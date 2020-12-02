@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular", "Vascular\Vascular.csproj", "{B60559D3-4D28-4F7D-9050-223C01E00084}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B60559D3-4D28-4F7D-9050-223C01E00084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60559D3-4D28-4F7D-9050-223C01E00084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60559D3-4D28-4F7D-9050-223C01E00084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60559D3-4D28-4F7D-9050-223C01E00084}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
