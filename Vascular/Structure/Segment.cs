@@ -67,12 +67,12 @@ namespace Vascular.Structure
 
         public AxialBounds GenerateBounds()
         {
-            return this.Bounds = new AxialBounds(this.Start.Position, this.End.Position, radius);
+            return this.Bounds = new AxialBounds(this);
         }
 
         public AxialBounds GenerateBounds(double pad)
         {
-            return this.Bounds = new AxialBounds(this.Start.Position, this.End.Position, radius).Extend(pad);
+            return this.Bounds = new AxialBounds(this).Extend(pad);
         }
 
         public double Slenderness

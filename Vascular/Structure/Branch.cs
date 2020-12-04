@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Vascular.Geometry;
@@ -440,6 +441,16 @@ namespace Vascular.Structure
                 }
             }
             return a;
+        }
+
+        public IEnumerator<Segment> GetEnumerator()
+        {
+            return segments.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

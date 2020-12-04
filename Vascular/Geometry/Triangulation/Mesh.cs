@@ -82,6 +82,14 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        public void Merge(Mesh other)
+        {
+            foreach (var t in other.T)
+            {
+                AddTriangle(t.A.P, t.B.P, t.C.P);
+            }
+        }
+
         public void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
         {
             AddTriangle(a, b, c, ((b - a) ^ (c - a)).Normalize());

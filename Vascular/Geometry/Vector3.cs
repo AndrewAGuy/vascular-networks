@@ -169,7 +169,7 @@ namespace Vascular.Geometry
             return new Vector3(X, Y, Z);
         }
 
-        public Vector3 Round(int decimals = 0, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+        public Vector3 Round(int decimals = 0, MidpointRounding midpointRounding = MidpointRounding.ToPositiveInfinity)
         {
             return new Vector3(Math.Round(x, decimals, midpointRounding), Math.Round(y, decimals, midpointRounding), Math.Round(z, decimals, midpointRounding));
         }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Vascular.Geometry.Bounds;
+using Vascular.Geometry.Generators;
 
 namespace Vascular.Geometry
 {
@@ -75,6 +76,71 @@ namespace Vascular.Geometry
                 xd, xy, zx,
                 xy, yd, yz,
                 zx, yz, zd) * s;
+        }
+
+        public static Vector3 RealSymmetricEigenvalues(Matrix3 A, double t2 = 1e-12)
+        {
+            // Solving characteristic eqn for eigenvalues
+            // Uses decomposition A = bB + iI where tr(A) placed into iI
+            var b_off = Math.Pow(A.m12, 2.0) + Math.Pow(A.m13, 2.0) + Math.Pow(A.m23, 2.0);
+            if (b_off < t2)
+            {
+                var E = Math.Max(Math.Max(A.m11, A.m22), A.m33);
+                var e = Math.Min(Math.Min(A.m11, A.m22), A.m33);
+                return new Vector3(E, A.Trace - E - e, e);
+            }
+            else
+            {
+                var T = A.Trace;
+                var i = T / 3.0;
+                var b_on = Math.Pow(A.m11 - i, 2.0) + Math.Pow(A.m22 - i, 2.0) + Math.Pow(A.m33 - i, 2.0);
+                var b = Math.Sqrt((b_on + 2.0 * b_off) / 6.0);
+                var B = (A - Matrix3.Diagonal(i)) / b;
+                var d = B.Determinant * 0.5;
+                var a = d <= -1 ? Math.PI / 3.0 : d >= 1 ? 0.0 : Math.Acos(d) / 3.0;
+                var E = i + 2.0 * b * Math.Cos(a);
+                var e = i + 2.0 * b * Math.Cos(a + Math.PI * 2.0 / 3.0);
+                return new Vector3(E, T - E - e, e);
+            }
+        }
+
+        public static Vector3 RealSymmetricEigenvector(Matrix3 A, double e, double t2 = 1e-12)
+        {
+            // Gets eigenvector associated with eigenvalue e
+            // Need 2 independent columns
+            var (b1, b2, b3) = (A - Matrix3.Diagonal(e)).Columns;
+            if (b1.LengthSquared > t2)
+            {
+                b1 = b1.Normalize();
+                b2 = RemoveComponent(b2, b1);
+                if (b2.LengthSquared > t2)
+                {
+                    return (b1 ^ b2).Normalize();
+                }
+                b3 = RemoveComponent(b3, b1);
+                if (b3.LengthSquared > t2)
+                {
+                    return (b1 ^ b3).Normalize();
+                }
+            }
+            else if (b2.LengthSquared > t2)
+            {
+                b2 = b2.Normalize();
+                b3 = RemoveComponent(b3, b2);
+                if (b3.LengthSquared > t2)
+                {
+                    return (b2 ^ b3).Normalize();
+                }
+            }
+            return null;
+        }
+
+        public static double DistanceToLine(Vector3 a, Vector3 b, Vector3 v)
+        {
+            var d = b - a;
+            var f = LineFactor(a, d, v);
+            var p = a + f * d;
+            return (v - p).Length;
         }
     }
 }

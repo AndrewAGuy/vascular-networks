@@ -25,6 +25,10 @@ namespace Vascular.Geometry
         {
         }
 
+        public Matrix3(double d) : this(d, d, d, d, d, d, d, d, d)
+        {
+        }
+
         public Matrix3(double m11, double m12, double m13, double m21, double m22, double m23, double m31, double m32, double m33)
         {
             this.m11 = m11;

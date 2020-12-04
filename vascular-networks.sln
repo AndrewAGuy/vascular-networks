@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular", "Vascular\Vascular.csproj", "{B60559D3-4D28-4F7D-9050-223C01E00084}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.IO.STL", "Vascular.IO.STL\Vascular.IO.STL.csproj", "{A00E32D2-065B-4AAF-BA9D-1EF829977736}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.IO.Triangulation", "Vascular.IO.Triangulation\Vascular.IO.Triangulation.csproj", "{8531DD3F-1886-48AA-B976-280CE7ECEB23}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{B60559D3-4D28-4F7D-9050-223C01E00084}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B60559D3-4D28-4F7D-9050-223C01E00084}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B60559D3-4D28-4F7D-9050-223C01E00084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A00E32D2-065B-4AAF-BA9D-1EF829977736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A00E32D2-065B-4AAF-BA9D-1EF829977736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A00E32D2-065B-4AAF-BA9D-1EF829977736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A00E32D2-065B-4AAF-BA9D-1EF829977736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8531DD3F-1886-48AA-B976-280CE7ECEB23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8531DD3F-1886-48AA-B976-280CE7ECEB23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8531DD3F-1886-48AA-B976-280CE7ECEB23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8531DD3F-1886-48AA-B976-280CE7ECEB23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

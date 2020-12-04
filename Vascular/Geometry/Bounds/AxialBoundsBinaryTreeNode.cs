@@ -30,5 +30,17 @@ namespace Vascular.Geometry.Bounds
                 ? new AxialBoundsBinaryTreeLeaf<T>(elements.First())
                 : (AxialBoundsBinaryTreeNode<T>)new AxialBoundsBinaryTreeSplit<T>(elements);
         }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            var T = new List<T>();
+            AxialBoundsBinaryTree.Visit(this, t => T.Add(t.Element));
+            return T.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 }

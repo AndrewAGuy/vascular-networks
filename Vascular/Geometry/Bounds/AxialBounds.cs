@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Vascular.Structure;
 
 namespace Vascular.Geometry.Bounds
 {
@@ -41,6 +42,11 @@ namespace Vascular.Geometry.Bounds
         {
             this.Upper = new Vector3(ab.Upper);
             this.Lower = new Vector3(ab.Lower);
+        }
+
+        public AxialBounds(Segment s) : this(s.Start.Position, s.End.Position, s.Radius)
+        {
+
         }
 
         public AxialBounds Copy()

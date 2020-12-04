@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vascular.Geometry;
 
@@ -67,5 +68,52 @@ namespace Vascular.Geometry.Triangulation
         {
             return SetGroupNormal(AngleWeighting);
         }
+
+        public List<Vertex> Fan
+        {
+            get
+            {
+                var currentTriangle = T.First.Value;
+                var outerEdge = currentTriangle.Opposite(this).CorrectWindingIn(currentTriangle);
+                var path = new List<Vertex>();
+                var first = outerEdge.S;
+                path.Add(first);
+                path.Add(outerEdge.E);
+                while (true)
+                {
+                    var secondLast = path[^2];
+                    var edgeInner = currentTriangle.Opposite(secondLast);
+                    var nextTriangle = edgeInner.Other(currentTriangle);
+                    outerEdge = nextTriangle.Opposite(this).CorrectWindingIn(nextTriangle);
+                    if (outerEdge.E == first)
+                    {
+                        break;
+                    }
+                    path.Add(outerEdge.E);
+                    currentTriangle = nextTriangle;
+                }
+                return path;
+            }
+        }
+
+        public List<Vertex> UnorderedFan
+        {
+            get
+            {
+                var vertices = new List<Vertex>(E.Count);
+                foreach (var e in E)
+                {
+                    vertices.Add(e.Other(this));
+                }
+                return vertices;
+            }
+        }
+
+        public bool IsConnected(Vertex other)
+        {
+            return E.Any(e => e.Other(this) == other);
+        }
+
+        public bool IsInterior => E.All(e => e.T.Count == 2);
     }
 }

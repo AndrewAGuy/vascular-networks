@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -64,14 +65,14 @@ namespace Vascular.Structure
                 Source = s,
                 Splitting = this.Splitting
             };
-            var r = CloneDownstream(this.Root);
+            var r = CloneDownstream(n, this.Root);
             s.Child = r.Segments[0];
             r.Start = s;
             r.Segments[0].Start = s;
             return n;
         }
 
-        private Branch CloneDownstream(Branch b)
+        private static Branch CloneDownstream(Network n, Branch b)
         {
             var T = new List<Transient>(b.Segments.Count);
             foreach (var t in b.Transients)
@@ -95,7 +96,7 @@ namespace Vascular.Structure
                     c.End = new Terminal(t.Position, t.Flow)
                     {
                         Parent = l,
-                        Network = this
+                        Network = n
                     };
                     l.End = c.End;
                     break;
@@ -104,15 +105,15 @@ namespace Vascular.Structure
                     {
                         Parent = l,
                         Position = s.Position,
-                        Network = this
+                        Network = n
                     };
                     l.End = c.End;
-                    var c0 = CloneDownstream(s.Downstream[0]);
+                    var c0 = CloneDownstream(n, s.Downstream[0]);
                     c0.Segments[0].Start = c.End;
                     c0.Start = c.End;
                     c.End.Children[0] = c0.Segments[0];
                     c.End.Downstream[0] = c0;
-                    var c1 = CloneDownstream(s.Downstream[1]);
+                    var c1 = CloneDownstream(n, s.Downstream[1]);
                     c1.Segments[0].Start = c.End;
                     c1.Start = c.End;
                     c.End.Children[1] = c1.Segments[0];
@@ -174,6 +175,21 @@ namespace Vascular.Structure
                     SegmentQuery(query, action, child);
                 }
             }
+        }
+
+        public IEnumerator<Segment> GetEnumerator()
+        {
+            return this.Segments.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            yield break;
+        }
+
+        IEnumerator<Branch> IEnumerable<Branch>.GetEnumerator()
+        {
+            return this.Branches.GetEnumerator();
         }
 
         public IEnumerable<Branch> Branches
