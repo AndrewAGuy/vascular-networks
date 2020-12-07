@@ -115,5 +115,17 @@ namespace Vascular.Geometry.Triangulation
         }
 
         public bool IsInterior => E.All(e => e.T.Count == 2);
+
+        public bool TriangleExists(Vertex u, Vertex v)
+        {
+            foreach (var t in T)
+            {
+                if (t.Contains(u) && t.Contains(v))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

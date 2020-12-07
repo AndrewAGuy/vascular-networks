@@ -103,12 +103,30 @@ namespace Vascular.Geometry.Triangulation
             var AB = AddEdge(A, B);
             var BC = AddEdge(B, C);
             var CA = AddEdge(C, A);
-            A.E.AddLast(AB);
-            B.E.AddLast(AB);
-            B.E.AddLast(BC);
-            C.E.AddLast(BC);
-            C.E.AddLast(CA);
-            A.E.AddLast(CA);
+            if (!A.E.Contains(AB))
+            {
+                A.E.AddLast(AB);
+            }
+            if (!B.E.Contains(AB))
+            {
+                B.E.AddLast(AB);
+            }
+            if (!B.E.Contains(BC))
+            {
+                B.E.AddLast(BC);
+            }
+            if (!C.E.Contains(BC))
+            {
+                C.E.AddLast(BC);
+            }
+            if (!C.E.Contains(CA))
+            {
+                C.E.AddLast(CA);
+            }
+            if (!A.E.Contains(CA))
+            {
+                A.E.AddLast(CA);
+            }
             var NT = new Triangle(A, B, C, AB, BC, CA, n);
             A.T.AddLast(NT);
             B.T.AddLast(NT);
@@ -187,40 +205,49 @@ namespace Vascular.Geometry.Triangulation
 
         public double Genus => 1 - 0.5 * this.EulerCharacteristic;
 
-        public bool VerifyEdgeCounts()
+        public bool VerifyEdgeCounts
         {
-            foreach (var e in E.Values)
+            get
             {
-                if (e.T.Count > 2 || e.T.Count == 0)
+                foreach (var e in E.Values)
                 {
-                    return false;
+                    if (e.T.Count > 2 || e.T.Count == 0)
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
         }
 
-        public bool IsClosed()
+        public bool IsClosed
         {
-            foreach (var e in E.Values)
+            get
             {
-                if (e.T.Count != 2)
+                foreach (var e in E.Values)
                 {
-                    return false;
+                    if (e.T.Count != 2)
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
         }
 
-        public bool HasBoundary()
+        public bool HasBoundary
         {
-            foreach (var e in E.Values)
+            get
             {
-                if (e.T.Count == 1)
+                foreach (var e in E.Values)
                 {
-                    return true;
+                    if (e.T.Count == 1)
+                    {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public AxialBounds GetAxialBounds()

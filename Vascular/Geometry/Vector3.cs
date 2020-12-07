@@ -180,7 +180,7 @@ namespace Vascular.Geometry
 
         public double LengthSquared => this * this;
 
-        public double Length => Math.Sqrt(this.Length);
+        public double Length => Math.Sqrt(this.LengthSquared);
 
         public static double DistanceSquared(Vector3 a, Vector3 b)
         {

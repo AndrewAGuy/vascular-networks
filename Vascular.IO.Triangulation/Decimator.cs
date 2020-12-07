@@ -12,8 +12,7 @@ namespace Vascular.IO.Triangulation
     {
         public Func<Vertex, double> MeanPlaneWeight { get; set; } = v => 1;
         public double MeanPlaneTolerance { get; set; } = 1.0e-12;
-        public double MeanPlaneRatio { get; set; } = 0.25;
-
+        public double MeanPlaneRatioSquared { get; set; } = 4;
 
         private enum Classification
         {
@@ -28,35 +27,53 @@ namespace Vascular.IO.Triangulation
         public bool ThrowIfComplex { get; set; } = true;
 
         public double RidgeDihedralAngleCosine { get; set; } = Math.Cos(Math.PI / 4.0);
+        public double MinDihedralAngleCosine { get; set; } = 0;
         public double SmallEdgeLengthFraction { get; set; } = 0.25;
+        public double MinLoopLengthFraction { get; set; } = 0.0625;
         public double MinLoopAspectRatio { get; set; } = 0.125;
 
         public bool DecimateBoundary { get; set; } = false;
 
         public Func<double, double, double> TotalErrorUpdate { get; set; } = (eOld, eNew) => eOld + eNew;
 
+        public bool SortCandidates { get; set; } = true;
+        public bool DecimateRidges { get; set; } = true;
+        public bool CollapseEdges { get; set; } = false;
+
+        public bool PerVertexCost { get; set; } = true;
+
         public void DecimateDistance(Mesh mesh, double targetValue)
         {
             var smallEdgeLength = targetValue * this.SmallEdgeLengthFraction;
+            var smallLoopLength = targetValue * this.MinLoopLengthFraction;
             var totalError = 0.0;
             while (true)
             {
                 var (simple, ridges) = Classify(mesh, smallEdgeLength);
-                var visited = new HashSet<Vertex>();
+                if (this.SortCandidates)
+                {
+                    simple.Sort();
+                    ridges.Sort();
+                }
+                var visited = new HashSet<Vertex>(mesh.V.Count);
                 var newError = 0.0;
+                var remainingError = targetValue - totalError;
                 foreach (var s in simple)
                 {
-                    if (s.D < targetValue - totalError && TryRemove(s, mesh, visited, smallEdgeLength))
+                    if (s.D < remainingError && TryRemove(s, mesh, visited, smallLoopLength))
                     {
                         newError = Math.Max(newError, s.D);
                     }
                 }
 
-                foreach (var r in ridges)
+                if (this.DecimateRidges)
                 {
-                    if (r.D < targetValue - totalError && TryRemove(r, mesh, visited, smallEdgeLength))
+                    foreach (var r in ridges)
                     {
-                        newError = Math.Max(newError, r.D);
+                        if (r.D < remainingError && TryRemove(r, mesh, visited, smallLoopLength))
+                        {
+                            newError = Math.Max(newError, r.D);
+                        }
                     }
                 }
 
@@ -66,6 +83,65 @@ namespace Vascular.IO.Triangulation
                     return;
                 }
             }
+        }
+
+        private bool TestRemesh(Mesh m, Vertex v, List<(Vertex a, Vertex b, Vertex c)> T, List<Vertex> f)
+        {
+            var fE = new HashSet<Edge>(f.Count) { new Edge(f[^1], f[0]) };
+            for (var i = 0; i < f.Count - 1; ++i)
+            {
+                fE.Add(new Edge(f[i], f[i + 1]));
+            }
+            var eD = new Dictionary<Edge, Vector3>(f.Count * 2);
+            foreach (var (a, b, c) in T)
+            {
+                if (a.TriangleExists(b, c))
+                {
+                    return false;
+                }
+                var ab = new Edge(a, b);
+                var bc = new Edge(b, c);
+                var ca = new Edge(c, a);
+                var N = ((b.P - a.P) ^ (c.P - a.P)).Normalize();
+                if (!TestRemeshEdge(m, fE, eD, ab, N, v) ||
+                    !TestRemeshEdge(m, fE, eD, bc, N, v) ||
+                    !TestRemeshEdge(m, fE, eD, ca, N, v))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool TestRemeshEdge(Mesh m, HashSet<Edge> fE, Dictionary<Edge, Vector3> eN, Edge e, Vector3 n, Vertex v)
+        {
+            if (!fE.Contains(e) && m.E.ContainsKey(e))
+            {
+                return false;
+            }
+            if (m.E.TryGetValue(e, out var E))
+            {
+                var t = E.T.Where(tr => !tr.Contains(v)).ToList();
+                if (t.Count == 0 || t[0].N * n < this.MinDihedralAngleCosine)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (eN.TryGetValue(e, out var N))
+                {
+                    if (n * N < this.MinDihedralAngleCosine)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    eN[e] = n;
+                }
+            }
+            return true;
         }
 
         private bool TryRemove(SimpleData s, Mesh m, HashSet<Vertex> h, double seL)
@@ -81,7 +157,34 @@ namespace Vascular.IO.Triangulation
                 return false;
             }
             var tris = OptimalLoopSplit(fan, s.P, seL);
-            if (tris == null)
+            if (tris == null || tris.Count != fan.Count - 2)
+            {
+                return false;
+            }
+            //var fanEdges = new HashSet<Edge>(fan.Count) { new Edge(fan[^1], fan[0]) };
+            //for (var i = 0; i < fan.Count - 1; ++i)
+            //{
+            //    fanEdges.Add(new Edge(fan[i], fan[i + 1]));
+            //}
+            //foreach (var (a, b, c) in tris)
+            //{
+            //    if (a.TriangleExists(b, c))
+            //    {
+            //        return false;
+            //    }
+            //    var ab = new Edge(a, b);
+            //    var bc = new Edge(b, c);
+            //    var ca = new Edge(c, a);
+
+
+            //    if (!fanEdges.Contains(ab) && m.E.ContainsKey(ab) ||
+            //        !fanEdges.Contains(bc) && m.E.ContainsKey(bc) ||
+            //        !fanEdges.Contains(ca) && m.E.ContainsKey(ca))
+            //    {
+            //        return false;
+            //    }
+            //}
+            if (!TestRemesh(m, s.V, tris, fan))
             {
                 return false;
             }
@@ -108,7 +211,7 @@ namespace Vascular.IO.Triangulation
 
             List<(Vertex a, Vertex b, Vertex c)> tris;
             List<Vertex> loop;
-            if (r.E)
+            if (!r.E)
             {
                 var (fan, a, b) = GetRidgeLoops(r, seL);
                 loop = fan;
@@ -124,6 +227,10 @@ namespace Vascular.IO.Triangulation
                 }
                 tris = A;
                 tris.AddRange(B);
+                if (tris.Count != loop.Count - 2)
+                {
+                    return false;
+                }
             }
             else
             {
@@ -139,6 +246,10 @@ namespace Vascular.IO.Triangulation
                 }
             }
 
+            if (!TestRemesh(m, r.V, tris, loop))
+            {
+                return false;
+            }
             m.RemoveVertex(r.V);
             foreach (var (a, b, c) in tris)
             {
@@ -231,7 +342,7 @@ namespace Vascular.IO.Triangulation
             var C = 0.0;
             for (var i = 0; i < loop.Count - 2; ++i)
             {
-                for (var j = i + 2; j < loop.Count; ++j)
+                for (var j = i + 2; j < loop.Count - 1; ++j)
                 {
                     var (a, b, c, ok) = Split(loop, i, j, mp, seL);
                     if (ok && c > C && c > this.MinLoopAspectRatio)
@@ -279,7 +390,7 @@ namespace Vascular.IO.Triangulation
             var Q = V[q];
             var d = P.P - Q.P;
             var L = d.Length;
-            if (L < seL)
+            if (L < seL || a.Count < 3 || b.Count < 3)
             {
                 return (null, null, 0, false);
             }
@@ -318,7 +429,7 @@ namespace Vascular.IO.Triangulation
             return (a, b, Math.Min(Math.Abs(adist), Math.Abs(bdist)) / L, true);
         }
 
-        private struct RidgeData : IEquatable<RidgeData>
+        private struct RidgeData : IEquatable<RidgeData>, IComparable<RidgeData>
         {
             public Vertex V;
             public double D;
@@ -326,6 +437,10 @@ namespace Vascular.IO.Triangulation
             public Vertex B;
             public bool E;
             public Plane3 P;
+            public int CompareTo(RidgeData o)
+            {
+                return D.CompareTo(o.D);
+            }
             public bool Equals(RidgeData o)
             {
                 return o.V == V;
@@ -340,11 +455,15 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private struct SimpleData : IEquatable<SimpleData>
+        private struct SimpleData : IEquatable<SimpleData>, IComparable<SimpleData>
         {
             public Vertex V;
             public double D;
             public Plane3 P;
+            public int CompareTo(SimpleData o)
+            {
+                return D.CompareTo(o.D);
+            }
             public bool Equals(SimpleData o)
             {
                 return o.V == V;
@@ -359,10 +478,33 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private (HashSet<SimpleData> simple, HashSet<RidgeData> ridges) Classify(Mesh mesh, double smallEdgeLength)
+        private struct CollapseData : IEquatable<CollapseData>, IComparable<CollapseData>
         {
-            var simple = new HashSet<SimpleData>(mesh.V.Count);
-            var ridges = new HashSet<RidgeData>(mesh.V.Count);
+            public Vertex K;
+            public Vertex R;
+            public double D;
+            public int CompareTo(CollapseData o)
+            {
+                return D.CompareTo(o.D);
+            }
+            public bool Equals(CollapseData o)
+            {
+                return K == o.K && R == o.R;
+            }
+            public override bool Equals(object obj)
+            {
+                return obj is CollapseData o && Equals(o);
+            }
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(K, R);
+            }
+        }
+
+        private (List<SimpleData> simple, List<RidgeData> ridges) Classify(Mesh mesh, double smallEdgeLength)
+        {
+            var simple = new List<SimpleData>(mesh.V.Count);
+            var ridges = new List<RidgeData>(mesh.V.Count);
             foreach (var v in mesh.V.Values)
             {
                 if (MeanPlane(v) is not Plane3 p)
@@ -421,7 +563,7 @@ namespace Vascular.IO.Triangulation
                         break;
                     }
                     var nDot = e.T.First.Value.N * e.T.Last.Value.N;
-                    if (nDot >= this.RidgeDihedralAngleCosine)
+                    if (nDot < this.RidgeDihedralAngleCosine)
                     {
                         switch (nFE)
                         {
@@ -441,7 +583,7 @@ namespace Vascular.IO.Triangulation
                         D = Math.Abs(p.Distance(v.P))
                     });
                 }
-                else if (nFE == 2)
+                else if (nFE == 2 && A != B)
                 {
                     ridges.Add(new RidgeData()
                     {
@@ -473,7 +615,7 @@ namespace Vascular.IO.Triangulation
             m /= W;
             S = S / W - Matrix3.OuterProduct(m);
             var ev = LinearAlgebra.RealSymmetricEigenvalues(S, S.Trace * this.MeanPlaneTolerance);
-            if (ev.z * this.MeanPlaneRatio >= ev.y)
+            if (ev.z * this.MeanPlaneRatioSquared >= ev.y)
             {
                 return null;
             }
