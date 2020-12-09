@@ -128,5 +128,35 @@ namespace Vascular.Geometry.Triangulation
         {
             return S.GetHashCode() ^ E.GetHashCode();
         }
+
+        public bool CanCollapse
+        {
+            get
+            {
+                var fan = S.UnorderedFan;
+                var joint = 0;
+                foreach (var v in E.UnorderedFan)
+                {
+                    if (fan.Contains(v))
+                    {
+                        ++joint;
+                    }
+                }
+                return joint == 2;
+            }
+        }
+
+        public Plane3 Midplane
+        {
+            get
+            {
+                var ed = this.Direction;
+                var mn = T.First.Value.N + T.Last.Value.N;
+                var pn = (ed ^ mn).Normalize();
+                return new Plane3(pn, pn * S.P);
+            }
+        }
+
+        public double DihedralAngleCosine => T.First.Value.N * T.Last.Value.N;
     }
 }

@@ -90,12 +90,12 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
-        public void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
+        public Triangle AddTriangle(Vector3 a, Vector3 b, Vector3 c)
         {
-            AddTriangle(a, b, c, ((b - a) ^ (c - a)).Normalize());
+            return AddTriangle(a, b, c, ((b - a) ^ (c - a)).Normalize());
         }
 
-        public void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 n)
+        public Triangle AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 n)
         {
             var A = AddVertex(a);
             var B = AddVertex(b);
@@ -135,6 +135,7 @@ namespace Vascular.Geometry.Triangulation
             BC.T.AddLast(NT);
             CA.T.AddLast(NT);
             NT.Node = T.AddLast(NT);
+            return NT;
         }
 
         public void RemoveTriangle(Triangle t)

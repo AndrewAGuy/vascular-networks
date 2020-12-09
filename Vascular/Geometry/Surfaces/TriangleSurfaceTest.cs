@@ -311,7 +311,7 @@ namespace Vascular.Geometry.Acceleration
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TestRayVertex(Vector3 v, Vector3 r0, Vector3 rd, double t2, ref double f, ref Vector3 p)
+        private static bool TestRayVertex(Vector3 v, Vector3 r0, Vector3 rd, double t2, ref double f, ref Vector3 p)
         {
             // Solving |r0+f*rd-v|=t2
             var r0v = r0 - v;
@@ -397,6 +397,43 @@ namespace Vascular.Geometry.Acceleration
                 var cp = p0 + e02 * LinearAlgebra.LineFactor(p0, e02, inPlane).Clamp(0, 1);
                 d = Vector3.Distance(cp, p);
                 return cp;
+            }
+        }
+
+        public double DistanceSquared(Vector3 v)
+        {
+            var inPlane = ProjectToPlane(v);
+            var toInPlane = inPlane - p0;
+            var a01 = b01 * toInPlane;
+            var a02 = b02 * toInPlane;
+            if (a01 >= 0)
+            {
+                if (a02 >= 0)
+                {
+                    if (a01 + a02 <= 1)
+                    {
+                        // Inside
+                        return Vector3.DistanceSquared(v, inPlane);
+                    }
+                    else
+                    {
+                        // Beyond edge 1-2
+                        var cp = p1 + e12 * LinearAlgebra.LineFactor(p1, e12, inPlane).Clamp(0, 1);
+                        return Vector3.DistanceSquared(v, cp);
+                    }
+                }
+                else
+                {
+                    // Beyond edge 0-1
+                    var cp = p0 + e01 * LinearAlgebra.LineFactor(p0, e01, inPlane).Clamp(0, 1);
+                    return Vector3.DistanceSquared(v, cp);
+                }
+            }
+            else
+            {
+                // Beyond edge 0-2
+                var cp = p0 + e02 * LinearAlgebra.LineFactor(p0, e02, inPlane).Clamp(0, 1);
+                return Vector3.DistanceSquared(v, cp);
             }
         }
 

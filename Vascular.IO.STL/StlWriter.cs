@@ -7,41 +7,25 @@ namespace Vascular.IO.STL
 {
     public class StlWriter : StlBuffer, IDisposable
     {
-        public StlWriter(FileStream stream)
+        public StlWriter(Stream stream, string header = null, char padChar = ' ') : base(0)
         {
             this.stream = new BinaryWriter(stream);
-            Begin();
+            Begin(header ?? string.Empty, padChar);
         }
 
-        public StlWriter(FileStream stream, string header)
+        public static void ToFile(string path, Mesh mesh, string header = null, char padChar = ' ', bool zOrder = false)
         {
-            this.stream = new BinaryWriter(stream);
-            Begin(header);
-        }
-
-        public static void ToFile(string path, Mesh mesh, string header)
-        {
-            using var writer = new StlWriter(new FileStream(path, FileMode.Create, FileAccess.Write), header ?? "");
-            writer.Write(mesh);
+            using var writer = new StlWriter(new FileStream(path, FileMode.Create, FileAccess.Write), header, padChar);
+            writer.Write(mesh, zOrder);
         }
 
         private const int HEADER_SIZE = 80;
 
-        private void Begin()
-        {
-            byte zero = 0;
-            for (var i = 0; i < HEADER_SIZE; ++i)
-            {
-                stream.Write(zero);
-            }
-            stream.Write(0);
-        }
-
-        private void Begin(string header)
+        private void Begin(string header, char padChar = ' ')
         {
             var formatted =
                 header.Length < HEADER_SIZE
-                ? header.PadRight(HEADER_SIZE, ' ')
+                ? header.PadRight(HEADER_SIZE, padChar)
                 : header.Length > HEADER_SIZE
                 ? header.Substring(0, HEADER_SIZE)
                 : header;

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Vascular.Geometry;
 using Vascular.Geometry.Triangulation;
 
@@ -16,7 +18,7 @@ namespace Vascular.IO.STL
 
         public StlBuffer(int chunk = 1 << 20)
         {
-            stream = new BinaryWriter(new MemoryStream(chunk));
+            stream = chunk != 0 ? new BinaryWriter(new MemoryStream(chunk)) : null;
         }
 
         protected void Write(Vector3 v)
@@ -56,9 +58,18 @@ namespace Vascular.IO.STL
             }
         }
 
-        public void Write(Mesh m)
+        public void Write(Mesh mesh, bool zOrder = false)
         {
-            Write(m.T);
+            if (zOrder)
+            {
+                double minZ(Triangle t) => Math.Min(Math.Min(t.A.P.z, t.B.P.z), t.C.P.z);
+                double maxZ(Triangle t) => Math.Max(Math.Max(t.A.P.z, t.B.P.z), t.C.P.z);
+                Write(mesh.T.OrderBy(minZ).ThenBy(maxZ));
+            }
+            else
+            {
+                Write(mesh.T);
+            }
         }
     }
 }

@@ -13,34 +13,59 @@ namespace Vascular.IO.Triangulation
         public Func<Vertex, double> MeanPlaneWeight { get; set; } = v => 1;
         public double MeanPlaneTolerance { get; set; } = 1.0e-12;
         public double MeanPlaneRatioSquared { get; set; } = 4;
-
-        private enum Classification
-        {
-            Simple,
-            Boundary,
-            Ridge,
-            Corner,
-            Complex
-        }
-
-        public bool TestComplex { get; set; } = false;
-        public bool ThrowIfComplex { get; set; } = true;
-
+        public bool TestNonManifold { get; set; } = false;
+        public bool ThrowIfNonManifold { get; set; } = true;
         public double RidgeDihedralAngleCosine { get; set; } = Math.Cos(Math.PI / 4.0);
         public double MinDihedralAngleCosine { get; set; } = 0;
         public double SmallEdgeLengthFraction { get; set; } = 0.25;
         public double MinLoopLengthFraction { get; set; } = 0.0625;
         public double MinLoopAspectRatio { get; set; } = 0.125;
-
         public bool DecimateBoundary { get; set; } = false;
-
         public Func<double, double, double> TotalErrorUpdate { get; set; } = (eOld, eNew) => eOld + eNew;
-
         public bool SortCandidates { get; set; } = true;
+        public bool RemoveVertices { get; set; } = true;
         public bool DecimateRidges { get; set; } = true;
         public bool CollapseEdges { get; set; } = false;
+        public bool PerTriangleCost { get; set; } = true;
+        public bool AccumulateCost { get; set; } = true;
 
-        public bool PerVertexCost { get; set; } = true;
+        private record Triple(Vertex a, Vertex b, Vertex c);
+
+        //public class IterationCompleteEventArgs : EventArgs
+        //{
+        //    public int NumTriangles { get; init; }
+        //    public int NumVertices { get; init; }
+        //    public int NumEdges { get; init; }
+        //    public double MaxError { get; init; }
+        //    public int NumCandidateVertices { get; init; }
+        //    public int NumCandidateEdges { get; init; }
+        //}
+        //public event EventHandler<IterationCompleteEventArgs> IterationComplete;
+
+        private double meshError = 0.0;
+        private double targetError;
+        private Dictionary<Triangle, double> meshErrors;
+        private HashSet<Vertex> candidateVertices;
+        private HashSet<Edge> candidateEdges;
+        private Mesh mesh;
+
+        private bool TestEdgeCollapse(Edge edge)
+        {
+            var fan = edge.S.UnorderedFan;
+            var joint = 0;
+            foreach (var v in edge.E.UnorderedFan)
+            {
+                if (fan.Contains(v))
+                {
+                    ++joint;
+                }
+            }
+            return joint == 2;
+        }
+
+        
+
+        
 
         public void DecimateDistance(Mesh mesh, double targetValue)
         {
@@ -520,7 +545,7 @@ namespace Vascular.IO.Triangulation
                     var be = v.E.Where(e => e.T.Count == 2).ToList();
                     if (be.Count != 2)
                     {
-                        if (this.ThrowIfComplex)
+                        if (this.ThrowIfNonManifold)
                         {
                             throw new TopologyException("Non-manifold node detected");
                         }
@@ -540,12 +565,12 @@ namespace Vascular.IO.Triangulation
                     continue;
                 }
 
-                if (this.TestComplex) // We know that all edges have 2 triangles, so should be fine getting a fan
+                if (this.TestNonManifold) // We know that all edges have 2 triangles, so should be fine getting a fan
                 {
                     var fan = v.Fan;
                     if (v.E.Any(e => !fan.Contains(e.Other(v))))
                     {
-                        if (this.ThrowIfComplex)
+                        if (this.ThrowIfNonManifold)
                         {
                             throw new TopologyException("Non-manifold node detected");
                         }
