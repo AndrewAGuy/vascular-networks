@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Vascular
@@ -23,12 +25,26 @@ namespace Vascular
             return val.CompareTo(min) < 0 ? min : val.CompareTo(max) > 0 ? max : val;
         }
 
-        public static void WaitAll(this IEnumerable<Task> tasks)
+        public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max, int taskCount = 0)
         {
-            foreach (var t in tasks)
+            using var semaphore = new SemaphoreSlim(max);
+            var tasks = new List<Task>(taskCount);
+            foreach (var element in source)
             {
-                t.Wait();
+                tasks.Add(Task.Run(async () =>
+                {
+                    try
+                    {
+                        await semaphore.WaitAsync();
+                        await run(element);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
             }
+            await Task.WhenAll(tasks);
         }
 
         public static TReturn ValueOrDefault<TKey, TValue, TReturn>(this IDictionary<TKey, TValue> dict, TKey key, TReturn def = default)
@@ -64,15 +80,15 @@ namespace Vascular
             }
         }
 
-        public static void Parallel<T>(this IEnumerable<T> networks, Action<T> action)
-        {
-            var tasks = new List<Task>();
-            foreach (var n in networks)
-            {
-                tasks.Add(Task.Run(() => action(n)));
-            }
-            tasks.WaitAll();
-        }
+        //public static void Parallel<T>(this IEnumerable<T> networks, Action<T> action)
+        //{
+        //    var tasks = new List<Task>();
+        //    foreach (var n in networks)
+        //    {
+        //        tasks.Add(Task.Run(() => action(n)));
+        //    }
+        //    tasks.WaitAll();
+        //}
 
         public static void Permute<T>(this List<T> list, Random random = null)
         {

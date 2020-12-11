@@ -8,8 +8,4 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Geometry\Surfaces\" />
-  </ItemGroup>
-
 </Project>

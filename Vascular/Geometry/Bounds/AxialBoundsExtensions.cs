@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Vascular.Geometry.Surfaces;
 using Vascular.Geometry.Triangulation;
 
 namespace Vascular.Geometry.Bounds

@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Vascular.Geometry;
-using Vascular.Geometry.Acceleration;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Lattices;
+using Vascular.Geometry.Surfaces;
 using Vascular.Geometry.Triangulation;
 using Vascular.Structure;
 
 namespace Vascular.IO.Triangulation
 {
-    public class MarchingTetrahedra
+    public class Triangulator
     {
         private BodyCentredCubicLattice lattice;
         private double stride;
         public double Stride
         {
-            get
-            {
-                return stride;
-            }
+            get => stride;
             set
             {
                 if (value > 0)
@@ -32,112 +32,158 @@ namespace Vascular.IO.Triangulation
                 }
             }
         }
-        public int StridesPerDivision { get; set; } = 20;
-        public int MaxThreads { get; set; } = 8;
 
-        public bool RoundVectors { get; set; } = true;
-        public int DecimalPlaces { get; set; } = 10;
+        public int StridesPerChunk { get; set; } = 20;
+        public int MaxConcurrentChunks { get; set; } = 8;
 
-        public bool PreloadCandidates { get; set; } = true;
         public int PreloadCapacity { get; set; } = 1024;
         public double PreloadStrideFactor { get; set; } = 4.0;
+
+        public Vector3[] SurfaceTestDirections { get; set; } = Connectivity.CubeFaces;
+        public double SurfaceTestRangeFactor { get; set; } = 2.0;
+        public int SurfaceTestMaxMiss { get; set; } = 1;
+
+        public double PointBoundsExtensionFactor { get; set; } = 4.0;
+
+        public Action<Decimation> ConfigureChunkDecimation { get; set; }
+        public Action<Decimation> ConfigureFinalDecimation { get; set; }
+        public bool ReportChunkDecimation { get; set; } = false;
+        public bool ReportFinalDecimation { get; set; } = false;
 
         private double vertexLower = 0.25;
         private double vertexUpper = 0.75;
         public double VertexFraction
         {
-            get
-            {
-                return vertexLower;
-            }
+            get => vertexLower;
             set
             {
                 if (value > 0 && value < 0.5)
                 {
                     vertexLower = value;
-                    vertexUpper = 1.0 - value;
+                    vertexUpper = 1 - value;
+                }
+                else if (value > 0.5 && value < 1)
+                {
+                    vertexUpper = value;
+                    vertexLower = 1 - value;
                 }
             }
         }
 
-        //public Action<Mesh> ChunkCompleteAction { get; set; }
-        //public Action<Mesh> ExportCompleteAction { get; set; }
-
-        //public delegate void ExportCompletionAction();
-        //public ExportCompletionAction ExportComplete { get; set; }
-        //public TriangleCompletionAction TriangleComplete { get; set; }
-        //public event ChunkCompletionAction OnChunkComplete;
-        //public event ExportCompletionAction OnExportComplete;
-
-        //private Mesh chunk;
-        //public MarchingTetrahedonExporter Add(Mesh chunk)
-        //{
-        //    this.chunk = chunk;
-        //    return this;
-        //}
-
-        //private readonly List<Network> networks = new List<Network>();
-        //public MarchingTetrahedonExporter Add(Network network)
-        //{
-        //    networks.Add(network);
-        //    return this;
-        //}
-
         private readonly List<IAxialBoundsQueryable<Segment>> features = new List<IAxialBoundsQueryable<Segment>>();
-        public MarchingTetrahedra Add(IAxialBoundsQueryable<Segment> feature)
+        public Triangulator Add(IAxialBoundsQueryable<Segment> feature)
         {
             features.Add(feature);
             return this;
         }
 
-        public MarchingTetrahedra SetStrideFromFeatureRadii(double fraction)
+        private IAxialBoundsQueryable<TriangleSurfaceTest> boundary;
+        public Triangulator Add(IAxialBoundsQueryable<TriangleSurfaceTest> surface)
         {
-            //var minVesselRadius = networks.Min(n => n.Segments.Where(s => s.Radius > 0.0).Min(s => s.Radius));
-            var minFeatureRadius = features.Min(f => f.Where(s => s.Radius > 0.0).Min(s => s.Radius));
-            this.Stride = minFeatureRadius * fraction;
-            //this.Stride = Math.Min(minVesselRadius, minFeatureRadius) * fraction;
+            boundary = surface;
             return this;
         }
 
-        public Mesh Export()
+        public Triangulator SetStrideFromFeatureRadii(double fraction)
         {
-            var export = new Mesh();
-            var totalBounds = features.Select(f => f is IAxialBoundable ab ? ab.GetAxialBounds() : f.GetTotalBounds())
-                .GetTotalBounds().Extend(this.Stride * 2);
-            var (iLo, jLo, kLo) = (totalBounds.Lower / this.Stride).Floor;
-            var (iHi, jHi, kHi) = (totalBounds.Upper / this.Stride).Ceiling;
-            var tasks = new HashSet<Task>(this.MaxThreads);
-            IEnumerable<(int i, int j, int k)> chunkLowerIndices()
+            var minFeatureRadius = features.Min(f => f.Where(s => s.Radius > 0.0).Min(s => s.Radius));
+            this.Stride = minFeatureRadius * fraction;
+            return this;
+        }
+
+        public record MeshChunks(int I, int J, int K);
+        public record ChunkPrepared(int Id, TimeSpan TimeElapsed, int Sample, int Build, int Segments, int Triangles);
+        public record ChunkSampled(int Id, TimeSpan TimeElapsed);
+        public record ChunkExtracted(int Id, TimeSpan TimeElapsed, int Triangles);
+        public record ChunkDecimating(int Id, int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
+        public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
+        public record ChunkMerged(int Id, TimeSpan TimeElapsed);
+        public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
+        public record MeshDecimating(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
+        public record MeshDecimated(TimeSpan TimeElapsed, int Triangles);
+
+        public async Task<Mesh> Export(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        {
+            var decimation = new Decimation(new Mesh())
             {
-                for (var i = iLo; i <= iHi; i += this.StridesPerDivision)
+                TaskCount = this.MaxConcurrentChunks,
+                MaxErrorSquared = 0
+            };
+            this.ConfigureFinalDecimation(decimation);
+
+            var totalBounds = features.GetTotalBounds()
+                .Append(boundary?.GetAxialBounds() ?? new AxialBounds())
+                .Extend(this.Stride * 2);
+            var (iMin, jMin, kMin) = (totalBounds.Lower / this.Stride).Floor;
+            var (iMax, jMax, kMax) = (totalBounds.Upper / this.Stride).Ceiling;
+            var iNum = (int)Math.Ceiling((iMax - iMin + 1) / (double)this.StridesPerChunk);
+            var jNum = (int)Math.Ceiling((jMax - jMin + 1) / (double)this.StridesPerChunk);
+            var kNum = (int)Math.Ceiling((kMax - kMin + 1) / (double)this.StridesPerChunk);
+            progress?.Report(new MeshChunks(iNum, jNum, kNum));
+
+            var taskId = 0;
+            IEnumerable<(int i, int j, int k, int n)> chunkLowerIndices()
+            {
+                for (var i = iMin; i <= iMax; i += this.StridesPerChunk)
                 {
-                    for (var j = jLo; j <= jHi; j += this.StridesPerDivision)
+                    for (var j = jMin; j <= jMax; j += this.StridesPerChunk)
                     {
-                        for (var k = kLo; k <= kHi; k += this.StridesPerDivision)
+                        for (var k = kMin; k <= kMax; k += this.StridesPerChunk)
                         {
-                            yield return (i, j, k);
+                            var n = taskId++;
+                            yield return (i, j, k, n);
                         }
                     }
                 }
             }
-            foreach (var (i, j, k) in chunkLowerIndices())
-            {
-                if (tasks.Count == this.MaxThreads)
-                {
-                    var wait = Task.WhenAny(tasks);
-                    wait.Wait();
-                    tasks.Remove(wait.Result);
-                }
-                tasks.Add(Task.Run(() => GenerateChunk(i, j, k, export)));
-            }
-            //this.ExportCompleteAction(export);
-            return export;
+
+            //var tasks = new HashSet<Task>(this.MaxConcurrentChunks);
+            var stopwatch = Stopwatch.StartNew();
+            await chunkLowerIndices().RunAsync(
+                obj => GenerateChunk(obj.i, obj.j, obj.k, iMax, jMax, kMax,
+                    decimation, obj.n, progress, cancellationToken),
+                this.MaxConcurrentChunks);
+            var elapsed = stopwatch.Elapsed;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            progress?.Report(new MeshCreated(elapsed, decimation.Mesh.T.Count));
+
+            stopwatch.Restart();
+            var decimationProgress = this.ReportFinalDecimation
+                ? new Progress<Decimation.ProgressData>(
+                    pd => progress?.Report(
+                        new MeshDecimating(pd.Triangles, pd.Edges, pd.CandidateEdges, pd.MaxError, pd.MinError)))
+                : null;
+            await decimation.DecimateAsync(decimationProgress, cancellationToken);
+            elapsed = stopwatch.Elapsed;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            progress?.Report(new MeshDecimated(elapsed, decimation.Mesh.T.Count));
+
+            return decimation.Mesh;
         }
 
-        private void GenerateChunk(int iLo, int jLo, int kLo, Mesh export)
+        private async Task GenerateChunk(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax,
+            Decimation exportDecimation, int id, IProgress<object> progress, CancellationToken cancellationToken)
         {
-            var (points, sample) = GetPoints(iLo, iLo + this.StridesPerDivision, jLo, jLo + this.StridesPerDivision, kLo, kLo + this.StridesPerDivision);
-            var function = Sample(sample, lattice);
+            // Not guaranteed to be spun up immediately
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Trim sample range down to required
+            var iHi = Math.Min(iLo + this.StridesPerChunk, iMax + 1);
+            var jHi = Math.Min(jLo + this.StridesPerChunk, jMax + 1);
+            var kHi = Math.Min(kLo + this.StridesPerChunk, kMax + 1);
+
+            var stopwatch = Stopwatch.StartNew();
+            var (points, sample) = GetPoints(iLo, iHi, jLo, jHi, kLo, kHi);
+
+            var function = Sample(sample, id, points.Count, stopwatch, progress, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            stopwatch.Restart();
             var chunk = new Mesh();
             foreach (var p in points)
             {
@@ -164,11 +210,32 @@ namespace Vascular.IO.Triangulation
                 TryGenerate(v100, v011, v110, v010, f100, f011, f110, f010, chunk);
                 TryGenerate(v100, v011, v110, v101, f100, f011, f110, f101, chunk);
             }
-            //this.ChunkCompleteAction(chunk);
-            lock (export)
+            var elapsed = stopwatch.Elapsed;
+            progress?.Report(new ChunkExtracted(id, elapsed, chunk.T.Count));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            stopwatch.Restart();
+            var chunkDecimation = new Decimation(chunk);
+            this.ConfigureChunkDecimation(chunkDecimation);
+            var chunkProgress = this.ReportChunkDecimation
+                ? new Progress<Decimation.ProgressData>(
+                    pd => progress?.Report(new ChunkDecimating(
+                        id, pd.Triangles, pd.Edges, pd.CandidateEdges, pd.MaxError, pd.MinError)))
+                : null;
+            await chunkDecimation.DecimateAsync(chunkProgress, cancellationToken);
+            elapsed = stopwatch.Elapsed;
+            progress?.Report(new ChunkDecimated(id, elapsed, chunk.T.Count));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            stopwatch.Restart();
+            lock (exportDecimation)
             {
-                export.Merge(chunk);
+                exportDecimation.Merge(chunkDecimation);
             }
+            elapsed = stopwatch.Elapsed;
+            progress?.Report(new ChunkMerged(id, elapsed));
         }
 
         private void TryGenerate(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
@@ -313,22 +380,25 @@ namespace Vascular.IO.Triangulation
             new Vector3(1, 1, 1)
         };
 
+        private Vector3 GeneratePoint(Vector3 v0, Vector3 v1, double f0, double f1)
+        {
+            if (v0.CompareTo(v1) > 0)
+            {
+                var e = (f0 / (f0 - f1)).Clamp(vertexLower, vertexUpper);
+                return e * v1 + (1 - e) * v0;
+            }
+            else
+            {
+                var e = (f1 / (f1 - f0)).Clamp(vertexLower, vertexUpper);
+                return e * v0 + (1 - e) * v1;
+            }
+        }
+
         private void GenerateOne(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
         {
-            // v0 is the odd one out
-            var e1 = (f0 / (f0 - f1)).Clamp(vertexLower, vertexUpper);
-            var e2 = (f0 / (f0 - f2)).Clamp(vertexLower, vertexUpper);
-            var e3 = (f0 / (f0 - f3)).Clamp(vertexLower, vertexUpper);
-            var p1 = e1 * v1 + (1 - e1) * v0;
-            var p2 = e2 * v2 + (1 - e2) * v0;
-            var p3 = e3 * v3 + (1 - e3) * v0;
-            // Rounding vectors can ensure that we don't accidentally duplicate due to machine precision errors
-            if (this.RoundVectors)
-            {
-                p1 = p1.Round(this.DecimalPlaces);
-                p2 = p2.Round(this.DecimalPlaces);
-                p3 = p3.Round(this.DecimalPlaces);
-            }
+            var p1 = GeneratePoint(v0, v1, f0, f1);
+            var p2 = GeneratePoint(v0, v2, f0, f2);
+            var p3 = GeneratePoint(v0, v3, f0, f3);
             // Make sure that we are wound correctly
             var n = (p2 - p1) ^ (p3 - p1);
             if (f0 <= 0)
@@ -359,22 +429,10 @@ namespace Vascular.IO.Triangulation
 
         private void GenerateTwo(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
         {
-            // v0,v1 - v2,v3 pairs
-            var e02 = (f0 / (f0 - f2)).Clamp(vertexLower, vertexUpper);
-            var e03 = (f0 / (f0 - f3)).Clamp(vertexLower, vertexUpper);
-            var e12 = (f1 / (f1 - f2)).Clamp(vertexLower, vertexUpper);
-            var e13 = (f1 / (f1 - f3)).Clamp(vertexLower, vertexUpper);
-            var p02 = e02 * v2 + (1 - e02) * v0;
-            var p03 = e03 * v3 + (1 - e03) * v0;
-            var p12 = e12 * v2 + (1 - e12) * v1;
-            var p13 = e13 * v3 + (1 - e13) * v1;
-            if (this.RoundVectors)
-            {
-                p02 = p02.Round(this.DecimalPlaces);
-                p03 = p03.Round(this.DecimalPlaces);
-                p12 = p12.Round(this.DecimalPlaces);
-                p13 = p13.Round(this.DecimalPlaces);
-            }
+            var p02 = GeneratePoint(v0, v2, f0, f2);
+            var p03 = GeneratePoint(v0, v3, f0, f3);
+            var p12 = GeneratePoint(v1, v2, f1, f2);
+            var p13 = GeneratePoint(v1, v3, f1, f3);
             var n = (p12 - p02) ^ (p03 - p02);
             // Generate triangles: 02 12 03 - 03 12 13, ensuring that winding correct
             if (f0 <= 0)
@@ -419,13 +477,13 @@ namespace Vascular.IO.Triangulation
             var construction = new List<Vector3>(total);
             var extra = (iR * jR + jR * kR + kR * iR + 1) * 2;
             var sample = new HashSet<Vector3>(total + extra);
-            for (var i = iLo; i <= iHi; ++i)
+            for (var i = iLo; i < iHi; ++i)
             {
-                for (var j = jLo; j <= jHi; ++j)
+                for (var j = jLo; j < jHi; ++j)
                 {
-                    for (var k = kLo; k <= kHi; ++k)
+                    for (var k = kLo; k < kHi; ++k)
                     {
-                        var z0 = new Vector3(i, j, 2 * k - i - j);
+                        var z0 = new Vector3(i - k, j - k, 2 * k);
                         var z1 = z0 + new Vector3(0, 0, 1);
                         construction.Add(z0);
                         construction.Add(z1);
@@ -446,42 +504,75 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private double DefaultSampler(Vector3 v, AxialBounds b, double d)
+        private Dictionary<Vector3, double> Sample(HashSet<Vector3> points, int id, int build, Stopwatch stopwatch,
+            IProgress<object> progress, CancellationToken cancellationToken)
         {
+            Func<Vector3, AxialBounds, double, double> conversion;
+            Func<Vector3, AxialBounds, double> initialize;
+
+            var totalBounds = points.Select(p => lattice.ToSpace(p))
+                .GetTotalBounds().Extend(this.Stride * this.PointBoundsExtensionFactor);
+
+            var segments = new List<SegmentSurfaceTest>(this.PreloadCapacity);
             foreach (var f in features)
             {
-                f.Query(b, s => d = Math.Min(d, s.DistanceToSurface(v)));
+                f.Query(totalBounds, s => segments.Add(new SegmentSurfaceTest(s)));
             }
-            return d;
-        }
+            var lookupFeatures = new AxialBoundsHashTable<SegmentSurfaceTest>(segments, this.Stride * this.PreloadStrideFactor, 2);
+            var triangleCount = 0;
 
-        private Dictionary<Vector3, double> Sample(HashSet<Vector3> points, Lattice lattice)
-        {
-            Func<Vector3, AxialBounds, double, double> conversion = DefaultSampler;
-
-            if (this.PreloadCandidates)
+            if (boundary == null)
             {
-                var segments = new List<SegmentSurfaceTest>(this.PreloadCapacity);
-                var totalBounds = points.GetTotalBounds().Extend(this.Stride * 2);
-                foreach (var f in features)
-                {
-                    f.Query(totalBounds, s => segments.Add(new SegmentSurfaceTest(s)));
-                }
-                var lookup = new AxialBoundsHashTable<SegmentSurfaceTest>(segments, this.Stride * this.PreloadStrideFactor, 2);
+                initialize = (v, b) => double.PositiveInfinity;
                 conversion = (v, b, d) =>
                 {
-                    lookup.Query(b, s => d = Math.Min(d, s.DistanceToSurface(v)));
+                    lookupFeatures.Query(b, s => d = Math.Min(d, s.DistanceToSurface(v)));
+                    return d;
+                };
+            }
+            else
+            {
+                var testDirections = this.SurfaceTestDirections
+                    .Select(d => d * boundary.GetAxialBounds().Range.Max * this.SurfaceTestRangeFactor)
+                    .ToArray();
+                var minHits = testDirections.Length - this.SurfaceTestMaxMiss;
+
+                var triangles = new List<TriangleSurfaceTest>(this.PreloadCapacity);
+                boundary.Query(totalBounds, t => triangles.Add(t));
+                var boundaryFeatures = new AxialBoundsHashTable<TriangleSurfaceTest>(triangles, this.Stride * this.PreloadStrideFactor, 2);
+                triangleCount = triangles.Count;
+
+                initialize = (v, b) =>
+                {
+                    var sign = boundary.IsPointInside(v, testDirections, minHits) ? -1.0 : 1.0;
+                    var dist2 = double.PositiveInfinity;
+                    boundaryFeatures.Query(b, t => dist2 = Math.Min(dist2, t.DistanceSquared(v)));
+                    return sign * Math.Sqrt(dist2);
+                };
+                conversion = (v, b, d) =>
+                {
+                    lookupFeatures.Query(b, s => d = Math.Max(d, -s.DistanceToSurface(v)));
                     return d;
                 };
             }
 
-            return points.ToDictionary(p => p, p =>
+            var elapsed = stopwatch.Elapsed;
+            progress?.Report(new ChunkPrepared(id, elapsed, points.Count, build, segments.Count, triangleCount));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            stopwatch.Restart();
+            var function = points.ToDictionary(p => lattice.ToSpace(p), p =>
             {
                 var v = lattice.ToSpace(p);
-                var b = new AxialBounds(v).Extend(this.Stride * 2);
-                var d = this.Stride * 2;
+                var b = new AxialBounds(v).Extend(this.Stride * this.PointBoundsExtensionFactor);
+                var d = initialize(v, b);
                 return conversion(v, b, d);
             });
+            elapsed = stopwatch.Elapsed;
+            progress?.Report(new ChunkSampled(id, elapsed));
+
+            return function;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
 
-namespace Vascular.Geometry.Acceleration
+namespace Vascular.Geometry.Surfaces
 {
     public class TriangleSurfaceTest : IAxialBoundable
     {
@@ -60,6 +60,10 @@ namespace Vascular.Geometry.Acceleration
         private readonly AxialBounds ab;
         private readonly Vector3 b01, b02;
         private readonly double t2;
+
+        public Vector3 A => p0;
+        public Vector3 B => p1;
+        public Vector3 C => p2;
 
         public Triangle Triangle
         {
@@ -544,6 +548,58 @@ namespace Vascular.Geometry.Acceleration
                 }
             }
             return true;
+        }
+
+        public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3 a, out Vector3 b)
+        {
+            var f = 0.0;
+            Vector3 p = null;
+            a = null;
+            b = null;
+            
+            if (TestRay(other.p0, other.e01, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+            if (TestRay(other.p1, other.e12, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+            if (TestRay(other.p0, other.e02, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+
+            if (other.TestRay(p0, e01, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+            if (other.TestRay(p1, e12, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+            if (other.TestRay(p0, e02, 0, ref f, ref p))
+            {
+                TryAssign(ref a, ref b, p);
+            }
+
+            return a != null && (b != null ? true : throw new GeometryException("Ray intersection tests must find 2 intersection points"));
+        }
+
+        private void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v)
+        {
+            if (a == null)
+            {
+                a = v;
+            }
+            else if (b == null)
+            {
+                b = v;
+            }
+            else
+            {
+                throw new GeometryException("Ray intersection tests can only return 2 intersection points");
+            }
         }
     }
 }

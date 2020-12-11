@@ -5,26 +5,51 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Vascular.Geometry;
-using Vascular.Geometry.Acceleration;
+using Vascular.Geometry.Surfaces;
 using Vascular.Geometry.Triangulation;
 
-namespace Vascular.IO.Triangulation.Remeshing
+namespace Vascular.IO.Triangulation
 {
-    public class EdgeCollapseDecimation
+    public record DecimationBegin(int BoundaryVertices, int Vertices, Summary Error);
+    public record DecimationStep(int Triangles, int Edges, int CandidateEdges, Summary Error);
+
+    public class Decimation
     {
         public double MaxErrorSquared { get; set; } = 1.0e-2;
         public double NormalToleranceSquare { get; set; } = 1.0e-12;
         public double MinDihedralCosine { get; set; } = -0.5;
         public bool SubtractOldDihedral { get; set; } = true;
         public Mesh Mesh { get; }
-        public int ThreadCount { get; set; } = 1;
+        public int TaskCount { get; set; } = 1;
 
-        public EdgeCollapseDecimation(Mesh mesh)
+        public IEnumerable<int> SummaryMoments { get; set; }
+        public IEnumerable<double> SummaryOrders { get; set; }
+
+        public Decimation(Mesh mesh)
         {
             this.Mesh = mesh;
             originalPoints = mesh.T.ToDictionary(t => t, t => new OriginalPoints(Array.Empty<Vector3>(), 0.0));
             candidateEdges = mesh.E.Values.ToHashSet();
+            boundaryVertices = mesh.V.Values.Where(v => !v.IsInterior).ToHashSet();
+            if (this.ExtendBoundary)
+            {
+                foreach (var v in boundaryVertices.ToList())
+                {
+                    foreach (var V in v.UnorderedFan)
+                    {
+                        boundaryVertices.Add(V);
+                    }
+                }
+            }
         }
+
+        private void SetBoundary()
+        {
+            boundaryVertices.Clear();
+
+        }
+
+        public bool ExtendBoundary { get; set; } = true;
 
         public void Decimate()
         {
@@ -42,16 +67,26 @@ namespace Vascular.IO.Triangulation.Remeshing
             }
         }
 
-        public record ProgressData(int Triangles, int Edges, int CandidateEdges);
+        public record ProgressData(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
 
-        public async Task DecimateAsync(CancellationToken cancellationToken = default, IProgress<ProgressData> progress = null)
+        public async Task DecimateAsync(IProgress<ProgressData> progress = null, CancellationToken cancellationToken = default)
         {
             while (candidateEdges.Count != 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                progress?.Report(new ProgressData(this.Mesh.T.Count, this.Mesh.E.Count, candidateEdges.Count));
+
+                var candidateCount = candidateEdges.Count;
+
                 var candidateTask = GetCandidatesAsync();
+
+                if (progress != null)
+                {
+                    var maxError = originalPoints.Values.Max(op => op.Error);
+                    var minError = originalPoints.Values.Min(op => op.Error);
+                    progress.Report(new ProgressData(this.Mesh.T.Count, this.Mesh.E.Count, candidateCount, maxError, minError));
+                }
                 var visited = new HashSet<Edge>(this.Mesh.E.Count);
+
                 var candidateCollapses = await candidateTask;
                 foreach (var collapse in candidateCollapses)
                 {
@@ -63,11 +98,12 @@ namespace Vascular.IO.Triangulation.Remeshing
             }
         }
 
-        private void Merge(EdgeCollapseDecimation other)
+        public void Merge(Decimation other)
         {
             // Save boundaries for later
             var boundary = this.Mesh.V.Values.Where(v => !v.IsInterior).ToList();
             var otherBoundary = other.Mesh.V.Values.Where(v => !v.IsInterior).ToList();
+            boundaryVertices.Clear();
             // Merge meshes
             foreach (var t in other.Mesh.T)
             {
@@ -84,15 +120,37 @@ namespace Vascular.IO.Triangulation.Remeshing
                         candidateEdges.Add(e);
                     }
                 }
+                else
+                {
+                    boundaryVertices.Add(b);
+                }
             }
             // Same for other boundary, but this time it has to be translated into this mesh
             foreach (var b in otherBoundary)
             {
-                if (this.Mesh.GetVertex(b.P) is Vertex v && v.IsInterior)
+                if (this.Mesh.GetVertex(b.P) is Vertex v)
                 {
-                    foreach (var e in v.E)
+                    if (v.IsInterior)
                     {
-                        candidateEdges.Add(e);
+                        foreach (var e in v.E)
+                        {
+                            candidateEdges.Add(e);
+                        }
+                    }
+                    else
+                    {
+                        boundaryVertices.Add(v);
+                    }
+                }
+            }
+
+            if (this.ExtendBoundary)
+            {
+                foreach (var v in boundaryVertices.ToList())
+                {
+                    foreach (var V in v.UnorderedFan)
+                    {
+                        boundaryVertices.Add(V);
                     }
                 }
             }
@@ -104,6 +162,7 @@ namespace Vascular.IO.Triangulation.Remeshing
 
         private readonly Dictionary<Triangle, OriginalPoints> originalPoints;
         private readonly HashSet<Edge> candidateEdges;
+        private readonly HashSet<Vertex> boundaryVertices;
 
         private void Execute(CollapseData collapse, HashSet<Edge> visited)
         {
@@ -169,16 +228,21 @@ namespace Vascular.IO.Triangulation.Remeshing
 
         private async Task<IOrderedEnumerable<CollapseData>> GetCandidatesAsync()
         {
+            if (this.TaskCount == 1)
+            {
+                return GetCandidates();
+            }
+
             var candidateCollapses = new List<CollapseData>(candidateEdges.Count);
             var candidateRemovals = new List<Edge>(candidateEdges.Count);
-            var perThread = candidateEdges.Count / this.ThreadCount;
-            var tasks = new List<Task<(List<CollapseData> c, List<Edge> r)>>(this.ThreadCount);
+            var perThread = Math.Max(1, candidateEdges.Count / this.TaskCount);
+            var tasks = new List<Task<(List<CollapseData> c, List<Edge> r)>>(this.TaskCount);
             var candidateEdgeList = candidateEdges.ToList();
-            foreach (var i in Enumerable.Range(0, this.ThreadCount))
+            foreach (var i in Enumerable.Range(0, Math.Min(this.TaskCount, candidateEdges.Count)))
             {
                 var begin = i * perThread;
-                var end = i == this.ThreadCount - 1 ? candidateEdgeList.Count : begin + perThread;
-                tasks.Add(Task.Run(() => 
+                var end = i == this.TaskCount - 1 ? candidateEdgeList.Count : begin + perThread;
+                tasks.Add(Task.Run(() =>
                 {
                     var c = new List<CollapseData>(end - begin);
                     var r = new List<Edge>(end - begin);
@@ -199,6 +263,10 @@ namespace Vascular.IO.Triangulation.Remeshing
             while (tasks.Count > 0)
             {
                 var finished = await Task.WhenAny(tasks);
+                if (finished.IsFaulted)
+                {
+                    throw new Exception("", finished.Exception);
+                }
                 tasks.Remove(finished);
                 candidateCollapses.AddRange(finished.Result.c);
                 candidateRemovals.AddRange(finished.Result.r);
@@ -257,7 +325,7 @@ namespace Vascular.IO.Triangulation.Remeshing
 
         private bool TryCreateRemesh(Vertex kept, Vertex lost, out List<Vertex> fan, out VertexTriple[] remesh)
         {
-            if (!lost.IsInterior)
+            if (boundaryVertices.Contains(lost))
             {
                 fan = null;
                 remesh = null;
@@ -397,327 +465,6 @@ namespace Vascular.IO.Triangulation.Remeshing
                 oldTotal += e.DihedralAngleCosine;
             }
             return oldTotal;
-        }
-    }
-
-    public class EdgeCollapseDecimator
-    {
-        private Dictionary<Triangle, List<Vector3>> originalPoints;
-        private HashSet<Edge> candidateEdges;
-        public double MaxDistanceSquared { get; set; }
-        public double ErrorFactor { get; set; } = 0;
-        public double AngleFactor { get; set; } = 1;
-
-        public double SquareTolerance { get; set; } = 1.0e-12;
-        public double MinDihedralCosine { get; set; } = -0.5;
-
-        public Action<int> OnIteration { get; set; }
-
-        public void Decimate(Mesh mesh)
-        {
-            //originalPoints = new Dictionary<Triangle, List<Vector3>>(mesh.T.Count);
-            candidateEdges = mesh.E.Values.ToHashSet();
-            originalPoints = mesh.T.ToDictionary(t => t, t => new List<Vector3>());
-            while (candidateEdges.Count != 0)
-            {
-                this.OnIteration(mesh.T.Count);
-                var candidateCollapses = GetCandidates(mesh);
-                var visited = new HashSet<Edge>(mesh.E.Count);
-                foreach (var collapse in candidateCollapses)
-                {
-                    if (!visited.Contains(new Edge(collapse.kept, collapse.lost)))
-                    {
-                        Execute(collapse, visited, mesh);
-                    }
-                }
-            }
-        }
-
-        private void Execute(Collapse collapse, HashSet<Edge> visited, Mesh mesh)
-        {
-            // Update visited. All edges attached to fan of lost are invalid.
-            foreach (var e in collapse.lost.E)
-            {
-                var other = e.Other(collapse.lost);
-                foreach (var ee in other.E)
-                {
-                    visited.Add(ee);
-                }
-            }
-            // Modify mesh and cost structure
-            var removedTriangles = collapse.lost.T.ToList();
-            foreach (var t in removedTriangles)
-            {
-                originalPoints.Remove(t);
-                mesh.RemoveTriangle(t);
-            }
-            for (var i = 0; i < collapse.tris.Length; ++i)
-            {
-                var t = collapse.tris[i];
-                var T = mesh.AddTriangle(t.a.P, t.b.P, t.c.P);
-                originalPoints[T] = collapse.points[i];
-            }
-            // Update candidates. All edges attached to fan of kept are valid
-            foreach (var e in collapse.kept.E)
-            {
-                var other = e.Other(collapse.kept);
-                foreach (var ee in other.E)
-                {
-                    candidateEdges.Add(ee);
-                }
-            }
-        }
-
-        private record OriginalPoints(Vector3[] Points, double Error);
-        private record Triple(Vertex a, Vertex b, Vertex c, TriangleSurfaceTest surface);
-        private record Collapse(Vertex kept, Vertex lost, Triple[] tris, List<Vector3>[] points, double cost);
-
-        private IOrderedEnumerable<Collapse> GetCandidates(Mesh mesh)
-        {
-            var candidateCollapses = new List<Collapse>(candidateEdges.Count);
-            var candidateRemovals = new List<Edge>(candidateEdges.Count);
-            foreach (var edge in candidateEdges)
-            {
-                if (TryCreateCollapse(edge, mesh, out var collapse) && collapse != null)
-                {
-                    candidateCollapses.Add(collapse);
-                }
-                else
-                {
-                    candidateRemovals.Add(edge);
-                }
-            }
-            foreach (var edge in candidateRemovals)
-            {
-                candidateEdges.Remove(edge);
-            }
-            return candidateCollapses.OrderBy(collapse => collapse.cost);
-        }
-
-        private bool TryCreateCollapse(Edge edge, Mesh mesh, out Collapse collapse)
-        {
-            collapse = null;
-            //try
-            //{
-            if (!edge.CanCollapse)
-            {
-                return false;
-            }
-            // Evaluate both potential collapses
-            var c1 = EdgeCollapseRemesh(edge.S, edge.E);
-            var c2 = EdgeCollapseRemesh(edge.E, edge.S);
-            if (c1.ok)
-            {
-                var e1 = RemeshErrorSquared(edge.E, c1.remesh);
-                if (c2.ok)
-                {
-                    var e2 = RemeshErrorSquared(edge.S, c2.remesh);
-                    if (e1.error <= this.MaxDistanceSquared)
-                    {
-                        if (e2.error <= this.MaxDistanceSquared)
-                        {
-                            var C1 = RemeshDihedralCost(edge.E, c1.fan, c1.remesh, mesh);
-                            var C2 = RemeshDihedralCost(edge.S, c2.fan, c2.remesh, mesh);
-                            collapse = C2.cost < C1.cost
-                                ? new Collapse(edge.E, edge.S, c2.remesh, e2.points, C2.cost)
-                                : new Collapse(edge.S, edge.E, c1.remesh, e1.points, C1.cost);
-                        }
-                        else
-                        {
-                            var C1 = RemeshDihedralCost(edge.E, c1.fan, c1.remesh, mesh);
-                            collapse = new Collapse(edge.S, edge.E, c1.remesh, e1.points, C1.cost);
-                        }
-                    }
-                    else if (e2.error <= this.MaxDistanceSquared)
-                    {
-                        var C2 = RemeshDihedralCost(edge.S, c2.fan, c2.remesh, mesh);
-                        collapse = new Collapse(edge.E, edge.S, c2.remesh, e2.points, C2.cost);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else if (e1.error <= this.MaxDistanceSquared)
-                {
-                    var C1 = RemeshDihedralCost(edge.E, c1.fan, c1.remesh, mesh);
-                    collapse = new Collapse(edge.S, edge.E, c1.remesh, e1.points, C1.cost);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (c2.ok)
-            {
-                var e2 = RemeshErrorSquared(edge.S, c2.remesh);
-                if (e2.error <= this.MaxDistanceSquared)
-                {
-                    var C2 = RemeshDihedralCost(edge.S, c2.fan, c2.remesh, mesh);
-                    collapse = new Collapse(edge.E, edge.S, c2.remesh, e2.points, C2.cost);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-            //var e1 = RemeshErrorSquared(edge.E, c1.remesh);
-            //var e2 = RemeshErrorSquared(edge.S, c2.remesh);
-            //if (e1.error <= this.MaxDistanceSquared)
-            //{
-            //    if (e2.error <= this.MaxDistanceSquared)
-            //    {
-            //        var C1 = RemeshDihedralCost(edge.E, c1.fan, c1.remesh, mesh);
-            //        var C2 = RemeshDihedralCost(edge.S, c2.fan, c2.remesh, mesh);
-            //        collapse = C2 < C1
-            //            ? new Collapse(edge.E, edge.S, c2.remesh, e2.points, C2)
-            //            : new Collapse(edge.S, edge.E, c1.remesh, e1.points, C1);
-            //    }
-            //    else
-            //    {
-            //        var C1 = RemeshDihedralCost(edge.E, c1.fan, c1.remesh, mesh);
-            //        collapse = new Collapse(edge.S, edge.E, c1.remesh, e1.points, C1);
-            //    }
-            //}
-            //else if (e2.error <= this.MaxDistanceSquared)
-            //{
-            //    var C2 = RemeshDihedralCost(edge.S, c2.fan, c2.remesh, mesh);
-            //    collapse = new Collapse(edge.E, edge.S, c2.remesh, e2.points, C2);
-            //}
-            //else
-            //{
-            //    return false;
-            //}
-            return true;
-            //}
-            //catch (Exception)
-            //{
-            //    return false;
-            //}
-        }
-
-        private (double cost, bool ok) RemeshDihedralCost(Vertex lost, List<Vertex> fan, Triple[] remesh, Mesh mesh)
-        {
-            var oldTotal = 0.0;
-            foreach (var t in lost.T)
-            {
-                oldTotal += t.Opposite(lost).DihedralAngleCosine;
-            }
-            foreach (var e in lost.E)
-            {
-                oldTotal += e.DihedralAngleCosine;
-            }
-
-            var newTotal = 0.0;
-            for (var i = 1; i < remesh.Length - 1; ++i)
-            {
-                var d = remesh[i].surface.Normal * remesh[i + 1].surface.Normal;
-                if (d < this.MinDihedralCosine)
-                {
-                    return (double.PositiveInfinity, false);
-                }
-                newTotal += d;
-            }
-            // First and last special
-            var edge = mesh.E[new Edge(fan[0], fan[1])];
-            var T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
-            var dot = T.N * remesh[0].surface.Normal;
-            if (dot < this.MinDihedralCosine)
-            {
-                return (double.PositiveInfinity, false);
-            }
-            newTotal += dot;
-            for (var i = 0; i < remesh.Length; ++i)
-            {
-                edge = mesh.E[new Edge(remesh[i].b, remesh[i].c)];
-                T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
-                dot = T.N * remesh[i].surface.Normal;
-                if (dot < this.MinDihedralCosine)
-                {
-                    return (double.PositiveInfinity, false);
-                }
-                newTotal += dot;
-            }
-            edge = mesh.E[new Edge(fan[^1], fan[0])];
-            T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
-            dot = T.N * remesh[^1].surface.Normal;
-            if (dot < this.MinDihedralCosine)
-            {
-                return (double.PositiveInfinity, false);
-            }
-            newTotal += dot;
-
-            return (oldTotal - newTotal, true);
-        }
-
-        private (List<Vertex> fan, Triple[] remesh, bool ok) EdgeCollapseRemesh(Vertex kept, Vertex lost)
-        {
-            // Walk fan starting from kept vertex, testing dihedral angles
-            var fan = lost.FanFrom(kept);
-            var remesh = new Triple[lost.T.Count - 2];
-            var a = fan[0];
-            for (var i = 1; i < fan.Count - 1; ++i)
-            {
-                var b = fan[i];
-                var c = fan[i + 1];
-                if (((b.P - a.P) ^ (c.P - a.P)).LengthSquared < this.SquareTolerance)
-                {
-                    return (null, null, false);
-                }
-                remesh[i - 1] = new Triple(a, b, c, new TriangleSurfaceTest(a.P, b.P, c.P, t2: this.SquareTolerance));
-            }
-            return (fan, remesh, true);
-        }
-
-        private (double error, List<Vector3>[] points) RemeshErrorSquared(Vertex lost, Triple[] remesh)
-        {
-            var points = new List<Vector3>[remesh.Length];
-            for (var i = 0; i < remesh.Length; ++i)
-            {
-                points[i] = new List<Vector3>();
-            }
-
-            // Assign lost point itself
-            var minError = double.PositiveInfinity;
-            var minIndex = -1;
-            for (var i = 0; i < remesh.Length; ++i)
-            {
-                var error = remesh[i].surface.DistanceSquared(lost.P);
-                if (error < minError)
-                {
-                    minError = error;
-                    minIndex = i;
-                }
-            }
-            points[minIndex].Add(lost.P);
-            var maxError = minError;
-
-            // Assign accumulated points
-            foreach (var t in lost.T)
-            {
-                foreach (var p in originalPoints[t])
-                {
-                    minError = double.PositiveInfinity;
-                    minIndex = -1;
-                    for (var i = 0; i < remesh.Length; ++i)
-                    {
-                        var error = remesh[i].surface.DistanceSquared(p);
-                        if (error < minError)
-                        {
-                            minError = error;
-                            minIndex = i;
-                        }
-                    }
-                    points[minIndex].Add(p);
-                    maxError = Math.Max(maxError, minError);
-                }
-            }
-
-            return (maxError, points);
         }
     }
 }

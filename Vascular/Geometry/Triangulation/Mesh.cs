@@ -251,6 +251,21 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        public bool IsOneSided
+        {
+            get
+            {
+                foreach (var e in E.Values)
+                {
+                    if (e.T.Count == 2 && !e.CheckNormalConsistency())
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
         public AxialBounds GetAxialBounds()
         {
             var e = V.GetEnumerator();

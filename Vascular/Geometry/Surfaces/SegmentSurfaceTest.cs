@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure;
 
-namespace Vascular.Geometry.Acceleration
+namespace Vascular.Geometry.Surfaces
 {
     public class SegmentSurfaceTest : IAxialBoundable
     {

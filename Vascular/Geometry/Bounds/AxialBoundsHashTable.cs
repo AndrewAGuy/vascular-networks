@@ -55,6 +55,12 @@ namespace Vascular.Geometry.Bounds
         {
             baseStride = stride;
             this.factor = factor;
+            if (elements.Count() == 0)
+            {
+                table = new Dictionary<Key, LinkedList<T>>();
+                levels = new HashSet<int>();
+                return;
+            }
             var ranges = elements.Select(e => e.GetAxialBounds().Range.Max);
             var maxLevel = Level(ranges.Max());
             var minLevel = Level(ranges.Min());
