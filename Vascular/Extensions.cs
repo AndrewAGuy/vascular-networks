@@ -44,7 +44,18 @@ namespace Vascular
                     }
                 }));
             }
+            // Must now await and not return the created task as we would dispose of the semaphore
             await Task.WhenAll(tasks);
+        }
+
+        public static Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, int taskCount = 0)
+        {
+            var tasks = new List<Task>(taskCount);
+            foreach (var element in source)
+            {
+                tasks.Add(Task.Run(() => run(element)));
+            }
+            return Task.WhenAll(tasks);
         }
 
         public static TReturn ValueOrDefault<TKey, TValue, TReturn>(this IDictionary<TKey, TValue> dict, TKey key, TReturn def = default)

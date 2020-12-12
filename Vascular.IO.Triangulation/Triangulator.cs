@@ -57,12 +57,12 @@ namespace Vascular.IO.Triangulation
             get => vertexLower;
             set
             {
-                if (value > 0 && value < 0.5)
+                if (value is > 0 and < 0.5)
                 {
                     vertexLower = value;
                     vertexUpper = 1 - value;
                 }
-                else if (value > 0.5 && value < 1)
+                else if (value is > 0.5 and < 1)
                 {
                     vertexUpper = value;
                     vertexLower = 1 - value;
@@ -137,10 +137,10 @@ namespace Vascular.IO.Triangulation
                 }
             }
 
-            //var tasks = new HashSet<Task>(this.MaxConcurrentChunks);
             var stopwatch = Stopwatch.StartNew();
             await chunkLowerIndices().RunAsync(
-                obj => GenerateChunk(obj.i, obj.j, obj.k, iMax, jMax, kMax,
+                obj => GenerateChunk(
+                    obj.i, obj.j, obj.k, iMax, jMax, kMax,
                     decimation, obj.n, progress, cancellationToken),
                 this.MaxConcurrentChunks);
             var elapsed = stopwatch.Elapsed;

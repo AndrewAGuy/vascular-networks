@@ -19,7 +19,7 @@ namespace Vascular.Geometry.Triangulation
         public Vector3 N;
         public LinkedListNode<Triangle> Node;
 
-        public void EdgeNeighbours(List<Triangle> n)
+        public void EdgeNeighbours(ICollection<Triangle> n)
         {
             foreach (var t in AB.T)
             {
