@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
-    [Serializable]
+    [DataContract]
     public class RefinedLattice : Lattice
     {
+        [DataMember]
         private readonly double refinement;
+        [DataMember]
         private readonly Lattice lattice;
 
         public RefinedLattice(Lattice lattice, int refinement)

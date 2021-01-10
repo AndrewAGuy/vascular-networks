@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices
 {
-    [Serializable]
+    [DataContract]
     public class BodyCentredCubicLattice : Lattice
     {
+        [DataMember]
         private readonly Matrix3 inverse;
 
         public BodyCentredCubicLattice(double length)

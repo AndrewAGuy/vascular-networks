@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
-    [Serializable]
+    [DataContract]
     public class ClampedMurray : FlowContextualMurray
     {
-        private readonly double elo;
-        private readonly double ehi;
-        private readonly double qlo;
-        private readonly double qhi;
+        [DataMember]
+        private readonly double elo, ehi, qlo, qhi;
+        [DataMember]
         private readonly FlowContextualMurray murray;
 
         public ClampedMurray(double Q_lo, double e_lo, double Q_hi, double e_hi, FlowContextualMurray fcm)

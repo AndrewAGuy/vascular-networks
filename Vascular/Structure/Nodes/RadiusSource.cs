@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
 {
-    [Serializable]
+    [DataContract]
     public class RadiusSource : Source
     {
-        private double radius;
-        private double radius2;
-        private double radius4inv;
+        [DataMember]
+        private double radius, radius2, radius4inv;
 
         public RadiusSource(Vector3 x, double r) : base(x)
         {

@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
-    [Serializable]
+    [DataContract]
     public class RotatedOffsetLattice : Lattice
     {
+        [DataMember]
         private readonly Lattice lattice;
+        [DataMember]
         private readonly Matrix3 rotation;
+        [DataMember]
         private readonly Matrix3 inverse;
+        [DataMember]
         private readonly Vector3 offset;
 
         public RotatedOffsetLattice(Lattice lattice, Matrix3 rotation, Vector3 offset)

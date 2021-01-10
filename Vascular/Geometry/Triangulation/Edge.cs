@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Geometry.Triangulation
 {
-    [Serializable]
+    [DataContract]
     public class Edge : IEquatable<Edge>
     {
         public Edge(Vertex s, Vertex e)
@@ -13,7 +14,9 @@ namespace Vascular.Geometry.Triangulation
             (S, E) = (s, e);
         }
 
+        [DataMember]
         public Vertex S, E;
+        [DataMember]
         public LinkedList<Triangle> T;
 
         public Vector3 Direction => E.P - S.P;

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Structure.Nodes
 {
-    [Serializable]
+    [DataContract]
     public class Bifurcation : BranchNode, IMobileNode
     {
         public Bifurcation()
@@ -14,17 +15,24 @@ namespace Vascular.Structure.Nodes
 
         }
 
-        private double f0 = 1.0;
-        private double f1 = 0.0;
+        [DataMember]
+        private double f0 = 1.0, f1 = 0.0;
+        [DataMember]
         private double pressure = 0.0;
+        [DataMember]
         private int depth = -1;
+        [DataMember]
         private double pathLength = -1.0;
 
+        [DataMember]
         private readonly Segment[] children = new Segment[2] { null, null };
+        [DataMember]
         private readonly Branch[] downstream = new Branch[2] { null, null };
 
+        [DataMember]
         public override Segment Parent { get; set; } = null;
 
+        [DataMember]
         public override Vector3 Position { get; set; } = null;
 
         public override Segment[] Children

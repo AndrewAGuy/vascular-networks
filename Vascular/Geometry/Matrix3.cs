@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry
 {
-    [Serializable]
+    [DataContract]
     public class Matrix3
     {
-        public double m11 = 1.0;
-        public double m12 = 0.0;
-        public double m13 = 0.0;
-        public double m21 = 0.0;
-        public double m22 = 1.0;
-        public double m23 = 0.0;
-        public double m31 = 0.0;
-        public double m32 = 0.0;
-        public double m33 = 1.0;
+        [DataMember]
+        public double 
+            m11 = 1.0, m12 = 0.0, m13 = 0.0,
+            m21 = 0.0, m22 = 1.0, m23 = 0.0, 
+            m31 = 0.0, m32 = 0.0, m33 = 1.0;
 
         public Matrix3()
         {

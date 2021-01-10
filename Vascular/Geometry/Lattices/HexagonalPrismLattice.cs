@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices
 {
-    [Serializable]
+    [DataContract]
     public class HexagonalPrismLattice : Lattice
     {
+        [DataMember]
         private readonly Matrix3 inverse;
 
         public enum Connection

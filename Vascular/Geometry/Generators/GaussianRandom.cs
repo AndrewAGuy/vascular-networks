@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Generators
 {
-    [Serializable]
+    [DataContract]
     public class GaussianRandom : IVector3Generator
     {
+        [DataMember]
         private readonly Random random;
+        [DataMember]
         private double cached = 0;
+        [DataMember]
         private bool generate = true;
 
         public GaussianRandom(int seed)

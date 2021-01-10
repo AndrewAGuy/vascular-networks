@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Structure.Nodes
 {
+    [DataContract]
+    [KnownType(typeof(PressureSource))]
+    [KnownType(typeof(RadiusSource))]
     public abstract class Source : BranchNode
     {
         public Source(Vector3 x)
@@ -13,11 +17,16 @@ namespace Vascular.Structure.Nodes
             SetPosition(x);
         }
 
+        [DataMember]
         private Vector3 position = null;
 
+        [DataMember]
         private Segment child = null;
+        [DataMember]
         private Branch down = null;
+        [DataMember]
         private readonly Segment[] children = new Segment[1] { null };
+        [DataMember]
         private readonly Branch[] downstream = new Branch[1] { null };
 
         public Segment Child

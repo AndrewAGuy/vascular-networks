@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices
 {
-    [Serializable]
+    [DataContract]
     public class VoronoiCell
     {
-        [Serializable]
+        [DataContract]
         private struct HalfSpace
         {
+            [DataMember]
             public double x, y, z, d;
             public double Distance(Vector3 v)
             {
                 return v.x * x + v.y * y + v.z * z;
             }
         }
+        [DataMember]
         private readonly HalfSpace[] halfSpaces;
 
         public VoronoiCell(Vector3[] basisConnections, Matrix3 basis)
@@ -33,6 +36,7 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        [DataMember]
         public Vector3[] Connections { get; }
 
         public Vector3 MostViolatedConnection(Vector3 v)

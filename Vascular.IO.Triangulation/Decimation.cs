@@ -10,35 +10,52 @@ using Vascular.Geometry.Triangulation;
 
 namespace Vascular.IO.Triangulation
 {
-    public record DecimationBegin(int BoundaryVertices, int Vertices, Summary Error);
-    public record DecimationStep(int Triangles, int Edges, int CandidateEdges, Summary Error);
+    public record DecimationBegin(int BoundaryVertices, int Vertices);
+    public record DecimationStep(int Triangles, int Edges, int Remesh, int Recost, int Valid, Summary Error);
 
     public class Decimation
     {
-        public double MaxErrorSquared { get; set; } = 1.0e-2;
+        public double MaxErrorSquared { get; set; } = 0.0;
         public double NormalToleranceSquare { get; set; } = 1.0e-12;
         public bool SubtractOldDihedral { get; set; } = true;
         public Mesh Mesh { get; }
-        public int TaskCount { get; set; } = 1;
+        //public int TaskCount { get; set; } = 1;
 
+        public bool ReportErrors { get; set; }
         public IEnumerable<int> SummaryMoments { get; set; }
         public IEnumerable<double> SummaryOrders { get; set; }
+
+        public int EdgesPerChunk { get; set; } = 1024;
+        public int MaxConcurrentChunks { get; set; } = 1;
+
+        public bool DropErrors { get; set; } = false;
 
         public Decimation(Mesh mesh)
         {
             this.Mesh = mesh ?? new Mesh();
-            originalPoints = mesh.T.ToDictionary(t => t, t => new OriginalPoints(Array.Empty<Vector3>(), 0.0));
-            remeshing = new HashSet<(Vertex kept, Vertex lost)>(mesh.E.Count * 2);
-            foreach (var e in mesh.E.Values)
+            ClearErrors();
+            RemeshAll();
+            //candidateEdges = mesh.E.Values.ToHashSet();
+        }
+
+        public void ClearErrors()
+        {
+            originalPoints = this.Mesh.T.ToDictionary(t => t, t => new OriginalPoints(Array.Empty<Vector3>(), 0.0));
+        }
+
+        public void RemeshAll()
+        {
+            remeshing = new HashSet<(Vertex kept, Vertex lost)>(this.Mesh.E.Count * 2);
+            foreach (var e in this.Mesh.E.Values)
             {
                 remeshing.Add((e.S, e.E));
                 remeshing.Add((e.E, e.S));
             }
-            recosting = new HashSet<(Vertex kept, Vertex lost)>(mesh.E.Count * 2);
-            //candidateEdges = mesh.E.Values.ToHashSet();
-            collapses = new Dictionary<(Vertex kept, Vertex lost), Collapse>(mesh.E.Count * 2);
-            SetBoundary();
+            recosting = new HashSet<(Vertex kept, Vertex lost)>(this.Mesh.E.Count * 2);
+            collapses = new Dictionary<(Vertex kept, Vertex lost), Collapse>(this.Mesh.E.Count * 2);
         }
+
+        private bool boundaryValid = false;
 
         private void SetBoundary()
         {
@@ -53,6 +70,7 @@ namespace Vascular.IO.Triangulation
                     }
                 }
             }
+            boundaryValid = true;
         }
 
         public bool ExtendBoundary { get; set; } = true;
@@ -73,7 +91,7 @@ namespace Vascular.IO.Triangulation
         //    }
         //}
 
-        public record ProgressData(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
+        //public record ProgressData(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
 
         //public async Task DecimateAsync(IProgress<ProgressData> progress = null, CancellationToken cancellationToken = default)
         //{
@@ -164,7 +182,65 @@ namespace Vascular.IO.Triangulation
 
         public void Merge(Decimation other)
         {
+            boundaryValid = false;
 
+            originalPoints.EnsureCapacity(originalPoints.Count + other.originalPoints.Count);
+            foreach (var t in other.Mesh.T)
+            {
+                var T = this.Mesh.AddTriangle(t.A.P, t.B.P, t.C.P);
+                originalPoints[T] = other.originalPoints[t];
+            }
+
+            collapses.EnsureCapacity(collapses.Count + other.collapses.Count);
+            foreach (var c in other.collapses.Values)
+            {
+                var C = Translate(c);
+                collapses[(C.Kept, C.Lost)] = C;
+            }
+
+            recosting.EnsureCapacity(recosting.Count + other.recosting.Count);
+            foreach (var (k, l) in other.recosting)
+            {
+                recosting.Add((Translate(k), Translate(l)));
+            }
+            remeshing.EnsureCapacity(remeshing.Count + other.remeshing.Count);
+            foreach (var (k, l) in other.remeshing)
+            {
+                remeshing.Add((Translate(k), Translate(l)));
+            }
+        }
+
+        private Vertex Translate(Vertex other)
+        {
+            return this.Mesh.V[other.P];
+        }
+
+        private Collapse Translate(Collapse other)
+        {
+            var T = other.Remesh.Triangles;
+            var triangles = new VertexTriple[T.Length];
+            for (var i = 0; i < T.Length; ++i)
+            {
+                triangles[i] = T[i] with
+                {
+                    A = Translate(T[i].A),
+                    B = Translate(T[i].B),
+                    C = Translate(T[i].C)
+                };
+            }
+            var remesh = other.Remesh with { Triangles = triangles };
+            var fan = new List<Vertex>(other.Fan.Count);
+            foreach (var v in fan)
+            {
+                fan.Add(Translate(v));
+            }
+            return other with
+            {
+                Kept = Translate(other.Kept),
+                Lost = Translate(other.Lost),
+                Remesh = remesh,
+                Fan = fan
+            };
         }
 
         private record OriginalPoints(Vector3[] Points, double Error);
@@ -176,32 +252,52 @@ namespace Vascular.IO.Triangulation
 
         private record Collapse(Vertex Kept, Vertex Lost, Remesh Remesh, List<Vertex> Fan, double Cost);
 
-        private readonly Dictionary<Triangle, OriginalPoints> originalPoints;
+        private Dictionary<Triangle, OriginalPoints> originalPoints;
         //private readonly HashSet<Edge> candidateEdges;
-        private readonly Dictionary<(Vertex kept, Vertex lost), Collapse> collapses;
-        private readonly HashSet<(Vertex kept, Vertex lost)> remeshing;
-        private readonly HashSet<(Vertex kept, Vertex lost)> recosting;
+        private Dictionary<(Vertex kept, Vertex lost), Collapse> collapses;
+        private HashSet<(Vertex kept, Vertex lost)> remeshing;
+        private HashSet<(Vertex kept, Vertex lost)> recosting;
         private HashSet<Vertex> boundaryVertices;
         //private Dictionary<(Vertex kept, Vertex lost), Remesh> remeshes;
 
-        public async Task DecimateAsync(IProgress<ProgressData> progress = null, CancellationToken cancellationToken = default)
+        public async Task Decimate(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
+            if (!boundaryValid)
+            {
+                SetBoundary();
+            }
+            progress?.Report(new DecimationBegin(boundaryVertices.Count, this.Mesh.V.Count));
             while (remeshing.Count != 0 || recosting.Count != 0)
             {
-                progress?.Report(new ProgressData(this.Mesh.T.Count, this.Mesh.E.Count, remeshing.Count, 0, 0));
-                var collapses = await GetCollapses();
-                foreach (var collapse in collapses)
+                cancellationToken.ThrowIfCancellationRequested();
+                var remesh = remeshing.Count;
+                var recost = recosting.Count;
+                var summary = Task.FromResult<Summary>(null);
+                if (this.ReportErrors)
+                {
+                    var errors = originalPoints.Values.Select(op => op.Error).ToArray();
+                    summary = Task.Run(() => new Summary(errors, this.SummaryMoments, this.SummaryOrders));
+                }
+                //progress?.Report(new DecimationStepBegin(this.Mesh.T.Count, this.Mesh.E.Count, remeshing.Count, recosting.Count,
+                //    new Summary(originalPoints.Values.Select(op => op.Error).ToArray(), this.SummaryMoments, this.SummaryOrders)));
+
+                var valid = await GetCollapses(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                progress?.Report(new DecimationStep(this.Mesh.T.Count, this.Mesh.E.Count, remesh, recost, valid.Count(), await summary));
+                //progress?.Report(new DecimationStepCandidates(valid.Count(), collapses.Count));
+                foreach (var collapse in valid)
                 {
                     Execute(collapse);
                 }
+                FinishIteration();
             }
         }
 
-        private async Task<IOrderedEnumerable<Collapse>> GetCollapses()
+        private async Task<IOrderedEnumerable<Collapse>> GetCollapses(CancellationToken cancellationToken)
         {
             var validCollapses = new List<Collapse>(this.Mesh.E.Count * 2);
-            var recost = GetRecosting(validCollapses);
-            var remesh = GetRemeshing(validCollapses);
+            var recost = GetRecosting(validCollapses, cancellationToken);
+            var remesh = GetRemeshing(validCollapses, cancellationToken);
             await recost;
             recosting.Clear();
             await remesh;
@@ -209,15 +305,29 @@ namespace Vascular.IO.Triangulation
             return validCollapses.OrderBy(c => c.Cost);
         }
 
-        private Task GetRemeshing(List<Collapse> validCollapses)
+        private readonly SemaphoreSlim collapseSemaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim validSemaphore = new SemaphoreSlim(1);
+
+        private static IEnumerable<(int start, int end)> EnumerateChunks(int total, int stride)
         {
-            var perThread = Math.Max(1, remeshing.Count / this.TaskCount);
+            for (var start = 0; start < total; start += stride)
+            {
+                yield return (start, Math.Min(start + stride, total));
+            }
+        }
+
+        private Task GetRemeshing(List<Collapse> validCollapses, CancellationToken cancellationToken)
+        {
+            //var perThread = Math.Max(1, remeshing.Count / this.TaskCount);
             var workingArray = remeshing.ToArray();
-            return Enumerable.Range(0, Math.Min(this.TaskCount, remeshing.Count)).RunAsync(
-                i =>
+            //return Enumerable.Range(0, Math.Min(this.TaskCount, remeshing.Count)).RunAsync(
+            //    async i =>
+            return EnumerateChunks(remeshing.Count, this.EdgesPerChunk).RunAsync(
+                async range =>
                 {
-                    var begin = i * perThread;
-                    var end = i == this.TaskCount - 1 ? remeshing.Count : begin + perThread;
+                    var (begin, end) = range;
+                    //var begin = i * perThread;
+                    //var end = i == this.TaskCount - 1 ? remeshing.Count : begin + perThread;
                     var valid = new List<Collapse>(end - begin);
                     var invalid = new List<Collapse>(end - begin);
                     var removing = new List<(Vertex kept, Vertex lost)>(end - begin);
@@ -242,7 +352,8 @@ namespace Vascular.IO.Triangulation
                     }
 
                     // Update the collapses with new valid ones
-                    lock (collapses)
+                    await collapseSemaphore.WaitAsync(cancellationToken);
+                    try
                     {
                         foreach (var collapse in invalid)
                         {
@@ -257,22 +368,35 @@ namespace Vascular.IO.Triangulation
                             collapses.Remove(key);
                         }
                     }
-                    lock (validCollapses)
+                    finally
+                    {
+                        collapseSemaphore.Release();
+                    }
+
+                    await validSemaphore.WaitAsync(cancellationToken);
+                    try
                     {
                         validCollapses.AddRange(valid);
                     }
-                }, this.TaskCount);
+                    finally
+                    {
+                        validSemaphore.Release();
+                    }
+                }, this.MaxConcurrentChunks, cancellationToken);
         }
 
-        private Task GetRecosting(List<Collapse> validCollapses)
+        private Task GetRecosting(List<Collapse> validCollapses, CancellationToken cancellationToken)
         {
-            var perThread = Math.Max(1, recosting.Count / this.TaskCount);
+            //var perThread = Math.Max(1, recosting.Count / this.TaskCount);
             var workingArray = recosting.ToArray();
-            return Enumerable.Range(0, Math.Min(this.TaskCount, recosting.Count)).RunAsync(
-                i =>
+            //return Enumerable.Range(0, Math.Min(this.TaskCount, recosting.Count)).RunAsync(
+            //    async i =>
+            return EnumerateChunks(recosting.Count, this.EdgesPerChunk).RunAsync(
+                async range =>
                 {
-                    var begin = i * perThread;
-                    var end = i == this.TaskCount - 1 ? recosting.Count : begin + perThread;
+                    var (begin, end) = range;
+                    //var begin = i * perThread;
+                    //var end = i == this.TaskCount - 1 ? recosting.Count : begin + perThread;
                     var valid = new List<Collapse>(end - begin);
                     var invalid = new List<Collapse>(end - begin);
                     for (var j = begin; j < end; ++j)
@@ -295,11 +419,16 @@ namespace Vascular.IO.Triangulation
                     // No need to update collapses, as we'd only ever see it from either another call to this
                     // where we'd update costs again and nothing else, or a call to remesh where everything
                     // would be changed
-                    lock (validCollapses)
+                    await validSemaphore.WaitAsync(cancellationToken);
+                    try
                     {
                         validCollapses.AddRange(valid);
                     }
-                }, this.TaskCount);
+                    finally
+                    {
+                        validSemaphore.Release();
+                    }
+                }, this.MaxConcurrentChunks, cancellationToken);
         }
 
         //private async Task<IOrderedEnumerable<Collapse>> GetCollapses()
@@ -364,6 +493,14 @@ namespace Vascular.IO.Triangulation
         //    return collapses.Values.OrderBy(c => c.Cost);
         //}
 
+        private void FinishIteration()
+        {
+            if (this.DropErrors)
+            {
+                ClearErrors();
+            }
+        }
+
         private void Execute(Collapse collapse)
         {
             if (CheckValid(collapse))
@@ -377,7 +514,9 @@ namespace Vascular.IO.Triangulation
         private bool CheckValid(Collapse collapse)
         {
             var V = (collapse.Kept, collapse.Lost);
-            return !remeshing.Contains(V) && !recosting.Contains(V) && collapses.ContainsKey(V);
+            return !remeshing.Contains(V)
+                && !recosting.Contains(V)
+                && collapses.ContainsKey(V);
         }
 
         private void ModifyMesh(Collapse collapse)

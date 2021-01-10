@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Structure
 {
-    [Serializable]
+    [DataContract]
     public class Segment : IAxialBoundable
     {
+        [DataMember]
         private double radius = 0.0;
 
         public Segment()
@@ -22,14 +24,19 @@ namespace Vascular.Structure
             this.End = end;
         }
 
+        [DataMember]
         public Branch Branch { get; set; } = null;
 
+        [DataMember]
         public INode Start { get; set; }
 
+        [DataMember]
         public INode End { get; set; }
 
+        [DataMember]
         public double Length { get; private set; } = 0.0;
 
+        [DataMember]
         public AxialBounds Bounds { get; private set; } = new AxialBounds();
 
         public double Radius

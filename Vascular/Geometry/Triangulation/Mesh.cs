@@ -2,17 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry.Triangulation
 {
-    [Serializable]
+    [DataContract]
     public class Mesh : IAxialBoundable, IEnumerable<Triangle>, IEnumerable<Edge>, IEnumerable<Vertex>
     {
+        [DataMember]
         public LinkedList<Triangle> T = new LinkedList<Triangle>();
+        [DataMember]
         public Dictionary<Edge, Edge> E = new Dictionary<Edge, Edge>();
+        [DataMember]
         public Dictionary<Vector3, Vertex> V = new Dictionary<Vector3, Vertex>();
 
         public Vertex AddVertex(Vector3 p)

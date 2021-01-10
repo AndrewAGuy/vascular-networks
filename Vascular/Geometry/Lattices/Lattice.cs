@@ -1,17 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
+using Vascular.Geometry.Lattices.Transformed;
 
 namespace Vascular.Geometry.Lattices
 {
+    [DataContract]
+    [KnownType(typeof(BodyCentredCubicLattice))]
+    [KnownType(typeof(CubeLattice))]
+    [KnownType(typeof(CuboidLattice))]
+    [KnownType(typeof(HexagonalPrismLattice))]
+    [KnownType(typeof(TetrahedronLattice))]
+    [KnownType(typeof(OffsetLattice))]
+    [KnownType(typeof(RefinedLattice))]
+    [KnownType(typeof(RotatedLattice))]
+    [KnownType(typeof(RotatedOffsetLattice))]
     public abstract class Lattice
     {
         public abstract Vector3 ToSpace(Vector3 u);
         public abstract Vector3 ToBasis(Vector3 v);
         public abstract Vector3 ClosestVectorBasis(Vector3 v);
 
+        [DataMember]
         protected Matrix3 basis;
+        [DataMember]
         protected double determinant;
+        [DataMember]
         protected VoronoiCell voronoiCell;
         public Matrix3 Basis
         {

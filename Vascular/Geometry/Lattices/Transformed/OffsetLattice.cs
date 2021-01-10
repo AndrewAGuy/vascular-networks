@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
-    [Serializable]
+    [DataContract]
     public class OffsetLattice : Lattice
     {
+        [DataMember]
         private readonly Lattice lattice;
+        [DataMember]
         private readonly Vector3 offset;
 
         public OffsetLattice(Lattice lattice, Vector3 offset)

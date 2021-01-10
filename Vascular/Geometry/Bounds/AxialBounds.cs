@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Structure;
 
 namespace Vascular.Geometry.Bounds
 {
-    [Serializable]
+    [DataContract]
     public class AxialBounds : IAxialBoundable
     {
         public AxialBounds()
@@ -56,8 +57,10 @@ namespace Vascular.Geometry.Bounds
 
         public static AxialBounds Infinite => new AxialBounds(new Vector3(double.NegativeInfinity), new Vector3(double.PositiveInfinity));
 
+        [DataMember]
         public Vector3 Upper { get; private set; }
 
+        [DataMember]
         public Vector3 Lower { get; private set; }
 
         public Vector3 Range => this.Upper - this.Lower;

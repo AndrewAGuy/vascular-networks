@@ -1,14 +1,13 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Vascular.Geometry
 {
-    [Serializable]
+    [DataContract]
     public class Plane3
     {
-        public double x = 0.0;
-        public double y = 0.0;
-        public double z = 0.0;
-        public double d = 0.0;
+        [DataMember]
+        public double x = 0.0, y = 0.0, z = 0.0, d = 0.0;
 
         public Plane3()
         {

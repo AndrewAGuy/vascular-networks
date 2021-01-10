@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
 {
-    [Serializable]
+    [DataContract]
     public class PressureSource : Source
     {
-        private double pressure;
-        private double pressureInverted;
+        [DataMember]
+        private double pressure, pressureInverted;
 
         public PressureSource(Vector3 x, double p) : base(x)
         {

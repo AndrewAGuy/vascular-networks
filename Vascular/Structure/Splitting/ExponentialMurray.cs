@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
-    [Serializable]
+    [DataContract]
     public class ExponentialMurray : FlowContextualMurray
     {
+        [DataMember]
         protected double a, b, c;
 
         public ExponentialMurray(double Q_min, double e_max, double Q_max, double e_min, double rate)

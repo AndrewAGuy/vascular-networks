@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Vascular
 {
+    [DataContract]
     public class Summary
     {
+        [DataMember]
         public double Mean { get; }
+        [DataMember]
         public double Variance { get; }
+        [DataMember]
         public double[] StandardizedMoments { get; }
+        [DataMember]
         public double[] OrderStatistics { get; }
 
         public Summary(IEnumerable<double> values, IEnumerable<int> standardizedMoments = null, IEnumerable<double> orders = null)

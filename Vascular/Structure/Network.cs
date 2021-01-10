@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -11,9 +12,10 @@ using Vascular.Structure.Splitting;
 
 namespace Vascular.Structure
 {
-    [Serializable]
+    [DataContract]
     public class Network : IAxialBoundsQueryable<Segment>, IAxialBoundsQueryable<Branch>
     {
+        [DataMember]
         private Source source;
 
         public Source Source
@@ -40,23 +42,31 @@ namespace Vascular.Structure
             }
         }
 
+        [DataMember]
         public Network[] Partners { get; set; } = null;
 
+        [DataMember]
         public double Viscosity { get; set; } = 4.0e-6;
 
+        [DataMember]
         public double PressureOffset { get; set; } = 0.0;
 
+        [DataMember]
         public ISplittingFunction Splitting { get; set; } = new Murray() { Exponent = 3.0 };
 
+        [DataMember]
         public double RelativeCompliance { get; set; } = 1;
 
+        [DataMember]
         public bool Output { get; set; } = false;
 
+        [DataMember]
         public string Name { get; set; } = "";
 
+        [DataMember]
         public Vector3 InletDirection { get; set; } = null;
 
-        public Func<Terminal, Vector3> TerminalDirection { get; set; } = t => null;
+        //public Func<Terminal, Vector3> TerminalDirection { get; set; } = t => null;
 
         public Network Clone(Source s)
         {

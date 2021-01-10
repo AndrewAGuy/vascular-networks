@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -8,9 +9,10 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure
 {
-    [Serializable]
+    [DataContract]
     public class Branch : IAxialBoundsQueryable<Segment>, IAxialBoundable
     {
+        [DataMember]
         private List<Segment> segments = new List<Segment>();
 
         public Branch()
@@ -121,6 +123,7 @@ namespace Vascular.Structure
             return list;
         }
 
+        [DataMember]
         public BranchNode Start { get; set; } = null;
 
         public Branch Parent
@@ -131,6 +134,7 @@ namespace Vascular.Structure
             }
         }
 
+        [DataMember]
         public BranchNode End { get; set; } = null;
 
         public Branch[] Children
@@ -197,6 +201,7 @@ namespace Vascular.Structure
             }
         }
 
+        [DataMember]
         private double radius = 0.0;
 
         public double Radius
@@ -214,12 +219,16 @@ namespace Vascular.Structure
             }
         }
 
+        [DataMember]
         public double Length { get; private set; } = 0.0;
 
+        [DataMember]
         public double EffectiveLength { get; private set; } = 0.0;
 
+        [DataMember]
         private double reducedResistanceLocal = 0.0;
 
+        [DataMember]
         public double ReducedResistance { get; private set; } = 0.0;
 
         public double Resistance
@@ -268,6 +277,7 @@ namespace Vascular.Structure
             this.Start.PropagatePhysicalUpstream();
         }
 
+        [DataMember]
         public double Flow { get; private set; } = 0.0;
 
         public void SetFlow(double Q)
@@ -295,6 +305,7 @@ namespace Vascular.Structure
             this.Start.PropagateLogicalUpstream();
         }
 
+        [DataMember]
         public AxialBounds LocalBounds { get; private set; } = new AxialBounds();
 
         public AxialBounds GenerateLocalBounds()
@@ -317,6 +328,7 @@ namespace Vascular.Structure
             return this.LocalBounds;
         }
 
+        [DataMember]
         public AxialBounds GlobalBounds { get; private set; } = new AxialBounds();
 
         public AxialBounds GenerateDownstreamBounds()

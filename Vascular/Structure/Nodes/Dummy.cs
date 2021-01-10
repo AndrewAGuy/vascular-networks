@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
 {
-    [Serializable]
+    [DataContract]
     public class Dummy : INode
     {
         public Segment Parent
@@ -28,6 +29,7 @@ namespace Vascular.Structure.Nodes
             }
         }
 
+        [DataMember]
         public Vector3 Position { get; set; } = null;
     }
 }

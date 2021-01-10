@@ -16,6 +16,17 @@ using Vascular.Structure;
 
 namespace Vascular.IO.Triangulation
 {
+    public record MeshChunks(int I, int J, int K);
+    public record ChunkPrepared(int Id, TimeSpan TimeElapsed, int Sample, int Build, int Segments, int Triangles);
+    public record ChunkSampled(int Id, TimeSpan TimeElapsed);
+    public record ChunkExtracted(int Id, TimeSpan TimeElapsed, int Triangles);
+    public record ChunkDecimating(int Id, object Data);
+    public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
+    public record ChunkMerged(int Id, TimeSpan TimeElapsed);
+    public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
+    public record MeshDecimating(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
+    public record MeshDecimated(TimeSpan TimeElapsed, int Triangles);
+
     public class Triangulator
     {
         private BodyCentredCubicLattice lattice;
@@ -91,22 +102,11 @@ namespace Vascular.IO.Triangulation
             return this;
         }
 
-        public record MeshChunks(int I, int J, int K);
-        public record ChunkPrepared(int Id, TimeSpan TimeElapsed, int Sample, int Build, int Segments, int Triangles);
-        public record ChunkSampled(int Id, TimeSpan TimeElapsed);
-        public record ChunkExtracted(int Id, TimeSpan TimeElapsed, int Triangles);
-        public record ChunkDecimating(int Id, int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
-        public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
-        public record ChunkMerged(int Id, TimeSpan TimeElapsed);
-        public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
-        public record MeshDecimating(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
-        public record MeshDecimated(TimeSpan TimeElapsed, int Triangles);
-
         public async Task<Mesh> Export(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
             var decimation = new Decimation(new Mesh())
             {
-                TaskCount = this.MaxConcurrentChunks,
+                MaxConcurrentChunks = this.MaxConcurrentChunks,
                 MaxErrorSquared = 0
             };
             this.ConfigureFinalDecimation(decimation);
@@ -121,28 +121,29 @@ namespace Vascular.IO.Triangulation
             var kNum = (int)Math.Ceiling((kMax - kMin + 1) / (double)this.StridesPerChunk);
             progress?.Report(new MeshChunks(iNum, jNum, kNum));
 
-            var taskId = 0;
             IEnumerable<(int i, int j, int k, int n)> chunkLowerIndices()
             {
+                var taskId = 0;
                 for (var i = iMin; i <= iMax; i += this.StridesPerChunk)
                 {
                     for (var j = jMin; j <= jMax; j += this.StridesPerChunk)
                     {
                         for (var k = kMin; k <= kMax; k += this.StridesPerChunk)
                         {
-                            var n = taskId++;
-                            yield return (i, j, k, n);
+                            yield return (i, j, k, taskId);
+                            taskId++;
                         }
                     }
                 }
             }
 
+            var semaphore = new SemaphoreSlim(1);
             var stopwatch = Stopwatch.StartNew();
             await chunkLowerIndices().RunAsync(
                 obj => GenerateChunk(
                     obj.i, obj.j, obj.k, iMax, jMax, kMax,
-                    decimation, obj.n, progress, cancellationToken),
-                this.MaxConcurrentChunks);
+                    decimation, semaphore, obj.n, progress, cancellationToken),
+                this.MaxConcurrentChunks, cancellationToken);
             var elapsed = stopwatch.Elapsed;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -150,12 +151,8 @@ namespace Vascular.IO.Triangulation
             progress?.Report(new MeshCreated(elapsed, decimation.Mesh.T.Count));
 
             stopwatch.Restart();
-            var decimationProgress = this.ReportFinalDecimation
-                ? new Progress<Decimation.ProgressData>(
-                    pd => progress?.Report(
-                        new MeshDecimating(pd.Triangles, pd.Edges, pd.CandidateEdges, pd.MaxError, pd.MinError)))
-                : null;
-            await decimation.DecimateAsync(decimationProgress, cancellationToken);
+            var decimationProgress = this.ReportFinalDecimation ? progress : null;
+            await decimation.Decimate(decimationProgress, cancellationToken);
             elapsed = stopwatch.Elapsed;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -166,7 +163,8 @@ namespace Vascular.IO.Triangulation
         }
 
         private async Task GenerateChunk(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax,
-            Decimation exportDecimation, int id, IProgress<object> progress, CancellationToken cancellationToken)
+            Decimation exportDecimation, SemaphoreSlim semaphore, int id, IProgress<object> progress,
+            CancellationToken cancellationToken)
         {
             // Not guaranteed to be spun up immediately
             cancellationToken.ThrowIfCancellationRequested();
@@ -215,26 +213,23 @@ namespace Vascular.IO.Triangulation
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            stopwatch.Restart();
             var chunkDecimation = new Decimation(chunk);
             this.ConfigureChunkDecimation(chunkDecimation);
             var chunkProgress = this.ReportChunkDecimation
-                ? new Progress<Decimation.ProgressData>(
-                    pd => progress?.Report(new ChunkDecimating(
-                        id, pd.Triangles, pd.Edges, pd.CandidateEdges, pd.MaxError, pd.MinError)))
+                ? new Progress<object>(data => progress?.Report(new ChunkDecimating(id, data)))
                 : null;
-            await chunkDecimation.DecimateAsync(chunkProgress, cancellationToken);
+            stopwatch.Restart();
+            await chunkDecimation.Decimate(chunkProgress, cancellationToken);
             elapsed = stopwatch.Elapsed;
             progress?.Report(new ChunkDecimated(id, elapsed, chunk.T.Count));
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            await semaphore.WaitAsync(cancellationToken);
             stopwatch.Restart();
-            lock (exportDecimation)
-            {
-                exportDecimation.Merge(chunkDecimation);
-            }
+            exportDecimation.Merge(chunkDecimation);
             elapsed = stopwatch.Elapsed;
+            semaphore.Release();
             progress?.Report(new ChunkMerged(id, elapsed));
         }
 

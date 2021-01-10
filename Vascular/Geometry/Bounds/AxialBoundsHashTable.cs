@@ -6,10 +6,8 @@ using System.Text;
 
 namespace Vascular.Geometry.Bounds
 {
-    [Serializable]
     public class AxialBoundsHashTable<T> : IEnumerable<T>, IAxialBoundsQueryable<T>, IAxialBoundable where T : IAxialBoundable
     {
-        [Serializable]
         private struct Key : IEquatable<Key>
         {
             public Key(int _x, int _y, int _z, int _w)
@@ -55,7 +53,7 @@ namespace Vascular.Geometry.Bounds
         {
             baseStride = stride;
             this.factor = factor;
-            if (elements.Count() == 0)
+            if (!elements.Any())
             {
                 table = new Dictionary<Key, LinkedList<T>>();
                 levels = new HashSet<int>();

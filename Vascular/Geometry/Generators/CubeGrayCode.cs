@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Generators
 {
-    [Serializable]
+    [DataContract]
     public class CubeGrayCode : IVector3Generator
     {
         private static readonly Vector3[] DIRECTIONS = new Vector3[8] {
@@ -17,6 +18,8 @@ namespace Vascular.Geometry.Generators
             new Vector3(+1, -1, -1),
             new Vector3(+1, +1, -1),
             };
+
+        [DataMember]
         private uint index = uint.MaxValue;
 
         public Vector3 NextVector3()

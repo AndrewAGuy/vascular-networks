@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure
 {
+    [DataContract]
+    [KnownType(typeof(RadiusSource))]
+    [KnownType(typeof(PressureSource))]
+    [KnownType(typeof(Bifurcation))]
+    [KnownType(typeof(Terminal))]
     public abstract class BranchNode : INode
     {
         public abstract double PathLength { get; }
@@ -24,6 +31,7 @@ namespace Vascular.Structure
 
         public abstract Branch[] Downstream { get; }
 
+        [DataMember]
         public Network Network { get; set; } = null;
 
         public abstract double Flow { get; }

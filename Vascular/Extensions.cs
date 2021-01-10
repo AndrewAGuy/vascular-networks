@@ -25,37 +25,52 @@ namespace Vascular
             return val.CompareTo(min) < 0 ? min : val.CompareTo(max) > 0 ? max : val;
         }
 
-        public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max, int taskCount = 0)
+        public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max, CancellationToken cancellationToken = default)
         {
             using var semaphore = new SemaphoreSlim(max);
-            var tasks = new List<Task>(taskCount);
-            foreach (var element in source)
-            {
-                tasks.Add(Task.Run(async () =>
+            await Task.WhenAll(source.Select(element =>
+                Task.Run(async () =>
                 {
+                    await semaphore.WaitAsync(cancellationToken);
                     try
                     {
-                        await semaphore.WaitAsync();
                         await run(element);
                     }
                     finally
                     {
                         semaphore.Release();
                     }
-                }));
-            }
+                }, cancellationToken)
+            ));
+            //var tasks = new List<Task>();
+            //foreach (var element in source)
+            //{
+            //    tasks.Add(Task.Run(async () =>
+            //    {
+            //        await semaphore.WaitAsync(cancellationToken);
+            //        try
+            //        {
+            //            await run(element);
+            //        }
+            //        finally
+            //        {
+            //            semaphore.Release();
+            //        }
+            //    }, cancellationToken));
+            //}
             // Must now await and not return the created task as we would dispose of the semaphore
-            await Task.WhenAll(tasks);
+            //await Task.WhenAll(tasks);
         }
 
-        public static Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, int taskCount = 0)
+        public static Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, CancellationToken cancellationToken = default)
         {
-            var tasks = new List<Task>(taskCount);
-            foreach (var element in source)
-            {
-                tasks.Add(Task.Run(() => run(element)));
-            }
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(source.Select(element => Task.Run(() => run(element), cancellationToken)));
+            //var tasks = new List<Task>();
+            //foreach (var element in source)
+            //{
+            //    tasks.Add(Task.Run(() => run(element)));
+            //}
+            //return Task.WhenAll(tasks);
         }
 
         public static TReturn ValueOrDefault<TKey, TValue, TReturn>(this IDictionary<TKey, TValue> dict, TKey key, TReturn def = default)

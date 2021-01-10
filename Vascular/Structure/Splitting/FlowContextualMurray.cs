@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
+    [DataContract]
+    [KnownType(typeof(ClampedMurray))]
+    [KnownType(typeof(ExponentialMurray))]
     public abstract class FlowContextualMurray : ISplittingFunction
     {
         public abstract double Exponent(double Q);
@@ -19,7 +23,7 @@ namespace Vascular.Structure.Splitting
             return (c1 * s, c2 * s);
         }
 
-        private (double df1_dc1, double df2_dc1) GroupGradient(double c1, double c2, double e)
+        private static (double df1_dc1, double df2_dc1) GroupGradient(double c1, double c2, double e)
         {
             var c1e = Math.Pow(c1, e);
             var c2e = Math.Pow(c2, e);

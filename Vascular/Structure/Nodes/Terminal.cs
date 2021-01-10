@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Structure.Nodes
 {
-    [Serializable]
+    [DataContract]
     public class Terminal : BranchNode
     {
         public Terminal(Vector3 x, double Q)
@@ -15,14 +16,19 @@ namespace Vascular.Structure.Nodes
             SetFlow(Q);
         }
 
+        [DataMember]
         private Vector3 position = null;
+        [DataMember]
         private double flow;
+        [DataMember]
         private double pathLength = -1.0;
+        [DataMember]
         private int depth = -1;
 
         private static readonly Segment[] CHILDREN = new Segment[] { };
         private static readonly Branch[] DOWNSTREAM = new Branch[] { };
 
+        [DataMember]
         public override Segment Parent { get; set; } = null;
 
         public override Segment[] Children
@@ -95,8 +101,10 @@ namespace Vascular.Structure.Nodes
             }
         }
 
+        [DataMember]
         public Terminal[] Partners { get; set; } = null;
 
+        [DataMember]
         public bool Culled { get; set; } = false;
 
         public override double Flow

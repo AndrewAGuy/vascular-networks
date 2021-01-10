@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry.Triangulation
 {
-    [Serializable]
+    [DataContract]
     public class Triangle
     {
         public Triangle(Vertex a, Vertex b, Vertex c, Edge ab, Edge bc, Edge ca, Vector3 n)
@@ -14,9 +15,13 @@ namespace Vascular.Geometry.Triangulation
             (A, B, C, AB, BC, CA, N) = (a, b, c, ab, bc, ca, n);
         }
 
+        [DataMember]
         public Vertex A, B, C;
+        [DataMember]
         public Edge AB, BC, CA;
+        [DataMember]
         public Vector3 N;
+        [DataMember]
         public LinkedListNode<Triangle> Node;
 
         public void EdgeNeighbours(ICollection<Triangle> n)

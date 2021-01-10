@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Geometry.Lattices
 {
-    [Serializable]
+    [DataContract]
     public class CuboidLattice : Lattice
     {
+        [DataMember]
         private readonly double lengthX, lengthY, lengthZ;
+
+        [DataMember]
         private readonly double inverseX, inverseY, inverseZ;
 
         public enum Connection

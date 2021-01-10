@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Vascular.Geometry.Bounds
 {
-    [Serializable]
     public class AxialBoundsBinaryTreeSplit<T> : AxialBoundsBinaryTreeNode<T> where T : IAxialBoundable
     {
         public AxialBoundsBinaryTreeNode<T> Left { get; }

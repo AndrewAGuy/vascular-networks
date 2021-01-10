@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
-    [Serializable]
+    [DataContract]
     public class Murray : ISplittingFunction
     {
-        private double e;
-        private double e_ni;
-        private double e_dd;
-        private double e_dn;
+        [DataMember]
+        private double e, e_ni, e_dd, e_dn;
 
         public double Exponent
         {

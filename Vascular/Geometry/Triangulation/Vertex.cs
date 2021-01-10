@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Geometry.Triangulation
 {
-    [Serializable]
+    [DataContract]
     public class Vertex
     {
         public Vertex(Vector3 p)
@@ -14,11 +15,15 @@ namespace Vascular.Geometry.Triangulation
             P = p;
         }
 
+        [DataMember]
         public Vector3 P;
 
+        [DataMember]
         public LinkedList<Edge> E = new LinkedList<Edge>();
+        [DataMember]
         public LinkedList<Triangle> T = new LinkedList<Triangle>();
 
+        [DataMember]
         public Vector3 N;
 
         public Vector3 SetGroupNormal(Func<Triangle, Vertex, double> weighting)

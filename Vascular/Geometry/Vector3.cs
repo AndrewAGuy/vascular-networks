@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry
 {
-    [Serializable]
+    [DataContract]
     public class Vector3 : IEquatable<Vector3>, IComparable<Vector3>, IFormattable, IAxialBoundable
     {
-        public double x = 0.0;
-        public double y = 0.0;
-        public double z = 0.0;
+        [DataMember]
+        public double x = 0.0, y = 0.0, z = 0.0;
 
         public Vector3()
         {
