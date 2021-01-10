@@ -24,8 +24,7 @@ namespace Vascular.IO.Triangulation
     public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
     public record ChunkMerged(int Id, TimeSpan TimeElapsed);
     public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
-    public record MeshDecimating(int Triangles, int Edges, int CandidateEdges, double MaxError, double MinError);
-    public record MeshDecimated(TimeSpan TimeElapsed, int Triangles);
+    public record MeshDecimated(TimeSpan TimeElapsed);
 
     public class Triangulator
     {
@@ -56,8 +55,8 @@ namespace Vascular.IO.Triangulation
 
         public double PointBoundsExtensionFactor { get; set; } = 4.0;
 
-        public Action<Decimation> ConfigureChunkDecimation { get; set; }
-        public Action<Decimation> ConfigureFinalDecimation { get; set; }
+        public Action<Decimation> ConfigureChunkDecimation { get; set; } = d => { };
+        public Action<Decimation> ConfigureFinalDecimation { get; set; } = d => { };
         public bool ReportChunkDecimation { get; set; } = false;
         public bool ReportFinalDecimation { get; set; } = false;
 
@@ -104,12 +103,7 @@ namespace Vascular.IO.Triangulation
 
         public async Task<Mesh> Export(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
-            var decimation = new Decimation(new Mesh())
-            {
-                MaxConcurrentChunks = this.MaxConcurrentChunks,
-                MaxErrorSquared = 0
-            };
-            this.ConfigureFinalDecimation(decimation);
+            var decimation = new Decimation(new Mesh());
 
             var totalBounds = features.GetTotalBounds()
                 .Append(boundary?.GetAxialBounds() ?? new AxialBounds())
@@ -137,7 +131,7 @@ namespace Vascular.IO.Triangulation
                 }
             }
 
-            var semaphore = new SemaphoreSlim(1);
+            using var semaphore = new SemaphoreSlim(1);
             var stopwatch = Stopwatch.StartNew();
             await chunkLowerIndices().RunAsync(
                 obj => GenerateChunk(
@@ -150,14 +144,15 @@ namespace Vascular.IO.Triangulation
 
             progress?.Report(new MeshCreated(elapsed, decimation.Mesh.T.Count));
 
-            stopwatch.Restart();
+            this.ConfigureFinalDecimation(decimation);
             var decimationProgress = this.ReportFinalDecimation ? progress : null;
+            stopwatch.Restart();
             await decimation.Decimate(decimationProgress, cancellationToken);
             elapsed = stopwatch.Elapsed;
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            progress?.Report(new MeshDecimated(elapsed, decimation.Mesh.T.Count));
+            progress?.Report(new MeshDecimated(elapsed));
 
             return decimation.Mesh;
         }
@@ -223,13 +218,17 @@ namespace Vascular.IO.Triangulation
             elapsed = stopwatch.Elapsed;
             progress?.Report(new ChunkDecimated(id, elapsed, chunk.T.Count));
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             await semaphore.WaitAsync(cancellationToken);
-            stopwatch.Restart();
-            exportDecimation.Merge(chunkDecimation);
-            elapsed = stopwatch.Elapsed;
-            semaphore.Release();
+            try
+            {
+                stopwatch.Restart();
+                exportDecimation.Merge(chunkDecimation);
+                elapsed = stopwatch.Elapsed;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
             progress?.Report(new ChunkMerged(id, elapsed));
         }
 
