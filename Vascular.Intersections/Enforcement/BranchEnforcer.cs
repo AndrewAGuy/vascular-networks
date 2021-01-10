@@ -8,11 +8,11 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Enforcement
 {
-    public abstract class BranchPenalizingEnforcer<TIntersection, TRecorder>
+    public abstract class BranchEnforcer<TIntersection, TRecorder>
         : Enforcer<TIntersection, Branch, TRecorder>
         where TRecorder : Recorder<TIntersection, Branch>, new()
     {
-        public BranchPenalizingEnforcer(Network[] n) : base(n)
+        public BranchEnforcer(Network[] n) : base(n)
         {
 
         }

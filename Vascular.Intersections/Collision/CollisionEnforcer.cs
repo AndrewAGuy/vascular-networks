@@ -101,7 +101,7 @@ namespace Vascular.Intersections.Collision
             {
                 eTask = externalColliders.RunAsync(colliderTask);
             }
-            if (this.OperatingMode != Mode.External)
+            if (this.OperatingMode != Mode.External && this.Iterations % this.InternalTestStagger == 0)
             {
                 iTask = internalColliders.RunAsync(colliderTask);
             }

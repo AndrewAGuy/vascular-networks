@@ -10,5 +10,17 @@ namespace Vascular.Geometry.Generators
         {
             return new Random(r.Next());
         }
+
+        public static void Permute<T>(this List<T> list, Random random = null)
+        {
+            random ??= new Random();
+            for (var i = list.Count - 1; i > 0; i--)
+            {
+                var swap = random.Next(i + 1);
+                var temp = list[i];
+                list[i] = list[swap];
+                list[swap] = temp;
+            }
+        }
     }
 }

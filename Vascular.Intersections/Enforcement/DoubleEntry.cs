@@ -7,7 +7,7 @@ using Vascular.Geometry;
 
 namespace Vascular.Intersections.Enforcement
 {
-    internal class DoubleEntry
+    public class DoubleEntry
     {
         public DoubleEntry(Vector3 _v, Vector3 _d)
         {

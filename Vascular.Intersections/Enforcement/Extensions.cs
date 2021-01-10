@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Vascular.Intersections.Enforcement
 {
     public static class Extensions
     {
-        public static void IterateToEnd(this IEnumerable<IEnforcer> enforcers, int steps)
+        public static async Task IterateToEnd(this IEnumerable<IEnforcer> enforcers, int steps)
         {
             IEnforcer firstPassing = null;
             while (true)
@@ -19,7 +20,7 @@ namespace Vascular.Intersections.Enforcement
                         return;
                     }
 
-                    if (enforcer.Advance(steps) == 0)
+                    if (await enforcer.Advance(steps) == 0)
                     {
                         firstPassing ??= enforcer;
                     }

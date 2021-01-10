@@ -106,74 +106,7 @@ namespace Vascular
             }
         }
 
-        //public static void Parallel<T>(this IEnumerable<T> networks, Action<T> action)
-        //{
-        //    var tasks = new List<Task>();
-        //    foreach (var n in networks)
-        //    {
-        //        tasks.Add(Task.Run(() => action(n)));
-        //    }
-        //    tasks.WaitAll();
-        //}
-
-        public static void Permute<T>(this List<T> list, Random random = null)
-        {
-            random ??= new Random();
-            for (var i = list.Count - 1; i > 0; i--)
-            {
-                var swap = random.Next(i + 1);
-                var temp = list[i];
-                list[i] = list[swap];
-                list[swap] = temp;
-            }
-        }
-
         public delegate double CostFunction<T>(T t);
-
-        public static T MinSuitable<T>(this IEnumerable<T> ts, CostFunction<T> f, Predicate<T> p) where T : class
-        {
-            T b = null;
-            var v = 0.0;
-            foreach (var t in ts)
-            {
-                if (p(t))
-                {
-                    var c = f(t);
-                    if (b == null)
-                    {
-                        b = t;
-                        v = c;
-                    }
-                    else if (c < v)
-                    {
-                        v = c;
-                        b = t;
-                    }
-                }
-            }
-            return b;
-        }
-
-        public static T ArgMin<T>(this IEnumerable<T> ts, CostFunction<T> f) where T : class
-        {
-            T m = null;
-            var v = 0.0;
-            foreach (var t in ts)
-            {
-                var c = f(t);
-                if (m == null)
-                {
-                    m = t;
-                    v = c;
-                }
-                else if (c < v)
-                {
-                    m = t;
-                    v = c;
-                }
-            }
-            return m;
-        }
 
         public static bool MinSuitable<T>(this IEnumerable<T> ts, CostFunction<T> f, Predicate<T> p, out T m, out double v)
         {

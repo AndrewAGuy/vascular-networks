@@ -7,7 +7,7 @@ using Vascular.Geometry;
 
 namespace Vascular.Intersections.Enforcement
 {
-    internal class SingleEntry
+    public class SingleEntry
     {
         public SingleEntry(Vector3 _v)
         {

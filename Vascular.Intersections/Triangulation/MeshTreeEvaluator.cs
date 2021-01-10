@@ -10,7 +10,7 @@ using Vascular.Structure;
 
 namespace Vascular.Intersections.Triangulation
 {
-    public class TreeEvaluator
+    public class TreeEvaluator : IMeshRegion
     {
         public AxialBoundsBinaryTreeNode<TriangleSurfaceTest> Tree { get; }
 

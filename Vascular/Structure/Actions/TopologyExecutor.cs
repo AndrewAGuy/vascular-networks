@@ -18,10 +18,10 @@ namespace Vascular.Structure.Actions
 
         private bool Iterate()
         {
-            var a = actions.MinSuitable(
-                t => 1.0 / (1.0 + this.Priority(t.A, t.B)),
-                t => t.IsPermissable() && this.Permissable(t.A, t.B));
-            if (a == null)
+            if (!actions.MinSuitable(
+                t => -this.Priority(t.A, t.B),
+                t => t.IsPermissable() && this.Permissable(t.A, t.B),
+                out var a, out var v))
             {
                 return false;
             }

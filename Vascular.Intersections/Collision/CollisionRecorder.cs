@@ -8,7 +8,7 @@ using Vascular.Structure.Actions;
 
 namespace Vascular.Intersections.Collision
 {
-    public class CollisionRecorder : Recorder<SegmentIntersection, INode>
+    public class CollisionRecorder : SegmentRecorder< INode>
     {
         private double immediateCullRatio = 0.0;
         public double ImmediateCullRatio
@@ -27,6 +27,8 @@ namespace Vascular.Intersections.Collision
         }
         public bool ResetStationaryFractions { get; set; } = true;
 
+        public bool RecordTopology { get; set; } = false;
+
         public override int Count
         {
             get
@@ -39,22 +41,28 @@ namespace Vascular.Intersections.Collision
         private Dictionary<Segment, SingleEntry> segments = new Dictionary<Segment, SingleEntry>();
         private Dictionary<IMobileNode, SingleEntry> nodes = new Dictionary<IMobileNode, SingleEntry>();
 
+        private HashSet<BranchAction> branchActions = new HashSet<BranchAction>();
+
         public override void Reset()
         {
             base.Reset();
             segments = new Dictionary<Segment, SingleEntry>();
             nodes = new Dictionary<IMobileNode, SingleEntry>();
+            branchActions = new HashSet<BranchAction>();
         }
 
         protected override void RecordSingle(SegmentIntersection i)
         {
-            if (i.Indeterminate)
+            if (!TryRecordTopology(i))
             {
-                RecordIndefinite(i);
-            }
-            else
-            {
-                RecordDefinite(i);
+                if (i.Indeterminate)
+                {
+                    RecordIndefinite(i);
+                }
+                else
+                {
+                    RecordDefinite(i);
+                }
             }
         }
 
@@ -243,7 +251,59 @@ namespace Vascular.Intersections.Collision
             }
         }
 
+        public Func<Branch, Branch, bool> BranchActionPredicate { get; set; } =
+            (a, b) => Math.Min(a.Flow, b.Flow) > 4;
+
+        private bool TryRecordTopology(SegmentIntersection i)
+        {
+            var A = i.A.Branch;
+            var B = i.B.Branch;
+            if (!this.RecordTopology || 
+                A.Network != B.Network || 
+                !this.BranchActionPredicate(A, B))
+            {
+                return false;
+            }
+            var sA = A.Start.Position;
+            var eA = A.End.Position;
+            var sB = B.Start.Position;
+            var eB = B.End.Position;
+            var lA = Vector3.DistanceSquared(sA, eA);
+            var lB = Vector3.DistanceSquared(sB, eB);
+            var dA = Vector3.DistanceSquared(sB, eA);
+            var dB = Vector3.DistanceSquared(sA, eB);
+            if (dA < lA)
+            {
+                if (dB < lB)
+                {
+                    branchActions.Add(new SwapEnds(A, B));
+                }
+                else
+                {
+                    branchActions.Add(new MoveBifurcation(A, B));
+                }
+            }
+            else
+            {
+                if (dA < lA)
+                {
+                    branchActions.Add(new MoveBifurcation(B, A));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public override void Finish()
+        {
+            FinishGeometry();
+            FinishTopology();
+        }
+
+        private void FinishGeometry()
         {
             var actions = new List<GeometryAction>(nodes.Count + segments.Count);
             actions.AddRange(minimumNodePerturbation == 0
@@ -267,7 +327,11 @@ namespace Vascular.Intersections.Collision
                 }));
             actions.AddRange(segments.Select(s => new InsertTransient(s.Key, s.Value.Mean)));
             this.GeometryActions = actions;
-            this.BranchActions = null;
+        }
+
+        private void FinishTopology()
+        {
+            this.BranchActions = branchActions;
         }
     }
 }
