@@ -21,7 +21,7 @@ namespace Vascular.Structure.Actions
             seg.End = tran;
             tran.Parent = seg;
             // Update branch
-            seg.Branch.Reinitialise();
+            seg.Branch.Reinitialize();
             return tran;
         }
 
@@ -32,7 +32,7 @@ namespace Vascular.Structure.Actions
             var end = tran.Child.End;
             seg.End = end;
             end.Parent = seg;
-            seg.Branch.Reinitialise();
+            seg.Branch.Reinitialize();
             return seg;
         }
 
@@ -46,7 +46,7 @@ namespace Vascular.Structure.Actions
             }
             // Will this kill the whole network?
             var branch = term.Upstream;
-            if (!(branch.Start is Bifurcation bifurc))
+            if (branch.Start is not Bifurcation bifurc)
             {
                 throw new TopologyException("Branch to be culled does not start at bifurcation");
             }
@@ -62,7 +62,7 @@ namespace Vascular.Structure.Actions
             other.Start = tran;
             parent.End = tran;
             parent.Branch.End = other.Branch.End;
-            parent.Branch.Reinitialise();
+            parent.Branch.Reinitialize();
             // Set as culled, cast branch into the void
             term.Parent = null;
             term.Culled = true;
@@ -123,8 +123,60 @@ namespace Vascular.Structure.Actions
             bifurc.UpdateDownstream();
             // Update the existing branch.
             from.Branch.End = bifurc;
-            from.Branch.Reinitialise();
+            from.Branch.Reinitialize();
             return bifurc;
+        }
+
+        public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild, bool markDownstream = true)
+        {
+            var lostChild = keptChild == 0 ? 1 : 0;
+            // Rewire bifurcation into transient, same as in culling
+            var tran = new Transient()
+            {
+                Position = bifurc.Position,
+                Child = bifurc.Children[keptChild],
+                Parent = bifurc.Parent
+            };
+            tran.Parent.End = tran;
+            tran.Child.Start = tran;
+            tran.Parent.Branch.End = tran.Child.Branch.End;
+            tran.Parent.Branch.Reinitialize();
+            // Now find all downstream terminals on the lost side, remove them
+            if (markDownstream)
+            {
+                Terminal.ForDownstream(bifurc.Downstream[lostChild], t =>
+                {
+                    t.Parent = null;
+                    t.Culled = true;
+                });
+            }
+            return tran;
+        }
+
+        public static Transient RemoveBranch(Branch branch, bool throwIfRoot = true, bool markDownstream = true)
+        {
+            switch (branch.Start)
+            {
+                case Bifurcation bifurc:
+                    return RemoveBifurcation(bifurc, bifurc.IndexOf(branch), markDownstream);
+                case Source source:
+                    if (throwIfRoot)
+                    {
+                        throw new TopologyException("Branch to be removed is root vessel");
+                    }
+                    source.Child = null;
+                    if (markDownstream)
+                    {
+                        Terminal.ForDownstream(branch, t =>
+                        {
+                            t.Parent = null;
+                            t.Culled = true;
+                        });
+                    }
+                    return null;
+                default:
+                    throw new TopologyException("Branch started with invalid node");
+            }
         }
 
         public static void SwapEnds(Branch a, Branch b)
@@ -151,8 +203,8 @@ namespace Vascular.Structure.Actions
             var branchEndB = b.Branch.End;
             a.Branch.End = branchEndB;
             b.Branch.End = branchEndA;
-            a.Branch.Reinitialise();
-            b.Branch.Reinitialise();
+            a.Branch.Reinitialize();
+            b.Branch.Reinitialize();
         }
 
         public static (Transient, Bifurcation) MoveBifurcation(Branch moving, Branch from)
@@ -170,7 +222,7 @@ namespace Vascular.Structure.Actions
                 tran.Parent.End = tran;
                 tran.Child.Start = tran;
                 tran.Parent.Branch.End = tran.Child.Branch.End;
-                tran.Parent.Branch.Reinitialise();
+                tran.Parent.Branch.Reinitialize();
                 // Create new bifurcation, reset branches to do this
                 moving.Reset();
                 from.Reset();

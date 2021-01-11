@@ -40,8 +40,7 @@ namespace Vascular
                     {
                         semaphore.Release();
                     }
-                }, cancellationToken)
-            ));
+                }, cancellationToken)));
         }
 
         public static async Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, int max, CancellationToken cancellationToken = default)
@@ -59,8 +58,7 @@ namespace Vascular
                     {
                         semaphore.Release();
                     }
-                }, cancellationToken)
-            ));
+                }, cancellationToken)));
         }
 
         public static Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, CancellationToken cancellationToken = default)

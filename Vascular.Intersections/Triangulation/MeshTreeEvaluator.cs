@@ -6,11 +6,12 @@ using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Surfaces;
 using Vascular.Geometry.Triangulation;
+using Vascular.Intersections.Enforcement;
 using Vascular.Structure;
 
 namespace Vascular.Intersections.Triangulation
 {
-    public class TreeEvaluator : IMeshRegion
+    public class TreeEvaluator : IIntersectionEvaluator<TriangleIntersection>
     {
         public AxialBoundsBinaryTreeNode<TriangleSurfaceTest> Tree { get; }
 
@@ -25,7 +26,7 @@ namespace Vascular.Intersections.Triangulation
             this.Tree = AxialBoundsBinaryTreeNode<TriangleSurfaceTest>.Create(surfaceTests);
         }
 
-        public IReadOnlyList<TriangleIntersection> Evaluate(Network network)
+        public IEnumerable<TriangleIntersection> Evaluate(Network network)
         {
             var intersections = new List<TriangleIntersection>();
             if (network.Root != null)

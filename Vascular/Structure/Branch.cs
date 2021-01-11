@@ -22,10 +22,10 @@ namespace Vascular.Structure
 
         public Branch(Segment s)
         {
-            Initialise(s);
+            Initialize(s);
         }
 
-        public void Initialise(Segment s)
+        public void Initialize(Segment s)
         {
             segments.Clear();
             Add(s);
@@ -36,12 +36,12 @@ namespace Vascular.Structure
             }
         }
 
-        public void Reinitialise()
+        public void Reinitialize()
         {
-            Initialise(segments[0]);
+            Initialize(segments[0]);
         }
 
-        public void Initialise()
+        public void Initialize()
         {
             segments.Clear();
             var s = this.End.Parent;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -53,13 +54,13 @@ namespace Vascular.Intersections.Enforcement
             total = 0;
         }
 
-        public virtual void Record(IReadOnlyList<TIntersection> ts)
+        public virtual void Record(IEnumerable<TIntersection> ts)
         {
             foreach (var t in ts)
             {
                 RecordSingle(t);
             }
-            total += ts.Count;
+            total += ts.Count();
         }
     }
 }

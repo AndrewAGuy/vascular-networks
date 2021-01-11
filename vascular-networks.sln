@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Construction.ACCO"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Intersections", "Vascular.Intersections\Vascular.Intersections.csproj", "{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Optimization", "Vascular.Optimization\Vascular.Optimization.csproj", "{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Construction.LSC", "Vascular.Construction.LSC\Vascular.Construction.LSC.csproj", "{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -132,7 +132,7 @@ namespace Vascular.Structure
                 default:
                     throw new TopologyException("Branch ended with invalid node");
             }
-            c.Initialise(f);
+            c.Initialize(f);
             return c;
         }
 
