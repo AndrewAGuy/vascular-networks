@@ -31,9 +31,11 @@ namespace Vascular.Structure.Actions
 
         public override bool IsPermissable()
         {
-            return !a.IsStrictAncestorOf(b)
-                && !b.IsStrictAncestorOf(a)
-                && !a.IsSiblingOf(b);
+            return !a.IsStrictAncestorOf(b) // Loop avoidance
+                && !b.IsStrictAncestorOf(a) //
+                && !a.IsSiblingOf(b)        // Waste of time
+                && a.IsRooted               // Cannot send subtree into the void
+                && b.IsRooted;              // 
         }
 
         public override bool Equals(object obj)

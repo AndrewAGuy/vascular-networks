@@ -10,8 +10,6 @@ namespace Vascular.Construction.LSC
 {
     using MultipleMapEntry = KeyValuePair<Vector3, ICollection<Terminal>>;
 
-    public delegate Vector3 ClosestBasisFunction(Vector3 v);
-
     public delegate IEnumerable<MultipleMapEntry> ExteriorOrderingGenerator(IEnumerable<MultipleMapEntry> E);
     public delegate bool ExteriorPredicate(Vector3 z, Vector3 x);
     public delegate double TerminalFlowFunction(Vector3 z, Vector3 x);

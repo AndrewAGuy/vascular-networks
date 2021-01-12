@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
-using Vascular.Geometry.Lattices;
-using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC
+namespace Vascular.Geometry.Lattices.Manipulation
 {
     using SingleMap = Dictionary<Vector3, Terminal>;
     using MultipleMap = Dictionary<Vector3, ICollection<Terminal>>;
+
+    public delegate Vector3 ClosestBasisFunction(Vector3 v);
 
     public static class LatticeActions
     {

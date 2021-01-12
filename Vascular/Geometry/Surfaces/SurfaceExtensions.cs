@@ -8,8 +8,70 @@ using Vascular.Geometry.Triangulation;
 
 namespace Vascular.Geometry.Surfaces
 {
+    public record RayIntersection<T>(T Object, double Fraction);
+
     public static class SurfaceExtensions
     {
+        public static IEnumerable<RayIntersection<TriangleSurfaceTest>> RayIntersections(
+            this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, Vector3 direction, double rayTolerance)
+        {
+            var intersections = new List<RayIntersection<TriangleSurfaceTest>>();
+            var bounds = new AxialBounds(point, point + direction, rayTolerance);
+            surface.Query(bounds, triangle =>
+            {
+                var fraction = 0.0;
+                Vector3 hitPoint = null;
+                if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
+                {
+                    intersections.Add(new RayIntersection<TriangleSurfaceTest>(triangle, fraction));
+                }
+            });
+            return intersections;
+        }
+
+        public static int RayIntersectionCount(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, Vector3 direction, double rayTolerance)
+        {
+            var intersections = 0;
+            var bounds = new AxialBounds(point, point + direction, rayTolerance);
+            surface.Query(bounds, triangle =>
+            {
+                var fraction = 0.0;
+                Vector3 hitPoint = null;
+                if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
+                {
+                    ++intersections;
+                }
+            });
+            return intersections;
+        }
+
+        public static (int inwards, int outwards) RayIntersectionCounts(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, Vector3 direction, double rayTolerance)
+        {
+            var bounds = new AxialBounds(point, point + direction, rayTolerance);
+            var inwards = 0;
+            var outwards = 0;
+            surface.Query(bounds, triangle =>
+            {
+                var fraction = 0.0;
+                Vector3 hitPoint = null;
+                if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
+                {
+                    if (triangle.Normal * direction > 0)
+                    {
+                        ++outwards;
+                    }
+                    else
+                    {
+                        ++inwards;
+                    }
+                }
+            });
+            return (inwards, outwards);
+        }
+
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 testDirection, double rayTolerance, int fractionRounding)
         {
@@ -41,7 +103,7 @@ namespace Vascular.Geometry.Surfaces
             return hits >= minHits;
         }
 
-        public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface, 
+        public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 testDirection, double tol)
         {
             var count = 0;
@@ -58,7 +120,7 @@ namespace Vascular.Geometry.Surfaces
             return count % 2 != 0;
         }
 
-        public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface, 
+        public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3[] testDirections, int minHits, double tol)
         {
             var hits = 0;

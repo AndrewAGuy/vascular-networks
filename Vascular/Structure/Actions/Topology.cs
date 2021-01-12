@@ -36,7 +36,7 @@ namespace Vascular.Structure.Actions
             return seg;
         }
 
-        public static Transient CullTerminal(Terminal term)
+        public static Transient CullTerminal(Terminal term, bool nullParent = true)
         {
             // Was terminal ever actually built?
             if (term.Parent == null)
@@ -64,14 +64,17 @@ namespace Vascular.Structure.Actions
             parent.Branch.End = other.Branch.End;
             parent.Branch.Reinitialize();
             // Set as culled, cast branch into the void
-            term.Parent = null;
+            if (nullParent)
+            {
+                term.Parent = null;
+            }
             term.Culled = true;
             return tran;
         }
 
-        public static Transient CullTerminalAndPropagate(Terminal term)
+        public static Transient CullTerminalAndPropagate(Terminal term, bool nullParent = true)
         {
-            var tran = CullTerminal(term);
+            var tran = CullTerminal(term, nullParent);
             if (tran != null)
             {
                 tran.Parent.Branch.PropagateLogicalUpstream();
@@ -127,7 +130,8 @@ namespace Vascular.Structure.Actions
             return bifurc;
         }
 
-        public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild, bool markDownstream = true)
+        public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild,
+            bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
             var lostChild = keptChild == 0 ? 1 : 0;
             // Rewire bifurcation into transient, same as in culling
@@ -146,19 +150,28 @@ namespace Vascular.Structure.Actions
             {
                 Terminal.ForDownstream(bifurc.Downstream[lostChild], t =>
                 {
-                    t.Parent = null;
+                    if (nullDownstream)
+                    {
+                        t.Parent = null;
+                    }
                     t.Culled = true;
                 });
+            }
+            if (nullLost)
+            {
+                bifurc.Parent = null;
+                bifurc.Downstream[lostChild].End.Parent = null;
             }
             return tran;
         }
 
-        public static Transient RemoveBranch(Branch branch, bool throwIfRoot = true, bool markDownstream = true)
+        public static Transient RemoveBranch(Branch branch, bool throwIfRoot = true,
+            bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
             switch (branch.Start)
             {
                 case Bifurcation bifurc:
-                    return RemoveBifurcation(bifurc, bifurc.IndexOf(branch), markDownstream);
+                    return RemoveBifurcation(bifurc, bifurc.IndexOf(branch), markDownstream, nullDownstream, nullLost);
                 case Source source:
                     if (throwIfRoot)
                     {
@@ -169,7 +182,10 @@ namespace Vascular.Structure.Actions
                     {
                         Terminal.ForDownstream(branch, t =>
                         {
-                            t.Parent = null;
+                            if (nullDownstream)
+                            {
+                                t.Parent = null;
+                            }
                             t.Culled = true;
                         });
                     }

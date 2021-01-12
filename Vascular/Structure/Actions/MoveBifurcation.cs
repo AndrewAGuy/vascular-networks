@@ -35,9 +35,10 @@ namespace Vascular.Structure.Actions
 
         public override bool IsPermissable()
         {
-            return !a.IsStrictAncestorOf(b)
-                && !a.IsSiblingOf(b)
-                && !b.IsParentOf(a);
+            return !a.IsStrictAncestorOf(b) // Creates a loop
+                && !a.IsSiblingOf(b)        // Waste of time
+                && !b.IsParentOf(a)         // 
+                && b.IsRooted;              // Cannot merge onto a culled section
         }
 
         public override bool Equals(object obj)

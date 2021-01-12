@@ -107,6 +107,8 @@ namespace Vascular.Structure.Nodes
         [DataMember]
         public bool Culled { get; set; } = false;
 
+        public bool IsRooted => this.Upstream?.IsRooted ?? false;
+
         public override double Flow
         {
             get

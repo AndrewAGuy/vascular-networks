@@ -9,6 +9,10 @@ namespace Vascular.IO.STL
 {
     public static class StlReader
     {
+        public const string MediaType = "model/stl";
+        public const string MediaTypeBinary = "model/x.stl-binary";
+        public const string MediaTypeASCII = "model/x.stl-ascii";
+
         public static Mesh FromFile(string path, Func<Vector3, Vector3> transform = null, bool invertNormals = false)
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);

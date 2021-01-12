@@ -439,6 +439,19 @@ namespace Vascular.Structure
             return ReferenceEquals(this.End, b.Start);
         }
 
+        public bool IsRooted
+        {
+            get
+            {
+                var b = this;
+                while (b.Parent != null)
+                {
+                    b = b.Parent;
+                }
+                return b.Start is Source;
+            }
+        }
+
         public static Branch CommonAncestor(Branch a, Branch b)
         {
             while (!ReferenceEquals(a, b))

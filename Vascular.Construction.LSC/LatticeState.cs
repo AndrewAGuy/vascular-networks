@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices;
+using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
