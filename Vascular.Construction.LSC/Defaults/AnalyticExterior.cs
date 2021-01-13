@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
 
-namespace Vascular.Construction.LSC.Predicates
+namespace Vascular.Construction.LSC.Defaults
 {
     public static class AnalyticExterior
     {

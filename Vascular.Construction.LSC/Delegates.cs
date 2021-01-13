@@ -17,7 +17,6 @@ namespace Vascular.Construction.LSC
     public delegate double TerminalPairCostFunction(Terminal T, Terminal t);
     public delegate Vector3 BifurcationPositionFunction(Bifurcation b);
     public delegate void TerminalPairBuildAction(Terminal T, Terminal t);
-    public delegate void IntermediateAction();
 
     public delegate IEnumerable<Vector3> InitialTerminalOrderingGenerator(IEnumerable<Vector3> V);
     public delegate bool InitialTerminalPredicate(Vector3 S, Vector3 T);
@@ -81,7 +80,7 @@ namespace Vascular.Construction.LSC
             };
         }
 
-        public static IntermediateAction Combine(this IntermediateAction[] A)
+        public static Action Combine(this Action[] A)
         {
             return () =>
             {

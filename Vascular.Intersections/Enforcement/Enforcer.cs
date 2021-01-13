@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,8 +40,7 @@ namespace Vascular.Intersections.Enforcement
             networks = n;
         }
 
-        public delegate void TerminalCullAction(Terminal t);
-        public event TerminalCullAction TerminalCulled;
+        public event Action<Terminal> TerminalCulled;
 
         public virtual async Task<int> Advance(int steps)
         {
@@ -110,7 +110,7 @@ namespace Vascular.Intersections.Enforcement
             return Task.CompletedTask;
         }
 
-        protected virtual Task<List<Terminal>> GetCulling()
+        protected virtual Task<IEnumerable<Terminal>> GetCulling()
         {
             return this.CullingPermitted
                 ? Task.Run(() =>
@@ -125,14 +125,14 @@ namespace Vascular.Intersections.Enforcement
                     {
                         AddToCull(culling, threshold);
                     }
-                    return culling;
+                    return (IEnumerable<Terminal>)culling;
                 })
-                : Task.FromResult(new List<Terminal>());
+                : Task.FromResult((IEnumerable<Terminal>)new List<Terminal>());
         }
 
-        protected virtual Task TryCull(List<Terminal> culling)
+        protected virtual Task TryCull(IEnumerable<Terminal> culling)
         {
-            if (this.CullingPermitted && culling.Count != 0)
+            if (this.CullingPermitted && culling.Any())
             {
                 foreach (var c in culling)
                 {

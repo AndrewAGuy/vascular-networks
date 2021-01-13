@@ -10,6 +10,23 @@ namespace Vascular
 {
     public static class Extensions
     {
+        public static void Permute<T>(this IList<T> list, Random random = null)
+        {
+            random ??= new Random();
+            for (var i = list.Count - 1; i > 0; i--)
+            {
+                var swap = random.Next(i + 1);
+                var temp = list[i];
+                list[i] = list[swap];
+                list[swap] = temp;
+            }
+        }
+
+        public static LinkedList<T> ToLinkedList<T>(this IEnumerable<T> source)
+        {
+            return new LinkedList<T>(source);
+        }
+
         public static double Clamp(this double val, double min, double max)
         {
             return val < min ? min : val > max ? max : val;
@@ -104,9 +121,7 @@ namespace Vascular
             }
         }
 
-        public delegate double CostFunction<T>(T t);
-
-        public static bool MinSuitable<T>(this IEnumerable<T> ts, CostFunction<T> f, Predicate<T> p, out T m, out double v)
+        public static bool MinSuitable<T>(this IEnumerable<T> ts, Func<T, double> f, Predicate<T> p, out T m, out double v)
         {
             m = default;
             v = double.PositiveInfinity;
@@ -140,7 +155,7 @@ namespace Vascular
             return true;
         }
 
-        public static bool ArgMin<T>(this IEnumerable<T> ts, CostFunction<T> f, out T m, out double v)
+        public static bool ArgMin<T>(this IEnumerable<T> ts, Func<T, double> f, out T m, out double v)
         {
             var e = ts.GetEnumerator();
             if (e.MoveNext())

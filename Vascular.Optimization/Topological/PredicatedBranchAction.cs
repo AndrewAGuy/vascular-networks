@@ -8,9 +8,9 @@ using Vascular.Structure.Actions;
 
 namespace Vascular.Optimization.Topological
 {
-    public class RandomBranchAction : BranchAction
+    public class PredicatedBranchAction : BranchAction
     {
-        public RandomBranchAction(BranchAction i, Predicate<BranchAction> p) : base(i.A, i.B)
+        public PredicatedBranchAction(BranchAction i, Predicate<BranchAction> p) : base(i.A, i.B)
         {
             inner = i;
             predicate = p;

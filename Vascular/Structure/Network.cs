@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure.Nodes;
@@ -281,6 +282,25 @@ namespace Vascular.Structure
                         }
                     }
                 }
+            }
+        }
+
+        public async Task VisitAsync(Action<Branch> action, int splitDepth)
+        {
+            await VisitAsync(this.Root, action, splitDepth);
+        }
+
+        public static async Task VisitAsync(Branch branch, Action<Branch> action, int splitDepth)
+        {
+            if (splitDepth > 0)
+            {
+                action(branch);
+                await branch.Children.RunAsync(child => VisitAsync(child, action, splitDepth - 1));
+            }
+            else
+            {
+                action(branch);
+                branch.End.ForEach(action);
             }
         }
     }

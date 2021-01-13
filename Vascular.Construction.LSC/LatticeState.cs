@@ -45,14 +45,14 @@ namespace Vascular.Construction.LSC
         public BifurcationPositionFunction BifurcationPositionFunction { get; set; }
         public TerminalPairBuildAction TerminalPairBuildAction { get; set; }
 
-        public IntermediateAction BeforeSpreadAction { get; set; }
-        public IntermediateAction BeforeRefineAction { get; set; }
-        public IntermediateAction BeforeCoarsenAction { get; set; }
-        public IntermediateAction BeforeReRefineAction { get; set; }
-        public IntermediateAction AfterSpreadAction { get; set; }
-        public IntermediateAction AfterRefineAction { get; set; }
-        public IntermediateAction AfterCoarsenAction { get; set; }
-        public IntermediateAction AfterReRefineAction { get; set; }
+        public Action BeforeSpreadAction { get; set; }
+        public Action BeforeRefineAction { get; set; }
+        public Action BeforeCoarsenAction { get; set; }
+        public Action BeforeReRefineAction { get; set; }
+        public Action AfterSpreadAction { get; set; }
+        public Action AfterRefineAction { get; set; }
+        public Action AfterCoarsenAction { get; set; }
+        public Action AfterReRefineAction { get; set; }
 
         public ClosestBasisFunction ClosestBasisFunction { get; set; }
 

@@ -90,6 +90,7 @@ namespace Vascular.Structure.Actions
             var br = new Branch(seg) { Start = s, End = t };
             s.Child = seg;
             t.Parent = seg;
+            t.Network = s.Network; // Forgetting this has made life so hard in the past
             return br;
         }
 
