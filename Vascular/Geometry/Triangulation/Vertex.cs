@@ -230,6 +230,21 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        public bool VerifyEdgeCounts
+        {
+            get
+            {
+                foreach (var e in E)
+                {
+                    if (e.T.Count > 2)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
         public bool TriangleExists(Vertex u, Vertex v)
         {
             foreach (var t in T)

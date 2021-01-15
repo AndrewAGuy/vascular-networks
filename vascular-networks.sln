@@ -9,13 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.IO.STL", "Vascular
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.IO.Triangulation", "Vascular.IO.Triangulation\Vascular.IO.Triangulation.csproj", "{8531DD3F-1886-48AA-B976-280CE7ECEB23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Construction.ACCO", "Vascular.Construction.ACCO\Vascular.Construction.ACCO.csproj", "{2748BC1F-A4E8-47D5-8536-F775DCC9C6E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Construction.ACCO", "Vascular.Construction.ACCO\Vascular.Construction.ACCO.csproj", "{2748BC1F-A4E8-47D5-8536-F775DCC9C6E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Intersections", "Vascular.Intersections\Vascular.Intersections.csproj", "{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Intersections", "Vascular.Intersections\Vascular.Intersections.csproj", "{FE023A1A-D660-4674-9ABF-2DECF6AAC11F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Optimization", "Vascular.Optimization\Vascular.Optimization.csproj", "{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Optimization", "Vascular.Optimization\Vascular.Optimization.csproj", "{BF94AF8E-4D3D-48F4-B730-D2EAF24B6FC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Construction.LSC", "Vascular.Construction.LSC\Vascular.Construction.LSC.csproj", "{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Construction.LSC", "Vascular.Construction.LSC\Vascular.Construction.LSC.csproj", "{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Construction.Fractals", "Vascular.Construction.Fractals\Vascular.Construction.Fractals.csproj", "{F0C2FC9C-AE3B-48F0-B99A-CA9C7CE998F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B5D7FE1-1E3B-4DCA-92E8-032BB5AD7179}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0C2FC9C-AE3B-48F0-B99A-CA9C7CE998F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0C2FC9C-AE3B-48F0-B99A-CA9C7CE998F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0C2FC9C-AE3B-48F0-B99A-CA9C7CE998F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0C2FC9C-AE3B-48F0-B99A-CA9C7CE998F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

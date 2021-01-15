@@ -128,6 +128,7 @@ namespace Vascular.Geometry.Bounds
 
         public void Query(AxialBounds query, Action<T> action)
         {
+            query = query.Copy().Trim(totalBounds);
             foreach (var level in levels)
             {
                 var stride = Stride(level);

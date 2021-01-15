@@ -146,5 +146,16 @@ namespace Vascular.Geometry.Bounds
         {
             return this;
         }
+
+        public AxialBounds Trim(AxialBounds other)
+        {
+            this.Lower.x = Math.Max(this.Lower.x, other.Lower.x);
+            this.Lower.y = Math.Max(this.Lower.y, other.Lower.y);
+            this.Lower.z = Math.Max(this.Lower.z, other.Lower.z);
+            this.Upper.x = Math.Min(this.Upper.x, other.Upper.x);
+            this.Upper.y = Math.Min(this.Upper.y, other.Upper.y);
+            this.Upper.z = Math.Min(this.Upper.z, other.Upper.z);
+            return this;
+        }
     }
 }

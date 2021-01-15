@@ -23,7 +23,7 @@ namespace Vascular.IO.Triangulation
         public IEnumerable<int> SummaryMoments { get; set; }
         public IEnumerable<double> SummaryOrders { get; set; }
 
-        public int EdgesPerChunk { get; set; } = 1024;
+        public Func<int, int> EdgesPerChunk { get; set; } = i => 1024;
         public int MaxConcurrentChunks { get; set; } = 1;
 
         public bool DropErrors { get; set; } = false;
@@ -204,7 +204,7 @@ namespace Vascular.IO.Triangulation
         private Task GetRemeshing(List<Collapse> validCollapses, CancellationToken cancellationToken)
         {
             var workingArray = remeshing.ToArray();
-            return EnumerateChunks(remeshing.Count, this.EdgesPerChunk).RunAsync(
+            return EnumerateChunks(remeshing.Count, this.EdgesPerChunk(remeshing.Count)).RunAsync(
                 async range =>
                 {
                     var (begin, end) = range;
@@ -268,32 +268,45 @@ namespace Vascular.IO.Triangulation
         private Task GetRecosting(List<Collapse> validCollapses, CancellationToken cancellationToken)
         {
             var workingArray = recosting.ToArray();
-            return EnumerateChunks(recosting.Count, this.EdgesPerChunk).RunAsync(
+            return EnumerateChunks(recosting.Count, this.EdgesPerChunk(recosting.Count)).RunAsync(
                 async range =>
                 {
                     var (begin, end) = range;
                     var valid = new List<Collapse>(end - begin);
-                    var invalid = new List<Collapse>(end - begin);
+                    var removing = new List<(Vertex kept, Vertex lost)>(end - begin);
                     for (var j = begin; j < end; ++j)
                     {
                         var V = workingArray[j];
                         // Test for not being in remeshing as a remesh may have occurred already and readded
                         if (!remeshing.Contains(V) && collapses.TryGetValue(V, out var old))
                         {
-                            if (TryCollapse(old.Kept, old.Lost, old.Remesh, old.Fan, out var updated))
+                            // An edge case that was found in testing - if the model had holes smaller than the
+                            // tolerance (e.g. sampled too coarse) then the neighbouring edges could collapse
+                            // into a 3-edge hole which isn't caught by the remesh invalidation checks
+                            if (V.kept.EdgeTo(V.lost) is not Edge edge || !edge.CanCollapse)
+                            {
+                                removing.Add(V);
+                            }
+                            else if (TryCollapse(old.Kept, old.Lost, old.Remesh, old.Fan, out var updated))
                             {
                                 valid.Add(updated);
-                            }
-                            else
-                            {
-                                invalid.Add(updated);
                             }
                         }
                     }
 
-                    // No need to update collapses, as we'd only ever see it from either another call to this
-                    // where we'd update costs again and nothing else, or a call to remesh where everything
-                    // would be changed
+                    await collapseSemaphore.WaitAsync(cancellationToken);
+                    try
+                    {
+                        foreach (var key in removing)
+                        {
+                            collapses.Remove(key);
+                        }
+                    }
+                    finally
+                    {
+                        collapseSemaphore.Release();
+                    }
+
                     await validSemaphore.WaitAsync(cancellationToken);
                     try
                     {
@@ -305,7 +318,7 @@ namespace Vascular.IO.Triangulation
                     }
                 }, this.MaxConcurrentChunks, cancellationToken);
         }
-        
+
         private void FinishIteration()
         {
             if (this.DropErrors)
@@ -612,5 +625,152 @@ namespace Vascular.IO.Triangulation
             }
             return true;
         }
+
+        public void DecimateGreedy(IProgress<int> progress = null)
+        {
+            if (!boundaryValid)
+            {
+                SetBoundary();
+            }
+
+            do
+            {
+                var candidates = this.Mesh.E.Values.ToLinkedList();
+                var executed = 0;
+                foreach (var node in candidates)
+                {
+                    var (S, E) = (node.S, node.E);
+                    if (TryRemesh(S.EdgeTo(E), S, E, out var rA, out var fA) &&
+                        TryCollapse(S, E, rA, fA, out var cA))
+                    {
+                        if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                            TryCollapse(E, S, rB, fB, out var cB))
+                        {
+                            ModifyMesh(cA.Cost < cB.Cost ? cA : cB);
+                        }
+                        else
+                        {
+                            ModifyMesh(cA);
+                        }
+                    }
+                    else
+                    {
+                        if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                            TryCollapse(E, S, rB, fB, out var cB))
+                        {
+                            ModifyMesh(cB);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    ++executed;
+                }
+                if (executed == 0)
+                {
+                    break;
+                }
+                progress?.Report(this.Mesh.T.Count);
+            } while (true);
+
+            //var rejected = new HashSet<(Vertex kept, Vertex lost)>(this.Mesh.E.Count * 2);
+            //bool tryEvaluate(Edge e, Vertex k, Vertex l, out Collapse c)
+            //{
+            //    c = null;
+            //    if (rejected.Contains((k, l)))
+            //    {
+            //        return false;
+            //    }
+            //    if (collapses.TryGetValue((k, l), out c))
+            //    {
+            //        return TryCollapse(k, l, c.Remesh, c.Fan, out c);
+            //    }
+            //    else
+            //    {
+            //        if (!TryRemesh(e, k, l, out var r, out var f))
+            //        {
+            //            rejected.Add((k, l));
+            //            return false;
+            //        }
+            //        if (TryCollapse(k, l, r, f, out c))
+            //        {
+            //            collapses[(k, l)] = c;
+            //            return true;
+            //        }
+            //        else
+            //        {
+            //            collapses[(k, l)] = new Collapse(k, l, r, f, double.PositiveInfinity);
+            //            return false;
+            //        }
+            //    }
+            //}
+            //if (tryEvaluate(node.Value, node.Value.S, node.Value.E, out var cA))
+            //{
+            //    if (tryEvaluate(node.Value, node.Value.S, node.Value.E, out var cB))
+            //    {
+            //        var min = cA.Cost < cB.Cost ? cA : cB;
+            //        RemoveLostEdges(min);
+            //        ModifyMesh(min);
+            //    }
+            //}
+            //TryRemesh(node.Value, node.Value.S, node.Value.E, out var rA, out var fA);
+            //TryRemesh(node.Value, node.Value.E, node.Value.S, out var rB, out var fB);
+            //if (rA == null)
+            //{
+            //    if (rB == null)
+            //    {
+            //    }
+            //}
+            //if (TryRemesh(node.Value, node.Value.S, node.Value.E, out var rA, out var fA) &&
+            //    TryCollapse(node.Value.S, node.Value.E, rA, fA, out var cA))
+            //{
+            //}
+            //foreach (var e in this.Mesh.E.Values)
+            //{
+            //    candidates.Add((e.S, e.E));
+            //    candidates.Add((e.E, e.S));
+            //}
+            //while (candidates.Count != 0)
+            //{
+            //    Collapse collapse = null;
+            //    foreach (var (kept, lost) in candidates)
+            //    {
+            //        if (!TryRemesh(kept.EdgeTo(lost), kept, lost, out var remesh, out var fan))
+            //        {
+            //        }
+            //        else
+            //        {
+            //        }
+            //    }
+            //}
+        }
+
+        public void DecimateSearching(IProgress<int> progress = null)
+        {
+            if (!boundaryValid)
+            {
+                SetBoundary();
+            }
+
+            var cache = new Dictionary<Edge, Collapse>(this.Mesh.E.Count);
+
+        }
+
+        //private Collapse EdgeCollapse(Edge candidate, Dictionary<Edge, Collapse> cache)
+        //{
+        //    if (cache.TryGetValue(candidate, out var collapse))
+        //    {
+        //        if (collapse == null)
+        //        {
+        //            // Rejected
+        //            return null;
+        //        }
+        //        else if (collapse.Cost == double.PositiveInfinity)
+        //        {
+
+        //        }
+        //    }
+        //}
     }
 }

@@ -8,7 +8,7 @@ using Vascular.Geometry.Bounds;
 namespace Vascular.Geometry.Triangulation
 {
     [DataContract]
-    public class Triangle
+    public class Triangle : IAxialBoundable
     {
         public Triangle(Vertex a, Vertex b, Vertex c, Edge ab, Edge bc, Edge ca, Vector3 n)
         {
@@ -95,6 +95,11 @@ namespace Vascular.Geometry.Triangulation
             var dB = Vector3.DistanceSquared(pos, B.P);
             var dC = Vector3.DistanceSquared(pos, C.P);
             return dA < dB ? dA < dC ? A : C : dB < dC ? B : C;
+        }
+
+        public AxialBounds GetAxialBounds()
+        {
+            return new AxialBounds(A.P).Append(B.P).Append(C.P);
         }
     }
 }

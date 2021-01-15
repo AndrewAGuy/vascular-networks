@@ -386,5 +386,37 @@ namespace Vascular.Geometry.Triangulation
         {
             return T.GetEnumerator();
         }
+
+        public Edge GetEdge(Vector3 a, Vector3 b)
+        {
+            return
+                GetVertex(a) is not Vertex A ||
+                GetVertex(b) is not Vertex B ||
+                !E.TryGetValue(new Edge(A, B), out var e)
+                ? null : e;
+        }
+
+        public Triangle GetTriangle(Vector3 a, Vector3 b, Vector3 c)
+        {
+            if (GetVertex(a) is not Vertex A ||
+                GetVertex(b) is not Vertex B ||
+                GetVertex(c) is not Vertex C)
+            {
+                return null;
+            }
+            var ab = new Edge(A, B);
+            if (!E.TryGetValue(ab, out var AB))
+            {
+                return null;
+            }
+            foreach (var t in AB.T)
+            {
+                if (t.Contains(A) && t.Contains(B) && t.Contains(C))
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
     }
 }
