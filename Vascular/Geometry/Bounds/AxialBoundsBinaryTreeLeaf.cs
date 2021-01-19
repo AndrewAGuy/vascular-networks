@@ -8,7 +8,7 @@ namespace Vascular.Geometry.Bounds
     {
         public T Element { get; }
 
-        public AxialBoundsBinaryTreeLeaf(T e) : base(e.GetAxialBounds())
+        public AxialBoundsBinaryTreeLeaf(T e) : base(e.GetAxialBounds(), 1)
         {
             this.Element = e;
         }

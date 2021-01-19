@@ -131,7 +131,15 @@ namespace Vascular.IO.Triangulation
                     }
                     else
                     {
-                        N.AddRange(Octree(T).Cast<Mesh>());
+                        var n = Octree(T).Cast<Mesh>().Where(x => x.T.Count != 0);
+                        if (n.Count() == 1)
+                        {
+                            yield return n.First();
+                        }
+                        else
+                        {
+                            N.AddRange(n);
+                        }
                     }
                 }
                 M = N;

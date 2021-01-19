@@ -10,18 +10,17 @@ namespace Vascular.Geometry.Bounds
         public AxialBoundsBinaryTreeNode<T> Left { get; }
         public AxialBoundsBinaryTreeNode<T> Right { get; }
 
-        public AxialBoundsBinaryTreeSplit(IEnumerable<T> elements) : base(elements.GetTotalBounds())
+        public AxialBoundsBinaryTreeSplit(IEnumerable<T> elements) : base(elements.GetTotalBounds(), elements.Count())
         {
-            var count = elements.Count();
-            if (count == 2)
+            if (this.Count == 2)
             {
                 this.Left = new AxialBoundsBinaryTreeLeaf<T>(elements.First());
                 this.Right = new AxialBoundsBinaryTreeLeaf<T>(elements.Last());
                 return;
             }
 
-            var below = new List<T>(count);
-            var above = new List<T>(count);
+            var below = new List<T>(this.Count);
+            var above = new List<T>(this.Count);
             // Split along longest edge
             var range = bounds.Range;
             var half = (bounds.Lower + bounds.Upper) / 2.0;

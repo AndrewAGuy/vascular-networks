@@ -9,10 +9,12 @@ namespace Vascular.Geometry.Bounds
     public abstract class AxialBoundsBinaryTreeNode<T> : IAxialBoundsQueryable<T>, IAxialBoundable where T : IAxialBoundable
     {
         protected AxialBounds bounds;
+        public int Count { get; }
 
-        public AxialBoundsBinaryTreeNode(AxialBounds b)
+        public AxialBoundsBinaryTreeNode(AxialBounds b, int c)
         {
             bounds = b;
+            this.Count = c;
         }
 
         public AxialBounds GetAxialBounds()

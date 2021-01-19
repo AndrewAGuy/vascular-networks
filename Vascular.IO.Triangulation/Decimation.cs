@@ -672,6 +672,7 @@ namespace Vascular.IO.Triangulation
                     break;
                 }
                 progress?.Report(this.Mesh.T.Count);
+                FinishIteration();
             } while (true);
 
             //var rejected = new HashSet<(Vertex kept, Vertex lost)>(this.Mesh.E.Count * 2);
@@ -746,31 +747,128 @@ namespace Vascular.IO.Triangulation
             //}
         }
 
-        public void DecimateSearching(IProgress<int> progress = null)
+        public void DecimateSearching(IProgress<int> progress = null, int reportEvery = 1024)
         {
             if (!boundaryValid)
             {
                 SetBoundary();
             }
 
-            var cache = new Dictionary<Edge, Collapse>(this.Mesh.E.Count);
-
+            progress?.Report(this.Mesh.T.Count);
+            while (true)
+            {
+                var executed = 0;
+                var candidates = this.Mesh.E.Values.ToArray();
+                foreach (var edge in candidates)
+                {
+                    var collapse = Walk(edge);
+                    if (collapse != null)
+                    {
+                        Execute(collapse);
+                        executed++;
+                        if (executed % reportEvery == 0)
+                        {
+                            progress?.Report(this.Mesh.T.Count);
+                        }
+                    }
+                }
+                if (executed == 0)
+                {
+                    return;
+                }
+                progress?.Report(this.Mesh.T.Count);
+                FinishIteration();
+            }
         }
 
-        //private Collapse EdgeCollapse(Edge candidate, Dictionary<Edge, Collapse> cache)
-        //{
-        //    if (cache.TryGetValue(candidate, out var collapse))
-        //    {
-        //        if (collapse == null)
-        //        {
-        //            // Rejected
-        //            return null;
-        //        }
-        //        else if (collapse.Cost == double.PositiveInfinity)
-        //        {
+        public int LocalIterations { get; set; } = 1;
 
-        //        }
-        //    }
-        //}
+        private Collapse Walk(Edge edge)
+        {
+            var collapse = GetBest(edge);
+            var iterations = 0;
+            while (collapse != null && iterations < this.LocalIterations)
+            {
+                var bestEdge = collapse.Kept.EdgeTo(collapse.Lost);
+                if (bestEdge == null)
+                {
+                    return null;
+                }
+                else if (bestEdge == edge)
+                {
+                    return collapse;
+                }
+                else
+                {
+                    edge = bestEdge;
+                    collapse = GetBest(bestEdge);
+                    iterations++;
+                }
+            }
+            return collapse;
+        }
+
+        private Collapse GetBest(Edge edge)
+        {
+            var neighbours = new List<Edge>(edge.S.E.Count + edge.E.E.Count);
+            neighbours.AddRange(edge.S.E);
+            neighbours.AddRange(edge.E.E);
+            neighbours.Remove(edge);
+            var permissible = neighbours.Select(e => GetCollapse(e)).Where(c => c != null);
+            return permissible.ArgMin(c => c.Cost, out var collapse, out var cost) ? collapse : null;
+        }
+
+        private Collapse GetCollapse(Edge edge)
+        {
+            return GetCollapse(edge.S, edge.E) is Collapse a
+                ? GetCollapse(edge.E, edge.S) is Collapse b ? a.Cost < b.Cost ? a : b : a
+                : GetCollapse(edge.E, edge.S) is Collapse B ? B : null;
+        }
+
+        private Collapse GetCollapse(Vertex kept, Vertex lost)
+        {
+            if (remeshing.Contains((kept, lost)))
+            {
+                remeshing.Remove((kept, lost));
+                recosting.Remove((kept, lost));
+                if (!TryRemesh(kept.EdgeTo(lost), kept, lost, out var remesh, out var fan))
+                {
+                    collapses.Remove((kept, lost));
+                    return null;
+                }
+                if (TryCollapse(kept, lost, remesh, fan, out var collapse))
+                {
+                    collapses[(kept, lost)] = collapse;
+                    return collapse;
+                }
+                else
+                {
+                    collapses[(kept, lost)] = new Collapse(kept, lost, remesh, fan, double.PositiveInfinity);
+                    return null;
+                }
+            }
+            else
+            {
+                if (collapses.TryGetValue((kept, lost), out var collapse))
+                {
+                    if (recosting.Contains((kept, lost)))
+                    {
+                        recosting.Remove((kept, lost));
+                        if (TryCollapse(collapse.Kept, collapse.Lost, collapse.Remesh, collapse.Fan, out var updated))
+                        {
+                            collapses[(kept, lost)] = updated;
+                            return updated;
+                        }
+                        else
+                        {
+                            collapses[(kept, lost)] = collapse with { Cost = double.PositiveInfinity };
+                            return null;
+                        }
+                    }
+                    return collapse.Cost != double.PositiveInfinity ? collapse : null;
+                }
+            }
+            return null;
+        }
     }
 }
