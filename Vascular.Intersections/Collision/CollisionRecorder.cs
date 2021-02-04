@@ -76,7 +76,7 @@ namespace Vascular.Intersections.Collision
             var tryPushBE = (1 - data.FractionB) * data.B.Slenderness < radialCaptureFraction;
             var tryPushA = tryPushAS || tryPushAE;
             var tryPushB = tryPushBS || tryPushBE;
-            // If we need to try pushing, check if we can't manage for any attempts. This informs us if we need to push 50:50 or all on one
+            // If we need to try pushing, check if we can't manage for any attempts. This informs us if we need to push split or all on one
             var notPushA = (tryPushAS && !(data.A.Start is IMobileNode)) || (tryPushAE && !(data.A.End is IMobileNode));
             var notPushB = (tryPushBS && !(data.B.Start is IMobileNode)) || (tryPushBE && !(data.B.End is IMobileNode));
             // New weighting, gives high flow branches priority

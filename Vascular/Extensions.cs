@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -22,6 +23,20 @@ namespace Vascular
             }
         }
 
+        public static IEnumerable<T> Permutation<T>(this IList<T> list, Random random = null)
+        {
+            random ??= new Random();
+            for (var i = list.Count - 1; i > 0; --i)
+            {
+                var swap = random.Next(i + 1);
+                var temp = list[i];
+                list[i] = list[swap];
+                list[swap] = temp;
+                yield return list[i];
+            }
+            yield return list[0];
+        }
+
         public static LinkedList<T> ToLinkedList<T>(this IEnumerable<T> source)
         {
             return new LinkedList<T>(source);
@@ -42,40 +57,88 @@ namespace Vascular
             return val.CompareTo(min) < 0 ? min : val.CompareTo(max) > 0 ? max : val;
         }
 
-        public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max, CancellationToken cancellationToken = default)
+        public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max,
+            bool waitInside = false, CancellationToken cancellationToken = default)
         {
             using var semaphore = new SemaphoreSlim(max);
-            await Task.WhenAll(source.Select(element =>
-                Task.Run(async () =>
+            if (waitInside)
+            {
+                await Task.WhenAll(source.Select(item =>
+                    Task.Run(async () =>
+                    {
+                        await semaphore.WaitAsync(cancellationToken);
+                        try
+                        {
+                            await run(item);
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, cancellationToken)));
+            }
+            else
+            {
+                var tasks = new List<Task>(source.Count());
+                foreach (var item in source)
                 {
                     await semaphore.WaitAsync(cancellationToken);
-                    try
+                    tasks.Add(Task.Run(async () =>
                     {
-                        await run(element);
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }, cancellationToken)));
+                        try
+                        {
+                            await run(item);
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, cancellationToken));
+                }
+                await Task.WhenAll(tasks);
+            }
         }
 
-        public static async Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, int max, CancellationToken cancellationToken = default)
+        public static async Task RunAsync<T>(this IEnumerable<T> source, Action<T> run, int max,
+            bool waitInside = false, CancellationToken cancellationToken = default)
         {
             using var semaphore = new SemaphoreSlim(max);
-            await Task.WhenAll(source.Select(element =>
-                Task.Run(async () =>
+            if (waitInside)
+            {
+                await Task.WhenAll(source.Select(item =>
+                   Task.Run(async () =>
+                   {
+                       await semaphore.WaitAsync(cancellationToken);
+                       try
+                       {
+                           run(item);
+                       }
+                       finally
+                       {
+                           semaphore.Release();
+                       }
+                   }, cancellationToken)));
+            }
+            else
+            {
+                var tasks = new List<Task>(source.Count());
+                foreach (var item in source)
                 {
                     await semaphore.WaitAsync(cancellationToken);
-                    try
+                    tasks.Add(Task.Run(() =>
                     {
-                        run(element);
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }, cancellationToken)));
+                        try
+                        {
+                            run(item);
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, cancellationToken));
+                }
+                await Task.WhenAll(tasks);
+            }
         }
 
         public static Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, CancellationToken cancellationToken = default)
@@ -180,6 +243,27 @@ namespace Vascular
                 v = double.PositiveInfinity;
                 return false;
             }
+        }
+
+        public static async Task<int> ReadBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+        {
+            // Patches async stream reading.
+            // From the docs for ReadAsync:
+            // "The result value can be less than the number of bytes allocated in the buffer if that many bytes are not currently available, 
+            // or it can be 0 (zero) if the end of the stream has been reached."
+            // That there is no version that only returns less if EOF reached is ridiculous.
+            var total = 0;
+            while (total < buffer.Length)
+            {
+                var memory = new Memory<byte>(buffer, total, buffer.Length - total);
+                var read = await stream.ReadAsync(memory, cancellationToken);
+                if (read == 0)
+                {
+                    return total;
+                }
+                total += read;
+            }
+            return total;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Vascular
             if (orders != null)
             {
                 var s = values.OrderBy(x => x).ToList();
-                this.OrderStatistics = orders?.Select(
+                this.OrderStatistics = orders.Select(
                     f =>
                     {
                         var fi = (s.Count - 1) * f;
