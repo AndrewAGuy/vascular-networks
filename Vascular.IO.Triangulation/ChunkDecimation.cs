@@ -40,7 +40,7 @@ namespace Vascular.IO.Triangulation
                     {
                         semaphore.Release();
                     }
-                }, this.MaxConcurrency, cancellationToken);
+                }, this.MaxConcurrency, false, cancellationToken);
             decimation.RemeshAll();
             await decimation.Decimate(progress, cancellationToken);
             return decimation;

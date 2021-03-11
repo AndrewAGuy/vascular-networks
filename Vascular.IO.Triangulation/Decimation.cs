@@ -262,7 +262,7 @@ namespace Vascular.IO.Triangulation
                     {
                         validSemaphore.Release();
                     }
-                }, this.MaxConcurrentChunks, cancellationToken);
+                }, this.MaxConcurrentChunks, false, cancellationToken);
         }
 
         private Task GetRecosting(List<Collapse> validCollapses, CancellationToken cancellationToken)
@@ -316,7 +316,7 @@ namespace Vascular.IO.Triangulation
                     {
                         validSemaphore.Release();
                     }
-                }, this.MaxConcurrentChunks, cancellationToken);
+                }, this.MaxConcurrentChunks, false, cancellationToken);
         }
 
         private void FinishIteration()
@@ -819,7 +819,7 @@ namespace Vascular.IO.Triangulation
                     {
                         semaphore.Release();
                     }
-                }, maxConcurrency, cancellationToken);
+                }, maxConcurrency, false, cancellationToken);
             finalDecimation.RemeshAll();
             await finalDecimation.Decimate(progress, cancellationToken);
             return finalDecimation;

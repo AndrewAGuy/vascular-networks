@@ -8,7 +8,7 @@ namespace Vascular.Structure.Actions
 {
     public class MoveBifurcation : BranchAction
     {
-        public MoveBifurcation(Branch a, Branch b) : base(a, b)
+        public MoveBifurcation(Branch moving, Branch target) : base(moving, target)
         {
         }
 

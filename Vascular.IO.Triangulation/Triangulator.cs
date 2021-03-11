@@ -137,7 +137,7 @@ namespace Vascular.IO.Triangulation
                 obj => GenerateChunk(
                     obj.i, obj.j, obj.k, iMax, jMax, kMax,
                     decimation, semaphore, obj.n, progress, cancellationToken),
-                this.MaxConcurrentChunks, cancellationToken);
+                this.MaxConcurrentChunks, false, cancellationToken);
             var elapsed = stopwatch.Elapsed;
 
             cancellationToken.ThrowIfCancellationRequested();

@@ -11,6 +11,16 @@ namespace Vascular.Geometry.Generators
             return new Random(r.Next());
         }
 
+        public static Predicate<T> Bernoulli<T>(this Random r, double p)
+        {
+            return t => r.NextDouble() < p;
+        }
+
+        public static Predicate<T> Bernoulli<T>(this Random r, Func<T, double> p)
+        {
+            return t => r.NextDouble() < p(t);
+        }
+
         public static void Permute<T>(this List<T> list, Random random = null)
         {
             random ??= new Random();

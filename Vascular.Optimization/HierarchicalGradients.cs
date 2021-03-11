@@ -33,7 +33,10 @@ namespace Vascular.Optimization
                 var c = 0.25 * Math.Pow(rq_p, -0.75) / p.Pressure;
                 (dr_dR, dr_dQ) = (c * p.Flow, c * p.ReducedResistance);
             }
-            throw new TopologyException("Unrecognized root node");
+            else
+            {
+                throw new TopologyException("Unrecognized root node");
+            }
         }
 
         public void SetCache()

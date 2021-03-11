@@ -156,6 +156,11 @@ namespace Vascular
             return dict.TryGetValue(key, out var val) && val is TReturn t ? t : def;
         }
 
+        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value, Func<TValue, TValue> add, Func<TValue, TValue, TValue> update)
+        {
+            dict[key] = dict.TryGetValue(key, out var current) ? update(current, value) : add(value);
+        }
+
         public static TValue ExistingOrNew<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key) where TValue : new()
         {
             if (!dict.TryGetValue(key, out var value))

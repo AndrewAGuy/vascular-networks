@@ -58,7 +58,7 @@ namespace Vascular.Optimization.Topological
             return t => (t.Parent.Radius + t.Child.Radius) * 0.5;
         }
 
-        public static Func<Transient,double> BranchRadius()
+        public static Func<Transient, double> BranchRadius()
         {
             return t => t.Child.Branch.Radius;
         }

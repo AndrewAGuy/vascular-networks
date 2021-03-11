@@ -27,8 +27,10 @@ namespace Vascular.Structure.Splitting
         {
             var c1e = Math.Pow(c1, e);
             var c2e = Math.Pow(c2, e);
-            var s = Math.Pow(c1e + c2e, -(e + 1) / e);
-            return (c2e * s, -c2 * Math.Pow(c1, e - 1) * s);
+            var E = c1e + c2e;
+            var D = Math.Pow(E, -1.0 / e);
+            var F = Math.Pow(E, (-1 - e) / e) * Math.Pow(c1, e - 1);
+            return (D - c1 * F, -c2 * F);
         }
 
         public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2)
@@ -42,21 +44,24 @@ namespace Vascular.Structure.Splitting
             var e = Exponent(Q);
             var de_dq1 = ExponentGradient(Q);
 
-            // Same terms as before
             var c1 = Math.Pow(rs1 * q1, 0.25);
             var c2 = Math.Pow(rs2 * q2, 0.25);
-            (var df1_dc1, var df2_dc1) = GroupGradient(c1, c2, e);
+            // Same terms as context-free, but cache the terms for later rather than use group gradient method
+            var c1e = Math.Pow(c1, e);
+            var c2e = Math.Pow(c2, e);
+            var E = c1e + c2e;
+            var D = Math.Pow(E, -1.0 / e);
+            var F = Math.Pow(E, (-1 - e) / e);
+            var G = F * Math.Pow(c1, e - 1);
+            (var df1_dc1, var df2_dc1) = (D - c1 * G, -c2 * G);
             var dc1_dq1 = 0.25 * rs1 * Math.Pow(c1, -3);
             var df1_dq1_c = df1_dc1 * dc1_dq1;
             var df2_dq1_c = df2_dc1 * dc1_dq1;
 
             // New terms from exponent
-            var u1 = Math.Pow(c1, e);
-            var u2 = Math.Pow(c2, e);
-            var u = u1 + u2;
-            var df_de_a = -Math.Pow(u, -1.0 / e) * Math.Log(u) / (e * e);
-            var df_de_b = -Math.Pow(u, -(1 - e) / e) * (u1 * Math.Log(u1) + u2 * Math.Log(u2)) / e;
-            var df_de = (df_de_a + df_de_b) * de_dq1;
+            var df_de_a = D * Math.Log(E) / (e * e);
+            var df_de_b = F * (c1e * Math.Log(c1e) + c2e * Math.Log(c2e)) / e;
+            var df_de = (df_de_a - df_de_b) * de_dq1;
             var df1_dq1_e = df_de * c1;
             var df2_dq1_e = df_de * c2;
 

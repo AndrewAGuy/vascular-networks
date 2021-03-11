@@ -35,8 +35,10 @@ namespace Vascular.Structure.Splitting
         {
             var c1e = Math.Pow(c1, e);
             var c2e = Math.Pow(c2, e);
-            var s = Math.Pow(c1e + c2e, e_dd);
-            return (c2e * s, -c2 * Math.Pow(c1, e_dn) * s);
+            var E = c1e + c2e;
+            var D = Math.Pow(E, e_ni);
+            var F = Math.Pow(E, e_dd) * Math.Pow(c1, e_dn);
+            return (D - c1 * F, -c2 * F);
         }
 
         public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2)

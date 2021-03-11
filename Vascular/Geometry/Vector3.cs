@@ -178,18 +178,25 @@ namespace Vascular.Geometry
 
         public double Min => Math.Min(Math.Min(x, y), z);
 
+        public Vector3 Abs => new Vector3(Math.Abs(x), Math.Abs(y), Math.Abs(z));
+
+        public double Sum => x + y + z;
+
         public double LengthSquared => this * this;
 
         public double Length => Math.Sqrt(this.LengthSquared);
 
         public static double DistanceSquared(Vector3 a, Vector3 b)
         {
-            return (a - b).LengthSquared;
+            var x = a.x - b.x;
+            var y = a.y - b.y;
+            var z = a.z - b.z;
+            return x * x + y * y + z * z;
         }
 
         public static double Distance(Vector3 a, Vector3 b)
         {
-            return (a - b).Length;
+            return Math.Sqrt(DistanceSquared(a, b));
         }
 
         public Vector3 Normalize(double t2 = 1.0e-12)
