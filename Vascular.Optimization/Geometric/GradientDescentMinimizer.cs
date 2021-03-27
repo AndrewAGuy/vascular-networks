@@ -62,6 +62,7 @@ namespace Vascular.Optimization.Geometric
         public Network Network { get; set; }
 
         public double TargetStep { get; set; }
+        public bool UpdateStrideToTarget { get; set; } = true;
 
         public void Iterate()
         {
@@ -70,9 +71,22 @@ namespace Vascular.Optimization.Geometric
             {
                 this.Stride = InitialMaxStrideFactor(gradient.Values, this.TargetStep);
             }
+            else if (this.UpdateStrideToTarget)
+            {
+                ClampStride(gradient.Values);
+            }
             Move(gradient, this.Stride, this.MovingPredicate);
             this.Network.Source.CalculatePhysical();
             this.Network.Source.PropagateRadiiDownstream();
+        }
+
+        private void ClampStride(IEnumerable<Vector3> G)
+        {
+            var g = Math.Sqrt(G.Max(x => x * x));
+            if (g * this.Stride > this.TargetStep)
+            {
+                this.Stride = this.TargetStep / g;
+            }
         }
 
         //public GradientDescentMinimizer Add(Func<Network,IDictionary<IMobileNode,Vector3>> g, )

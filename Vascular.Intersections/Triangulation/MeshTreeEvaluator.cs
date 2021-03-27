@@ -23,7 +23,7 @@ namespace Vascular.Intersections.Triangulation
         public TreeEvaluator(Mesh mesh, double r = 0.0, double t2 = 1e-12)
         {
             var surfaceTests = mesh.T.Select(triangle => new TriangleSurfaceTest(triangle, r, t2)).ToList();
-            this.Tree = AxialBoundsBinaryTreeNode<TriangleSurfaceTest>.Create(surfaceTests);
+            this.Tree = AxialBoundsBinaryTree.Create(surfaceTests);
         }
 
         public IEnumerable<TriangleIntersection> Evaluate(Network network)

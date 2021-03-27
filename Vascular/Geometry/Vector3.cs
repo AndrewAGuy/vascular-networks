@@ -199,10 +199,28 @@ namespace Vascular.Geometry
             return Math.Sqrt(DistanceSquared(a, b));
         }
 
-        public Vector3 Normalize(double t2 = 1.0e-12)
+        public Vector3 Normalize(double t = 1.0e-12)
         {
             var m = this.Length;
-            return m > t2 ? this / m : throw new PhysicalValueException("Attempting to normalize zero vector.");
+            return m > t ? this / m : throw new PhysicalValueException("Attempting to normalize zero vector.");
+        }
+
+        public Vector3 NormalizeSafe(double t = 1.0e-12)
+        {
+            var m = this.Length;
+            return m > t ? this / m : null;
+        }
+
+        public static Vector3 FromArray(double[] array)
+        {
+            return array.Length != 3
+                ? throw new ArgumentException($"Cannot create Vector3 from array with {array.Length} elements.")
+                : new Vector3(array[0], array[1], array[2]);
+        }
+
+        public double[] ToArray()
+        {
+            return new double[3] { x, y, z };
         }
     }
 }

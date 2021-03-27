@@ -1,13 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Vascular.Structure;
 
 namespace Vascular.Geometry.Bounds
 {
-    public class AxialBoundsBinaryTree
+    public static class AxialBoundsBinaryTree
     {
+        public static AxialBoundsBinaryTreeNode<T> Create<T>(IEnumerable<T> elements) where T : IAxialBoundable
+        {
+            return elements.Count() == 1
+                ? new AxialBoundsBinaryTreeLeaf<T>(elements.First())
+                : (AxialBoundsBinaryTreeNode<T>)new AxialBoundsBinaryTreeSplit<T>(elements);
+        }
+
         public static void TestRecursive<U, V>(AxialBoundsBinaryTreeNode<U> u, AxialBoundsBinaryTreeNode<V> v, Action<U, V> a)
             where U : IAxialBoundable
             where V : IAxialBoundable

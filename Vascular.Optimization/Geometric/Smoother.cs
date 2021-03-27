@@ -35,6 +35,20 @@ namespace Vascular.Optimization.Geometric
             return s => k * s.Radius;
         }
 
+        public static Func<Terminal, Vector3> GroupTerminalDirection()
+        {
+            return t =>
+            {
+                if (t.Partners is not null && t.Partners.Length > 1)
+                {
+                    var gn = t.Partners.Select(T => T.Upstream.NormalizedDirection).Sum().Normalize();
+                    var ip = LinearAlgebra.RemoveComponent(t.Upstream.Direction, gn);
+                    return ip.NormalizeSafe();
+                }
+                return null;
+            };
+        }
+
         public IDictionary<IMobileNode, Vector3> Forces(Network network)
         {
             var forces = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());

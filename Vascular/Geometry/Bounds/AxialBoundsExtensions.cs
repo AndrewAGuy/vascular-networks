@@ -8,6 +8,11 @@ namespace Vascular.Geometry.Bounds
 {
     public static class AxialBoundsExtensions
     {
+        public static IAxialBoundsQueryable<T> AsQueryable<T>(this IEnumerable<T> e) where T : IAxialBoundable
+        {
+            return new AxialBoundsQuerySequence<T>(e);
+        }
+
         public static AxialBounds GetTotalBounds<T>(this IEnumerable<T> es) where T : IAxialBoundable
         {
             var e = es.GetEnumerator();

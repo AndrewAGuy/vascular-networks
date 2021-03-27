@@ -57,6 +57,26 @@ namespace Vascular
             return val.CompareTo(min) < 0 ? min : val.CompareTo(max) > 0 ? max : val;
         }
 
+        public static IEnumerable<double> CumSum(this IEnumerable<double> V)
+        {
+            var s = 0.0;
+            foreach (var v in V)
+            {
+                s += v;
+                yield return s;
+            }
+        }
+
+        public static IEnumerable<int> CumSum(this IEnumerable<int> V)
+        {
+            var s = 0;
+            foreach (var v in V)
+            {
+                s += v;
+                yield return s;
+            }
+        }
+
         public static async Task RunAsync<T>(this IEnumerable<T> source, Func<T, Task> run, int max,
             bool waitInside = false, CancellationToken cancellationToken = default)
         {
@@ -248,6 +268,12 @@ namespace Vascular
                 v = double.PositiveInfinity;
                 return false;
             }
+        }
+
+        public static T ArgMin<T>(this IEnumerable<T> ts, Func<T, double> f)
+        {
+            return ts.ArgMin(f, out var m, out _)
+                ? m : throw new InvalidOperationException("No entries in method that cannot return default");
         }
 
         public static async Task<int> ReadBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)

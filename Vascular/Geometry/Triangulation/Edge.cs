@@ -30,13 +30,7 @@ namespace Vascular.Geometry.Triangulation
             return t1n * (t2p.P - S.P) > 0;
         }
 
-        public bool IsDegenerate
-        {
-            get
-            {
-                return S == E;
-            }
-        }
+        public bool IsDegenerate => S == E;
 
         public Vector3 GetNormal()
         {
@@ -78,13 +72,7 @@ namespace Vascular.Geometry.Triangulation
             return t.N * (this.Direction ^ (t.Opposite(this).P - S.P)) > 0 ? this : this.Reverse;
         }
 
-        public Edge Reverse
-        {
-            get
-            {
-                return new Edge(E, S);
-            }
-        }
+        public Edge Reverse => new Edge(E, S);
 
         public Vertex Other(Vertex v)
         {

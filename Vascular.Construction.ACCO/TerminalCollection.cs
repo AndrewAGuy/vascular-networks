@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vascular.Geometry;
 using Vascular.Structure;
@@ -32,77 +33,23 @@ namespace Vascular.Construction.ACCO
             }
         }
 
-        public Terminal Current
-        {
-            get
-            {
-                return waiting[^1];
-            }
-        }
+        public Terminal Current => waiting[^1];
 
-        public int Remaining
-        {
-            get
-            {
-                return waiting.Count;
-            }
-        }
+        public int Remaining => waiting.Count;
 
-        public IReadOnlyList<Terminal> Waiting
-        {
-            get
-            {
-                return waiting;
-            }
-        }
+        public IReadOnlyList<Terminal> Waiting => waiting;
 
-        public IEnumerable<Terminal> Built
-        {
-            get
-            {
-                return built;
-            }
-        }
+        public IEnumerable<Terminal> Built => built;
 
-        public int Index
-        {
-            get
-            {
-                return built.Count;
-            }
-        }
+        public int Index => built.Count;
 
-        public int Culled
-        {
-            get
-            {
-                return culled.Count;
-            }
-        }
+        public int Culled => culled.Count;
 
-        public int Rejected
-        {
-            get
-            {
-                return rejected.Count;
-            }
-        }
+        public int Rejected => rejected.Count;
 
-        public int Total
-        {
-            get
-            {
-                return this.Remaining + this.Processed;
-            }
-        }
+        public int Total => this.Remaining + this.Processed;
 
-        public int Processed
-        {
-            get
-            {
-                return rejected.Count + built.Count + culled.Count;
-            }
-        }
+        public int Processed => rejected.Count + built.Count + culled.Count;
 
         public Random Random
         {
@@ -114,6 +61,7 @@ namespace Vascular.Construction.ACCO
 
         public Network Network
         {
+            get => network;
             set
             {
                 network = value;
@@ -374,7 +322,7 @@ namespace Vascular.Construction.ACCO
             waiting.RemoveAt(waiting.Count - 1);
         }
 
-        private void Cull(Terminal t)
+        private static void Cull(Terminal t)
         {
             if (t.Partners != null)
             {
@@ -395,6 +343,27 @@ namespace Vascular.Construction.ACCO
                 {
                     trans.Parent.Branch.PropagateLogicalUpstream();
                     trans.UpdatePhysicalAndPropagate();
+                }
+            }
+        }
+
+        public static void Match(TerminalCollection[] collections, bool reorder)
+        {
+            var n = collections[0].Waiting.Count;
+            for (var i = 0; i < n; ++i)
+            {
+                var T = new Terminal[collections.Length];
+                for (var j = 0; j < collections.Length; ++j)
+                {
+                    T[j] = collections[j].Waiting[i];
+                    collections[j].Waiting[i].Partners = T;
+                }
+            }
+            if (reorder)
+            {
+                foreach (var c in collections)
+                {
+                    c.Reorder();
                 }
             }
         }

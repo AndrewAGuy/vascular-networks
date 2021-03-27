@@ -59,6 +59,7 @@ namespace Vascular.IO.Triangulation
         public Action<Decimation> ConfigureFinalDecimation { get; set; } = d => { };
         public bool ReportChunkDecimation { get; set; } = false;
         public bool ReportFinalDecimation { get; set; } = false;
+        public bool Decimate { get; set; } = true;
 
         private double vertexLower = 0.25;
         private double vertexUpper = 0.75;
@@ -144,15 +145,18 @@ namespace Vascular.IO.Triangulation
 
             progress?.Report(new MeshCreated(elapsed, decimation.Mesh.T.Count));
 
-            this.ConfigureFinalDecimation(decimation);
-            var decimationProgress = this.ReportFinalDecimation ? progress : null;
-            stopwatch.Restart();
-            await decimation.Decimate(decimationProgress, cancellationToken);
-            elapsed = stopwatch.Elapsed;
+            if (this.Decimate)
+            {
+                this.ConfigureFinalDecimation(decimation);
+                var decimationProgress = this.ReportFinalDecimation ? progress : null;
+                stopwatch.Restart();
+                await decimation.Decimate(decimationProgress, cancellationToken);
+                elapsed = stopwatch.Elapsed;
 
-            cancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
-            progress?.Report(new MeshDecimated(elapsed));
+                progress?.Report(new MeshDecimated(elapsed));
+            }
 
             return decimation.Mesh;
         }
@@ -160,6 +164,56 @@ namespace Vascular.IO.Triangulation
         private async Task GenerateChunk(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax,
             Decimation exportDecimation, SemaphoreSlim semaphore, int id, IProgress<object> progress,
             CancellationToken cancellationToken)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var chunk = ExtractMesh(iLo, jLo, kLo, iMax, jMax, kMax,
+                id, stopwatch, progress, cancellationToken);
+
+            if (this.Decimate)
+            {
+                var chunkDecimation = new Decimation(chunk);
+                this.ConfigureChunkDecimation(chunkDecimation);
+                var chunkProgress = this.ReportChunkDecimation
+                    ? new Progress<object>(data => progress?.Report(new ChunkDecimating(id, data)))
+                    : null;
+                stopwatch.Restart();
+                await chunkDecimation.Decimate(chunkProgress, cancellationToken);
+                var elapsed = stopwatch.Elapsed;
+                progress?.Report(new ChunkDecimated(id, elapsed, chunk.T.Count));
+
+                await semaphore.WaitAsync(cancellationToken);
+                try
+                {
+                    stopwatch.Restart();
+                    exportDecimation.Merge(chunkDecimation);
+                    elapsed = stopwatch.Elapsed;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+                progress?.Report(new ChunkMerged(id, elapsed));
+            }
+            else
+            {
+                await semaphore.WaitAsync(cancellationToken);
+                var elapsed = TimeSpan.Zero;
+                try
+                {
+                    stopwatch.Restart();
+                    exportDecimation.Mesh.Merge(chunk);
+                    elapsed = stopwatch.Elapsed;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+                progress?.Report(new ChunkMerged(id, elapsed));
+            }
+        }
+
+        private Mesh ExtractMesh(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax, 
+            int id, Stopwatch stopwatch, IProgress<object> progress, CancellationToken cancellationToken)
         {
             // Not guaranteed to be spun up immediately
             cancellationToken.ThrowIfCancellationRequested();
@@ -169,9 +223,7 @@ namespace Vascular.IO.Triangulation
             var jHi = Math.Min(jLo + this.StridesPerChunk, jMax + 1);
             var kHi = Math.Min(kLo + this.StridesPerChunk, kMax + 1);
 
-            var stopwatch = Stopwatch.StartNew();
             var (points, sample) = GetPoints(iLo, iHi, jLo, jHi, kLo, kHi);
-
             var function = Sample(sample, id, points.Count, stopwatch, progress, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -208,31 +260,11 @@ namespace Vascular.IO.Triangulation
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var chunkDecimation = new Decimation(chunk);
-            this.ConfigureChunkDecimation(chunkDecimation);
-            var chunkProgress = this.ReportChunkDecimation
-                ? new Progress<object>(data => progress?.Report(new ChunkDecimating(id, data)))
-                : null;
-            stopwatch.Restart();
-            await chunkDecimation.Decimate(chunkProgress, cancellationToken);
-            elapsed = stopwatch.Elapsed;
-            progress?.Report(new ChunkDecimated(id, elapsed, chunk.T.Count));
-
-            await semaphore.WaitAsync(cancellationToken);
-            try
-            {
-                stopwatch.Restart();
-                exportDecimation.Merge(chunkDecimation);
-                elapsed = stopwatch.Elapsed;
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-            progress?.Report(new ChunkMerged(id, elapsed));
+            return chunk;
         }
 
-        private void TryGenerate(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
+        private void TryGenerate(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+            double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var b0 = f0 <= 0;
             var b1 = f1 <= 0;
@@ -388,7 +420,8 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private void GenerateOne(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
+        private void GenerateOne(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+            double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var p1 = GeneratePoint(v0, v1, f0, f1);
             var p2 = GeneratePoint(v0, v2, f0, f2);
@@ -421,7 +454,8 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private void GenerateTwo(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, double f0, double f1, double f2, double f3, Mesh chunk)
+        private void GenerateTwo(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+            double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var p02 = GeneratePoint(v0, v2, f0, f2);
             var p03 = GeneratePoint(v0, v3, f0, f3);
@@ -459,7 +493,8 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private static (List<Vector3> construction, HashSet<Vector3> sample) GetPoints(int iLo, int iHi, int jLo, int jHi, int kLo, int kHi)
+        private static (List<Vector3> construction, HashSet<Vector3> sample) 
+            GetPoints(int iLo, int iHi, int jLo, int jHi, int kLo, int kHi)
         {
             // Sublattice with integral transform (1,0,0) (0,1,0) (0,0,1) <-> (1,0,0) (0,1,0) (-1,-1,2)
             // gets us cubic sublattice of index 2. Work in this to fill bounds based on stride

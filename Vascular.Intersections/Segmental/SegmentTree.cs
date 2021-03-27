@@ -14,7 +14,7 @@ namespace Vascular.Intersections.Segmental
 
         public SegmentTree(IEnumerable<Segment> segments)
         {
-            tree = AxialBoundsBinaryTreeNode<Segment>.Create(segments);
+            tree = AxialBoundsBinaryTree.Create(segments);
         }
 
         private List<SegmentIntersection> intersections = new List<SegmentIntersection>();

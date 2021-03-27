@@ -26,13 +26,6 @@ namespace Vascular.Geometry.Bounds
 
         public abstract void UpdateBounds();
 
-        public static AxialBoundsBinaryTreeNode<T> Create(IEnumerable<T> elements)
-        {
-            return elements.Count() == 1
-                ? new AxialBoundsBinaryTreeLeaf<T>(elements.First())
-                : (AxialBoundsBinaryTreeNode<T>)new AxialBoundsBinaryTreeSplit<T>(elements);
-        }
-
         public IEnumerator<T> GetEnumerator()
         {
             var T = new List<T>();

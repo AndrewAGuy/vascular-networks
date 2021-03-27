@@ -44,8 +44,8 @@ namespace Vascular.Geometry.Bounds
                 Split(elements, half.z, v => v.z, below, above);
             }
 
-            this.Left = Create(below);
-            this.Right = Create(above);
+            this.Left = AxialBoundsBinaryTree.Create(below);
+            this.Right = AxialBoundsBinaryTree.Create(above);
         }
 
         public override void Query(AxialBounds query, Action<T> action)

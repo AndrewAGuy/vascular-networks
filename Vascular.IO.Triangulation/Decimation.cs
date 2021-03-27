@@ -12,6 +12,14 @@ namespace Vascular.IO.Triangulation
 {
     public record DecimationBegin(int BoundaryVertices, int Vertices);
     public record DecimationStep(int Triangles, int Edges, int Remesh, int Recost, int Valid, Summary Error);
+    public record DecimationPass(int Triangles, int Edges, Summary Error);
+
+    public enum DecimationMode
+    {
+        Full,
+        Local,
+        Greedy
+    }
 
     public class Decimation
     {
@@ -32,7 +40,7 @@ namespace Vascular.IO.Triangulation
         {
             this.Mesh = mesh ?? new Mesh();
             ClearErrors();
-            RemeshAll();
+            //RemeshAll();
         }
 
         public void ClearErrors()
@@ -70,6 +78,16 @@ namespace Vascular.IO.Triangulation
             boundaryValid = true;
         }
 
+        private void Begin(IProgress<object> progress)
+        {
+            if (!boundaryValid)
+            {
+                SetBoundary();
+            }
+            progress?.Report(new DecimationBegin(boundaryVertices.Count, this.Mesh.V.Count));
+            RemeshAll();
+        }
+
         public bool ExtendBoundary { get; set; } = true;
 
         public void Merge(Decimation other)
@@ -83,23 +101,23 @@ namespace Vascular.IO.Triangulation
                 originalPoints[T] = other.originalPoints[t];
             }
 
-            collapses.EnsureCapacity(collapses.Count + other.collapses.Count);
-            foreach (var c in other.collapses.Values)
-            {
-                var C = Translate(c);
-                collapses[(C.Kept, C.Lost)] = C;
-            }
+            //collapses.EnsureCapacity(collapses.Count + other.collapses.Count);
+            //foreach (var c in other.collapses.Values)
+            //{
+            //    var C = Translate(c);
+            //    collapses[(C.Kept, C.Lost)] = C;
+            //}
 
-            recosting.EnsureCapacity(recosting.Count + other.recosting.Count);
-            foreach (var (k, l) in other.recosting)
-            {
-                recosting.Add((Translate(k), Translate(l)));
-            }
-            remeshing.EnsureCapacity(remeshing.Count + other.remeshing.Count);
-            foreach (var (k, l) in other.remeshing)
-            {
-                remeshing.Add((Translate(k), Translate(l)));
-            }
+            //recosting.EnsureCapacity(recosting.Count + other.recosting.Count);
+            //foreach (var (k, l) in other.recosting)
+            //{
+            //    recosting.Add((Translate(k), Translate(l)));
+            //}
+            //remeshing.EnsureCapacity(remeshing.Count + other.remeshing.Count);
+            //foreach (var (k, l) in other.remeshing)
+            //{
+            //    remeshing.Add((Translate(k), Translate(l)));
+            //}
         }
 
         private Vertex Translate(Vertex other)
@@ -148,24 +166,53 @@ namespace Vascular.IO.Triangulation
         private HashSet<(Vertex kept, Vertex lost)> recosting;
         private HashSet<Vertex> boundaryVertices;
 
+        public DecimationMode Mode { get; set; } = DecimationMode.Local;
+
         public async Task Decimate(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
-            if (!boundaryValid)
+            if (this.MaxErrorSquared <= 0.0)
             {
-                SetBoundary();
+                return;
             }
-            progress?.Report(new DecimationBegin(boundaryVertices.Count, this.Mesh.V.Count));
+            Begin(progress);
+            switch (this.Mode)
+            {
+                case DecimationMode.Full:
+                    await DecimateFull(progress, cancellationToken);
+                    break;
+                case DecimationMode.Local:
+                    await DecimateLocal(TryCollapseLocal, progress, cancellationToken);
+                    break;
+                case DecimationMode.Greedy:
+                    await DecimateLocal(TryCollapseGreedy, progress, cancellationToken);
+                    break;
+            }
+            //FilterCache();
+        }
+
+        private Task<Summary> GetSummary()
+        {
+            if (this.ReportErrors)
+            {
+                var errors = originalPoints.Values.Select(op => op.Error).ToArray();
+                return Task.Run(() => new Summary(errors, this.SummaryMoments, this.SummaryOrders));
+            }
+            return Task.FromResult<Summary>(null);
+        }
+
+        private async Task DecimateFull(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        {
+            //if (!boundaryValid)
+            //{
+            //    SetBoundary();
+            //}
+            //progress?.Report(new DecimationBegin(boundaryVertices.Count, this.Mesh.V.Count));
             while (remeshing.Count != 0 || recosting.Count != 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var remesh = remeshing.Count;
                 var recost = recosting.Count;
-                var summary = Task.FromResult<Summary>(null);
-                if (this.ReportErrors)
-                {
-                    var errors = originalPoints.Values.Select(op => op.Error).ToArray();
-                    summary = Task.Run(() => new Summary(errors, this.SummaryMoments, this.SummaryOrders));
-                }
+                var summary = GetSummary();
 
                 var valid = await GetCollapses(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
@@ -626,83 +673,128 @@ namespace Vascular.IO.Triangulation
             return true;
         }
 
-        public void DecimateGreedy(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        private async Task DecimateLocal(Action<Edge> action, IProgress<object> progress, CancellationToken cancellationToken)
         {
-            if (!boundaryValid)
-            {
-                SetBoundary();
-            }
-
-            do
-            {
-                var candidates = this.Mesh.E.Values.ToArray();
-                var executed = 0;
-                foreach (var edge in candidates)
-                {
-                    var (S, E) = (edge.S, edge.E);
-                    if (TryRemesh(S.EdgeTo(E), S, E, out var rA, out var fA) &&
-                        TryCollapse(S, E, rA, fA, out var cA))
-                    {
-                        if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
-                            TryCollapse(E, S, rB, fB, out var cB))
-                        {
-                            ModifyMesh(cA.Cost < cB.Cost ? cA : cB);
-                        }
-                        else
-                        {
-                            ModifyMesh(cA);
-                        }
-                    }
-                    else
-                    {
-                        if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
-                            TryCollapse(E, S, rB, fB, out var cB))
-                        {
-                            ModifyMesh(cB);
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    ++executed;
-                }
-                if (executed == 0)
-                {
-                    break;
-                }
-                progress?.Report(this.Mesh.T.Count);
-                FinishIteration();
-            } while (true);
-        }
-
-        public void DecimateLocal(IProgress<object> progress = null, CancellationToken cancellationToken = default)
-        {
-            if (!boundaryValid)
-            {
-                SetBoundary();
-            }
-
-            progress?.Report(this.Mesh.T.Count);
             while (true)
             {
+                var summary = GetSummary();
                 cancellationToken.ThrowIfCancellationRequested();
                 var startCount = this.Mesh.T.Count;
                 var candidates = this.Mesh.E.Values.ToArray();
+                progress?.Report(new DecimationPass(startCount, candidates.Length, await summary));
                 foreach (var edge in candidates)
                 {
-                    var collapse = GetBest(edge);
-                    if (collapse != null)
-                    {
-                        Execute(collapse);
-                    }
+                    action(edge);
                 }
                 if (this.Mesh.T.Count == startCount)
                 {
                     return;
                 }
-                progress?.Report(this.Mesh.T.Count);
                 FinishIteration();
+            }
+        }
+
+        //private async Task DecimateGreedy(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        //{
+        //    //if (!boundaryValid)
+        //    //{
+        //    //    SetBoundary();
+        //    //}
+
+        //    while (true)
+        //    {
+        //        //var candidates = this.Mesh.E.Values.ToArray();
+        //        //var executed = 0;
+        //        var summary = GetSummary();
+        //        cancellationToken.ThrowIfCancellationRequested();
+        //        var startCount = this.Mesh.T.Count;
+        //        var candidates = this.Mesh.E.Values.ToArray();
+        //        progress?.Report(new DecimationPass(startCount, candidates.Length, await summary));
+        //        foreach (var edge in candidates)
+        //        {
+        //            TryCollapseGreedy(edge);
+        //            //++executed;
+        //        }
+        //        //if (executed == 0)
+        //        //{
+        //        //    break;
+        //        //}
+        //        //progress?.Report(this.Mesh.T.Count);
+        //        if (this.Mesh.T.Count == startCount)
+        //        {
+        //            return;
+        //        }
+        //        FinishIteration();
+        //    }
+        //}
+
+        private void TryCollapseGreedy(Edge edge)
+        {
+            var (S, E) = (edge.S, edge.E);
+            if (TryRemesh(S.EdgeTo(E), S, E, out var rA, out var fA) &&
+                TryCollapse(S, E, rA, fA, out var cA))
+            {
+                if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                    TryCollapse(E, S, rB, fB, out var cB))
+                {
+                    ModifyMesh(cA.Cost < cB.Cost ? cA : cB);
+                }
+                else
+                {
+                    ModifyMesh(cA);
+                }
+            }
+            else
+            {
+                if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                    TryCollapse(E, S, rB, fB, out var cB))
+                {
+                    ModifyMesh(cB);
+                }
+            }
+        }
+
+        //private async Task DecimateLocal(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        //{
+        //    //if (!boundaryValid)
+        //    //{
+        //    //    SetBoundary();
+        //    //}
+
+        //    //progress?.Report(this.Mesh.T.Count);
+        //    while (true)
+        //    {
+        //        var summary = GetSummary();
+        //        cancellationToken.ThrowIfCancellationRequested();
+        //        var startCount = this.Mesh.T.Count;
+        //        var candidates = this.Mesh.E.Values.ToArray();
+        //        progress?.Report(new DecimationPass(startCount, candidates.Length, await summary));
+        //        foreach (var edge in candidates)
+        //        {
+        //            //var collapse = GetBest(edge);
+        //            //if (collapse != null)
+        //            //{
+        //            //    Execute(collapse);
+        //            //}
+        //            if (GetBest(edge) is Collapse collapse)
+        //            {
+        //                Execute(collapse);
+        //            }
+        //        }
+        //        if (this.Mesh.T.Count == startCount)
+        //        {
+        //            return;
+        //        }
+        //        //progress?.Report(this.Mesh.T.Count);
+        //        FinishIteration();
+        //    }
+        //}
+
+        private void TryCollapseLocal(Edge edge)
+        {
+            if (GetBest(edge) is Collapse collapse)
+            {
+                Execute(collapse);
             }
         }
 
@@ -795,6 +887,17 @@ namespace Vascular.IO.Triangulation
             }
             return null;
         }
+
+        //private void FilterCache()
+        //{
+        //    // Check that we aren't going to add invalid remeshing or recosting vertices
+        //    remeshing = remeshing
+        //        .Where(r => this.Mesh.V.ContainsKey(r.kept.P) && this.Mesh.V.ContainsKey(r.lost.P))
+        //        .ToHashSet();
+        //    recosting = recosting
+        //        .Where(r => this.Mesh.V.ContainsKey(r.kept.P) && this.Mesh.V.ContainsKey(r.lost.P))
+        //        .ToHashSet();
+        //}
 
         public static async Task<Decimation> Decimate(
             Action<Decimation> finalConfiguration, Action<Decimation> chunkConfiguration,

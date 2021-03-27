@@ -586,7 +586,7 @@ namespace Vascular.Geometry.Surfaces
             return a != null && (b != null ? true : throw new GeometryException("Ray intersection tests must find 2 intersection points"));
         }
 
-        private void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v)
+        private static void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v)
         {
             if (a == null)
             {
