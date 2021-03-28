@@ -10,43 +10,9 @@ using Vascular.Geometry.Triangulation;
 
 namespace Vascular.IO.Triangulation
 {
-    public class ChunkDecimation
+    public class Decomposition
     {
-        public Action<Decimation> ChunkConfiguration { get; set; }
-        public Action<Decimation> Configuration { get; set; }
-
-        public Func<Mesh, IEnumerable<Mesh>> ChunkGenerator { get; set; }
-
-        public int MaxConcurrency { get; set; } = 1;
-
-        public async Task<Decimation> Decimate(Mesh input,
-            IProgress<object> progress = null, CancellationToken cancellationToken = default)
-        {
-            var decimation = new Decimation(new Mesh());
-            this.Configuration?.Invoke(decimation);
-            using var semaphore = new SemaphoreSlim(1);
-            await this.ChunkGenerator(input).RunAsync(
-                async chunk =>
-                {
-                    var localDecimation = new Decimation(chunk);
-                    this.ChunkConfiguration?.Invoke(localDecimation);
-                    await localDecimation.Decimate(progress, cancellationToken);
-                    await semaphore.WaitAsync(cancellationToken);
-                    try
-                    {
-                        decimation.Merge(localDecimation);
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }, this.MaxConcurrency, false, cancellationToken);
-            decimation.RemeshAll();
-            await decimation.Decimate(progress, cancellationToken);
-            return decimation;
-        }
-
-        public static IEnumerable<Mesh> Split(Mesh m, int i, int j, int k)
+        public static IEnumerable<Mesh> AxialPlanes(Mesh m, int i, int j, int k)
         {
             static double[] getSplit(int n, AxialBounds b, Func<Vector3, double> s)
             {
