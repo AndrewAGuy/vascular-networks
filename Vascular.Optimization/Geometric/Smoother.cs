@@ -11,8 +11,8 @@ namespace Vascular.Optimization.Geometric
 {
     public class Smoother
     {
-        public Func<Terminal, Vector3> TerminalDirection { get; set; }
-        public Func<Source, Vector3> SourceDirection { get; set; }
+        public Func<Terminal, Vector3> TerminalDirection { get; set; } = GroupTerminalDirection();
+        public Func<Source, Vector3> SourceDirection { get; set; } = InletSourceDirection();
 
         public Func<Segment, double> LinearSpringConstant { get; set; }
         public Func<Segment, double> AngularSpringConstant { get; set; }
@@ -47,6 +47,11 @@ namespace Vascular.Optimization.Geometric
                 }
                 return null;
             };
+        }
+
+        public static Func<Source, Vector3> InletSourceDirection()
+        {
+            return s => s.Network.InletDirection;
         }
 
         public IDictionary<IMobileNode, Vector3> Forces(Network network)

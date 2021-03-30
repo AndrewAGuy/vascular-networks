@@ -88,12 +88,5 @@ namespace Vascular.Optimization.Geometric
                 this.Stride = this.TargetStep / g;
             }
         }
-
-        //public GradientDescentMinimizer Add(Func<Network,IDictionary<IMobileNode,Vector3>> g, )
-
-        //public GradientDescentMinimizer Add(Func<Network, IDictionary<IMobileNode, Vector3>> g, double s)
-        //{
-
-        //}
     }
 }
