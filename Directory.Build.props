@@ -2,4 +2,8 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Deterministic>true</Deterministic>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(BuildDocs)'=='True'">
+    <DocumentationFile>$(TargetDir)$(TargetName).xml</DocumentationFile>
+  </PropertyGroup>
 </Project>

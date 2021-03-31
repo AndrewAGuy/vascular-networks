@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
@@ -17,12 +15,6 @@ namespace Vascular.Structure.Nodes
 
         [DataMember]
         private double f0 = 1.0, f1 = 0.0;
-        [DataMember]
-        private double pressure = 0.0;
-        [DataMember]
-        private int depth = -1;
-        [DataMember]
-        private double pathLength = -1.0;
 
         [DataMember]
         private readonly Segment[] children = new Segment[2] { null, null };
@@ -35,29 +27,9 @@ namespace Vascular.Structure.Nodes
         [DataMember]
         public override Vector3 Position { get; set; } = null;
 
-        public override Segment[] Children
-        {
-            get
-            {
-                return children;
-            }
-        }
+        public override Segment[] Children => children;
 
-        public override int Depth
-        {
-            get
-            {
-                return depth;
-            }
-        }
-
-        public override Branch[] Downstream
-        {
-            get
-            {
-                return downstream;
-            }
-        }
+        public override Branch[] Downstream => downstream;
 
         public void UpdateDownstream()
         {
@@ -65,56 +37,52 @@ namespace Vascular.Structure.Nodes
             downstream[1] = children[1].Branch;
         }
 
-        public override double EffectiveLength
-        {
-            get
-            {
-                return (downstream[0].EffectiveLength * Math.Pow(f0, 2))
-                    + (downstream[1].EffectiveLength * Math.Pow(f1, 2));
-            }
-        }
+#if !NoEffectiveLength
+        public override double EffectiveLength => 
+            downstream[0].EffectiveLength * Math.Pow(f0, 2) 
+            + downstream[1].EffectiveLength * Math.Pow(f1, 2);
+#endif
 
-        public override double Flow
-        {
-            get
-            {
-                return downstream[0].Flow + downstream[1].Flow;
-            }
-        }
+        public override double Flow => downstream[0].Flow + downstream[1].Flow;
 
-        public override double ReducedResistance
-        {
-            get
-            {
-                return 1.0 /
-                    ((Math.Pow(f0, 4.0) / downstream[0].ReducedResistance)
-                    + (Math.Pow(f1, 4.0) / downstream[1].ReducedResistance));
-            }
-        }
+        public override double ReducedResistance => 1.0 / 
+            (Math.Pow(f0, 4.0) / downstream[0].ReducedResistance 
+            + Math.Pow(f1, 4.0) / downstream[1].ReducedResistance);
 
-        public override Branch Upstream
-        {
-            get
-            {
-                return this.Parent?.Branch;
-            }
-        }
+        public override Branch Upstream => this.Parent?.Branch;
 
-        public override double PathLength
-        {
-            get
-            {
-                return pathLength;
-            }
-        }
+#if !NoPressure
+        [DataMember]
+        private double pressure = 0.0;
 
-        public override double Pressure
+        public override double Pressure => pressure;
+
+        public override void CalculatePressures()
         {
-            get
-            {
-                return pressure;
-            }
+            pressure = this.Upstream.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
+            downstream[0].End.CalculatePressures();
+            downstream[1].End.CalculatePressures();
         }
+#endif
+
+#if !NoDepthPathLength
+        [DataMember]
+        private int depth = -1;
+        [DataMember]
+        private double pathLength = -1.0;
+
+        public override double PathLength => pathLength;
+
+        public override int Depth => depth;
+
+        public override void CalculatePathLengthsAndDepths()
+        {
+            depth = this.Upstream.Start.Depth + 1;
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
+            downstream[0].End.CalculatePathLengthsAndDepths();
+            downstream[1].End.CalculatePathLengthsAndDepths();
+        }
+#endif
 
         public override AxialBounds GenerateDownstreamBounds()
         {
@@ -181,21 +149,6 @@ namespace Vascular.Structure.Nodes
         {
             UpdatePhysicalDerived();
             this.Upstream.PropagatePhysicalUpstream();
-        }
-
-        public override void CalculatePressures()
-        {
-            pressure = this.Upstream.Start.Pressure - (this.Upstream.Flow * this.Upstream.Resistance);
-            downstream[0].End.CalculatePressures();
-            downstream[1].End.CalculatePressures();
-        }
-
-        public override void CalculatePathLengthsAndDepths()
-        {
-            depth = this.Upstream.Start.Depth + 1;
-            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
-            downstream[0].End.CalculatePathLengthsAndDepths();
-            downstream[1].End.CalculatePathLengthsAndDepths();
         }
 
         public void UpdateSegmentLengths()
@@ -277,23 +230,9 @@ namespace Vascular.Structure.Nodes
             return Math.Sqrt(Math.Max(p, Math.Max(c0, c1)));
         }
 
-        public double BifurcationRatio
-        {
-            get
-            {
-                return f0 > f1
-                    ? f1 / f0
-                    : f0 / f1;
-            }
-        }
+        public double BifurcationRatio => f0 > f1 ? f1 / f0 : f0 / f1;
 
-        public (double f0, double f1) Fractions
-        {
-            get
-            {
-                return (f0, f1);
-            }
-        }
+        public (double f0, double f1) Fractions => (f0, f1);
 
         public Vector3 WeightedMean(Func<Branch, double> weighting)
         {

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure.Nodes;
@@ -15,11 +13,19 @@ namespace Vascular.Structure
     [KnownType(typeof(Terminal))]
     public abstract class BranchNode : INode
     {
-        public abstract double PathLength { get; }
-
+#if !NoPressure
         public abstract double Pressure { get; }
 
+        public abstract void CalculatePressures();
+#endif
+
+#if !NoDepthPathLength
+        public abstract double PathLength { get; }
+
         public abstract int Depth { get; }
+
+        public abstract void CalculatePathLengthsAndDepths();
+#endif
 
         public abstract Segment Parent { get; set; }
 
@@ -36,7 +42,9 @@ namespace Vascular.Structure
 
         public abstract double Flow { get; }
 
+#if !NoEffectiveLength
         public abstract double EffectiveLength { get; }
+#endif
 
         public abstract double ReducedResistance { get; }
 
@@ -52,11 +60,7 @@ namespace Vascular.Structure
 
         public abstract void PropagateRadiiDownstream(Func<Branch, double> postProcessing);
 
-        public abstract void CalculatePressures();
-
         public abstract void CalculatePhysical();
-
-        public abstract void CalculatePathLengthsAndDepths();
 
         public abstract AxialBounds GenerateDownstreamBounds();
 

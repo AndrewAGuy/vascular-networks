@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
@@ -17,10 +14,7 @@ namespace Vascular.Structure.Nodes
 
         public Segment Child
         {
-            get
-            {
-                return child;
-            }
+            get => child;
             set
             {
                 child = value;

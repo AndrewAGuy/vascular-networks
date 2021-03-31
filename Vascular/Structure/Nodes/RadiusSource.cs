@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
@@ -28,29 +26,21 @@ namespace Vascular.Structure.Nodes
             radius4inv = 1.0 / (radius2 * radius2);
         }
 
-        sealed public override double RootRadius
-        {
-            get
-            {
-                return radius;
-            }
-        }
+        sealed public override double RootRadius => radius;
 
-        sealed public override double Volume
-        {
-            get
-            {
-                return Math.PI * radius2 * this.EffectiveLength;
-            }
-        }
+#if !NoEffectiveLength
+        sealed public override double Volume => Math.PI * radius2 * this.EffectiveLength;
+#endif
 
-        sealed public override double Pressure
-        {
-            get
-            {
-                return this.ReducedResistance * this.Flow * radius4inv;
-            }
-        }
+        public sealed override double Resistance => this.ReducedResistance * this.Network.ScaledViscosity * radius4inv;
+
+        public override double Work => this.Resistance * Math.Pow(this.Flow, 2);
+
+#if !NoPressure
+        sealed public override double Pressure => this.Resistance * this.Flow;
+#else
+        private double Pressure => this.Resistance * this.Flow;
+#endif
 
         public PressureSource ConvertToPressureSource()
         {

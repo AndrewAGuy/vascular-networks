@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -21,10 +18,7 @@ namespace Vascular.Structure
 
         public Source Source
         {
-            get
-            {
-                return source;
-            }
+            get => source;
             set
             {
                 source = value;
@@ -35,19 +29,30 @@ namespace Vascular.Structure
             }
         }
 
-        public Branch Root
-        {
-            get
-            {
-                return source.Child?.Branch;
-            }
-        }
+        public Branch Root => source.Child?.Branch;
 
         [DataMember]
         public Network[] Partners { get; set; } = null;
 
         [DataMember]
-        public double Viscosity { get; set; } = 4.0e-6;
+        private double viscosity = 4.0e-6;
+        [DataMember]
+        private double scaledViscosity = 4.0e-6 * 8.0 / Math.PI;
+        
+        public double Viscosity
+        {
+            get => viscosity;
+            set
+            {
+                if (value > 0)
+                {
+                    viscosity = value;
+                    scaledViscosity = value * 8.0 / Math.PI;
+                }
+            }
+        }
+
+        public double ScaledViscosity => scaledViscosity;
 
         [DataMember]
         public double PressureOffset { get; set; } = 0.0;

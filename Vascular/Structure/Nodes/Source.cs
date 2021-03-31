@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
@@ -31,10 +29,7 @@ namespace Vascular.Structure.Nodes
 
         public Segment Child
         {
-            get
-            {
-                return child;
-            }
+            get => child;
             set
             {
                 child = value;
@@ -52,98 +47,42 @@ namespace Vascular.Structure.Nodes
             }
         }
 
-        sealed public override Segment[] Children
-        {
-            get
-            {
-                return children;
-            }
-        }
+        sealed public override Segment[] Children => children;
 
         public void SetPosition(Vector3 x)
         {
             position = x ?? throw new PhysicalValueException("Source position must not be null");
         }
 
-        sealed public override int Depth
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        sealed public override double Flow => child.Flow;
 
-        sealed public override double PathLength
-        {
-            get
-            {
-                return 0.0;
-            }
-        }
-
-        sealed public override double Flow
-        {
-            get
-            {
-                return child.Flow;
-            }
-        }
-
-        sealed public override Branch[] Downstream
-        {
-            get
-            {
-                return downstream;
-            }
-        }
+        sealed public override Branch[] Downstream => downstream;
 
         sealed public override Segment Parent
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                throw new TopologyException("Source node has no parent");
-            }
+            get => null;
+            set => throw new TopologyException("Source node has no parent");
         }
 
-        sealed public override Branch Upstream
-        {
-            get
-            {
-                return null;
-            }
-        }
+        sealed public override Branch Upstream => null;
 
         sealed public override Vector3 Position
         {
-            get
-            {
-                return position;
-            }
-            set
-            {
-                throw new GeometryException("Source node position is fixed");
-            }
+            get => position;
+            set => throw new GeometryException("Source node position is fixed");
         }
 
-        sealed public override double EffectiveLength
-        {
-            get
-            {
-                return down.EffectiveLength;
-            }
-        }
+#if !NoEffectiveLength
+        sealed public override double EffectiveLength => down.EffectiveLength;
 
-        sealed public override double ReducedResistance
-        {
-            get
-            {
-                return down.EffectiveLength;
-            }
-        }
+        public abstract double Volume { get; }
+#endif
+
+        public sealed override double ReducedResistance => down.ReducedResistance;
+
+        public abstract double Resistance { get; }
+
+        public abstract double Work { get; }
 
         sealed public override void PropagateLogicalUpstream()
         {
@@ -156,8 +95,6 @@ namespace Vascular.Structure.Nodes
         }
 
         public abstract double RootRadius { get; }
-
-        public abstract double Volume { get; }
 
         sealed public override void SetChildRadii()
         {
@@ -187,10 +124,16 @@ namespace Vascular.Structure.Nodes
             down.UpdateRadii();
         }
 
+#if !NoDepthPathLength
         sealed public override void CalculatePathLengthsAndDepths()
         {
             down.End.CalculatePathLengthsAndDepths();
         }
+
+        sealed public override double PathLength => 0.0;
+
+        sealed public override int Depth => 0;
+#endif
 
         sealed public override void CalculatePhysical()
         {
@@ -200,10 +143,12 @@ namespace Vascular.Structure.Nodes
             down.UpdatePhysicalGlobal();
         }
 
+#if !NoPressure
         sealed public override void CalculatePressures()
         {
             down.End.CalculatePressures();
         }
+#endif
 
         sealed public override AxialBounds GenerateDownstreamBounds()
         {

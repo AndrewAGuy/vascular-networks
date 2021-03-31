@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
@@ -11,23 +8,11 @@ namespace Vascular.Structure.Nodes
     {
         public Segment Parent
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                return;
-            }
+            get => null;
+            set { }
         }
 
-        public Segment[] Children
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public Segment[] Children => null;
 
         [DataMember]
         public Vector3 Position { get; set; } = null;

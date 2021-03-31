@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
@@ -20,24 +19,14 @@ namespace Vascular.Structure.Nodes
         private Vector3 position = null;
         [DataMember]
         private double flow;
-        [DataMember]
-        private double pathLength = -1.0;
-        [DataMember]
-        private int depth = -1;
 
-        private static readonly Segment[] CHILDREN = new Segment[] { };
-        private static readonly Branch[] DOWNSTREAM = new Branch[] { };
+        private static readonly Segment[] CHILDREN = Array.Empty<Segment>();
+        private static readonly Branch[] DOWNSTREAM = Array.Empty<Branch>();
 
         [DataMember]
         public override Segment Parent { get; set; } = null;
 
-        public override Segment[] Children
-        {
-            get
-            {
-                return CHILDREN;
-            }
-        }
+        public override Segment[] Children => CHILDREN;
 
         public void SetPosition(Vector3 x)
         {
@@ -51,55 +40,41 @@ namespace Vascular.Structure.Nodes
 
         public override Vector3 Position
         {
-            get
-            {
-                return position;
-            }
-            set
-            {
-                throw new GeometryException("Terminal node position is fixed");
-            }
+            get => position;
+            set => throw new GeometryException("Terminal node position is fixed");
         }
 
-        public override double Pressure
-        {
-            get
-            {
-                return 0.0;
-            }
-        }
+#if !NoPressure
+        public override double Pressure => 0.0;
 
-        public override double EffectiveLength
+        public override void CalculatePressures()
         {
-            get
-            {
-                return 0.0;
-            }
+            return;
         }
+#endif
 
-        public override double ReducedResistance
-        {
-            get
-            {
-                return 0.0;
-            }
-        }
+#if !NoEffectiveLength
+        public override double EffectiveLength => 0.0;
+#endif
 
-        public override double PathLength
-        {
-            get
-            {
-                return pathLength;
-            }
-        }
+        public override double ReducedResistance => 0.0;
 
-        public override int Depth
+#if !NoDepthPathLength
+        [DataMember]
+        private double pathLength = -1.0;
+        [DataMember]
+        private int depth = -1;
+
+        public override double PathLength => pathLength;
+
+        public override int Depth => depth;
+
+        public override void CalculatePathLengthsAndDepths()
         {
-            get
-            {
-                return depth;
-            }
+            depth = this.Upstream.Start.Depth + 1;
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         }
+#endif
 
         [DataMember]
         public Terminal[] Partners { get; set; } = null;
@@ -109,20 +84,9 @@ namespace Vascular.Structure.Nodes
 
         public bool IsRooted => this.Upstream?.IsRooted ?? false;
 
-        public override double Flow
-        {
-            get
-            {
-                return flow;
-            }
-        }
+        public override double Flow => flow;
 
         public override void CalculatePhysical()
-        {
-            return;
-        }
-
-        public override void CalculatePressures()
         {
             return;
         }
@@ -167,27 +131,9 @@ namespace Vascular.Structure.Nodes
             this.Upstream.PropagatePhysicalUpstream();
         }
 
-        public override void CalculatePathLengthsAndDepths()
-        {
-            depth = this.Upstream.Start.Depth + 1;
-            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
-        }
+        public override Branch Upstream => this.Parent?.Branch;
 
-        public override Branch Upstream
-        {
-            get
-            {
-                return this.Parent?.Branch;
-            }
-        }
-
-        public override Branch[] Downstream
-        {
-            get
-            {
-                return DOWNSTREAM;
-            }
-        }
+        public override Branch[] Downstream => DOWNSTREAM;
 
         public static void ForDownstream(Branch branch, Action<Terminal> action)
         {

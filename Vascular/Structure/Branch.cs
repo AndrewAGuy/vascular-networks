@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure.Nodes;
@@ -82,13 +81,7 @@ namespace Vascular.Structure
             this.End.Parent = s;
         }
 
-        public IReadOnlyList<Segment> Segments
-        {
-            get
-            {
-                return segments;
-            }
-        }
+        public IReadOnlyList<Segment> Segments => segments;
 
         public IEnumerable<INode> Nodes
         {
@@ -126,90 +119,33 @@ namespace Vascular.Structure
         [DataMember]
         public BranchNode Start { get; set; } = null;
 
-        public Branch Parent
-        {
-            get
-            {
-                return this.Start.Upstream;
-            }
-        }
+        public Branch Parent => this.Start.Upstream;
 
         [DataMember]
         public BranchNode End { get; set; } = null;
 
-        public Branch[] Children
-        {
-            get
-            {
-                return this.End.Downstream;
-            }
-        }
+        public Branch[] Children => this.End.Downstream;
 
-        public Network Network
-        {
-            get
-            {
-                return this.End.Network;
-            }
-        }
+        public Network Network  => this.End.Network;
 
-        public Vector3 Direction
-        {
-            get
-            {
-                return this.End.Position - this.Start.Position;
-            }
-        }
+        public Vector3 Direction => this.End.Position - this.Start.Position;
 
-        public Vector3 NormalizedDirection
-        {
-            get
-            {
-                return this.Direction.Normalize();
-            }
-        }
+        public Vector3 NormalizedDirection => this.Direction.Normalize();
 
-        public double DirectLength
-        {
-            get
-            {
-                return this.Direction.Length;
-            }
-        }
+        public double DirectLength => this.Direction.Length;
 
-        public double Tortuosity
-        {
-            get
-            {
-                return this.Length / this.DirectLength;
-            }
-        }
+        public double Tortuosity  => this.Length / this.DirectLength;
 
-        public double Slenderness
-        {
-            get
-            {
-                return this.Length / this.Radius;
-            }
-        }
+        public double Slenderness => this.Length / this.Radius;
 
-        public bool IsTerminal
-        {
-            get
-            {
-                return this.End is Terminal;
-            }
-        }
+        public bool IsTerminal => this.End is Terminal;
 
         [DataMember]
         private double radius = 0.0;
 
         public double Radius
         {
-            get
-            {
-                return radius;
-            }
+            get => radius;
             set
             {
                 if (value >= 0.0)
@@ -223,21 +159,9 @@ namespace Vascular.Structure
         public double Length { get; private set; } = 0.0;
 
         [DataMember]
-        public double EffectiveLength { get; private set; } = 0.0;
-
-        [DataMember]
-        private double reducedResistanceLocal = 0.0;
-
-        [DataMember]
         public double ReducedResistance { get; private set; } = 0.0;
 
-        public double Resistance
-        {
-            get
-            {
-                return reducedResistanceLocal / Math.Pow(radius, 4);
-            }
-        }
+        public double Resistance => this.Length * this.Network.ScaledViscosity / Math.Pow(radius, 4);
 
         public void UpdateLengths()
         {
@@ -262,13 +186,19 @@ namespace Vascular.Structure
             {
                 this.Length += segments[i].Length;
             }
-            reducedResistanceLocal = 8.0 * this.Network.Viscosity * this.Length / Math.PI;
         }
+
+#if !NoEffectiveLength
+        [DataMember]
+        public double EffectiveLength { get; private set; } = 0.0;
+#endif
 
         public void UpdatePhysicalGlobal()
         {
+#if !NoEffectiveLength
             this.EffectiveLength = this.Length + this.End.EffectiveLength;
-            this.ReducedResistance = reducedResistanceLocal + this.End.ReducedResistance;
+#endif
+            this.ReducedResistance = this.Length + this.End.ReducedResistance;
         }
 
         public void PropagatePhysicalUpstream()
@@ -363,13 +293,9 @@ namespace Vascular.Structure
             }
         }
 
-        public int Depth
-        {
-            get
-            {
-                return this.End.Depth;
-            }
-        }
+#if !NoDepthPathLength
+        public int Depth => this.End.Depth;
+#endif
 
         public Branch GetNthUpstream(int n)
         {
@@ -381,21 +307,9 @@ namespace Vascular.Structure
             return u;
         }
 
-        public bool IsTopologicallyValid
-        {
-            get
-            {
-                return ReferenceEquals(this, this.CurrentTopologicallyValid);
-            }
-        }
+        public bool IsTopologicallyValid => ReferenceEquals(this, this.CurrentTopologicallyValid);
 
-        public Branch CurrentTopologicallyValid
-        {
-            get
-            {
-                return this.End?.Upstream;
-            }
-        }
+        public Branch CurrentTopologicallyValid => this.End?.Upstream;
 
         public bool IsAncestorOf(Branch b)
         {
