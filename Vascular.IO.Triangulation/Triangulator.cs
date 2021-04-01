@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Vascular.Geometry;
@@ -16,20 +13,62 @@ using Vascular.Structure;
 
 namespace Vascular.IO.Triangulation
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public record MeshChunks(int I, int J, int K);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkPrepared(int Id, TimeSpan TimeElapsed, int Sample, int Build, int Segments, int Triangles);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkSampled(int Id, TimeSpan TimeElapsed);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkExtracted(int Id, TimeSpan TimeElapsed, int Triangles);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkDecimating(int Id, object Data);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
+    
+    /// <summary>
+    /// 
+    /// </summary>
     public record ChunkMerged(int Id, TimeSpan TimeElapsed);
+    
+    /// <summary>
+    /// 
+    /// </summary>
     public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record MeshDecimated(TimeSpan TimeElapsed);
 
+    /// <summary>
+    /// Samples on a BCC lattice and generates faces using a Marching Tetrahedra approach, reducing each chunk as it goes.
+    /// </summary>
     public class Triangulator
     {
         private BodyCentredCubicLattice lattice;
         private double stride;
+
+        /// <summary>
+        /// The sampling stride.
+        /// </summary>
         public double Stride
         {
             get => stride;
@@ -43,26 +82,77 @@ namespace Vascular.IO.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public int StridesPerChunk { get; set; } = 20;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int MaxConcurrentChunks { get; set; } = 8;
 
+        /// <summary>
+        /// How many objects are expected to be hit in each chunk.
+        /// </summary>
         public int PreloadCapacity { get; set; } = 1024;
+
+        /// <summary>
+        /// How many multiples of the stride do we set the hash table powers to be.
+        /// </summary>
         public double PreloadStrideFactor { get; set; } = 4.0;
 
+        /// <summary>
+        /// The test rays for mesh intersections.
+        /// </summary>
         public Vector3[] SurfaceTestDirections { get; set; } = Connectivity.CubeFaces;
+
+        /// <summary>
+        /// How far do we test each ray as a multiple of the largest bounding length.
+        /// </summary>
         public double SurfaceTestRangeFactor { get; set; } = 2.0;
+
+        /// <summary>
+        /// The maximum number of allowed misses before deemed non-intersecting.
+        /// </summary>
         public int SurfaceTestMaxMiss { get; set; } = 1;
 
+        /// <summary>
+        /// Extend points by this multiple of the stride when looking for features.
+        /// </summary>
         public double PointBoundsExtensionFactor { get; set; } = 4.0;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Action<Decimation> ConfigureChunkDecimation { get; set; } = d => { };
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Action<Decimation> ConfigureFinalDecimation { get; set; } = d => { };
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public bool ReportChunkDecimation { get; set; } = false;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool ReportFinalDecimation { get; set; } = false;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool Decimate { get; set; } = true;
 
         private double vertexLower = 0.25;
         private double vertexUpper = 0.75;
+
+        /// <summary>
+        /// The fraction along each edge at which the vertices must be clamped to. Prevents collapsing to nodes.
+        /// </summary>
         public double VertexFraction
         {
             get => vertexLower;
@@ -82,6 +172,12 @@ namespace Vascular.IO.Triangulation
         }
 
         private readonly List<IAxialBoundsQueryable<Segment>> features = new List<IAxialBoundsQueryable<Segment>>();
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public Triangulator Add(IAxialBoundsQueryable<Segment> feature)
         {
             features.Add(feature);
@@ -89,12 +185,23 @@ namespace Vascular.IO.Triangulation
         }
 
         private IAxialBoundsQueryable<TriangleSurfaceTest> boundary;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <returns></returns>
         public Triangulator Add(IAxialBoundsQueryable<TriangleSurfaceTest> surface)
         {
             boundary = surface;
             return this;
         }
 
+        /// <summary>
+        /// Finds the smallest feature radius, then sets stride to be <paramref name="fraction"/> times that.
+        /// </summary>
+        /// <param name="fraction"></param>
+        /// <returns></returns>
         public Triangulator SetStrideFromFeatureRadii(double fraction)
         {
             var minFeatureRadius = features.Min(f => f.Where(s => s.Radius > 0.0).Min(s => s.Radius));
@@ -102,6 +209,12 @@ namespace Vascular.IO.Triangulation
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="progress"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Mesh> Export(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
             var decimation = new Decimation(new Mesh());

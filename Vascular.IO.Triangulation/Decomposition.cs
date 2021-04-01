@@ -1,17 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
 
 namespace Vascular.IO.Triangulation
 {
+    /// <summary>
+    /// Methods for decomposing a mesh into chunks
+    /// </summary>
     public class Decomposition
     {
+        /// <summary>
+        /// Split based on axial planes equally spaced in each direction.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public static IEnumerable<Mesh> AxialPlanes(Mesh m, int i, int j, int k)
         {
             static double[] getSplit(int n, AxialBounds b, Func<Vector3, double> s)
@@ -60,6 +68,11 @@ namespace Vascular.IO.Triangulation
             }
         }
 
+        /// <summary>
+        /// Split a mesh into 8 down the middle.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
         public static Mesh[,,] Octree(Mesh m)
         {
             var B = m.GetAxialBounds();
@@ -83,6 +96,12 @@ namespace Vascular.IO.Triangulation
             return M;
         }
 
+        /// <summary>
+        /// Keep splitting meshes into 8 until they have no more than <paramref name="t"/> triangles.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static IEnumerable<Mesh> OctreeRecursive(Mesh m, int t)
         {
             var M = new List<Mesh>() { m };

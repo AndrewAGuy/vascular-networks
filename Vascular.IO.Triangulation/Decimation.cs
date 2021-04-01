@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Vascular.Geometry;
@@ -10,44 +9,109 @@ using Vascular.Geometry.Triangulation;
 
 namespace Vascular.IO.Triangulation
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public record DecimationBegin(int BoundaryVertices, int Vertices);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record DecimationStep(int Triangles, int Edges, int Remesh, int Recost, int Valid, Summary Error);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public record DecimationPass(int Triangles, int Edges, Summary Error);
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum DecimationMode
     {
+        /// <summary>
+        /// 
+        /// </summary>
         Full,
+        /// <summary>
+        /// 
+        /// </summary>
         Local,
+        /// <summary>
+        /// 
+        /// </summary>
         Greedy
     }
 
+    /// <summary>
+    /// Stores a decimated mesh and the collection of lost points. Based on Kobbelt et al., "A General Framework for Mesh Decimation".
+    /// </summary>
     public class Decimation
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public double MaxErrorSquared { get; set; } = 0.0;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double NormalToleranceSquare { get; set; } = 1.0e-12;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Mesh Mesh { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool ReportErrors { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<int> SummaryMoments { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<double> SummaryOrders { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<int, int> EdgesPerChunk { get; set; } = i => 1024;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int MaxConcurrentChunks { get; set; } = 1;
 
+        /// <summary>
+        /// At the end of each iteration, clear the lost points cache. Each iteration compares to the current state, not the original.
+        /// </summary>
         public bool DropErrors { get; set; } = false;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
         public Decimation(Mesh mesh)
         {
             this.Mesh = mesh ?? new Mesh();
             ClearErrors();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void ClearErrors()
         {
             originalPoints = this.Mesh.T.ToDictionary(t => t, t => new OriginalPoints(Array.Empty<Vector3>(), 0.0));
         }
 
-        public void RemeshAll()
+        private void RemeshAll()
         {
             remeshing = new HashSet<(Vertex kept, Vertex lost)>(this.Mesh.E.Count * 2);
             foreach (var e in this.Mesh.E.Values)
@@ -87,8 +151,15 @@ namespace Vascular.IO.Triangulation
             RemeshAll();
         }
 
+        /// <summary>
+        /// Treat vertices one edge in from the boundary as boundary.
+        /// </summary>
         public bool ExtendBoundary { get; set; } = true;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
         public void Merge(Decimation other)
         {
             boundaryValid = false;
@@ -114,8 +185,17 @@ namespace Vascular.IO.Triangulation
         private HashSet<(Vertex kept, Vertex lost)> recosting;
         private HashSet<Vertex> boundaryVertices;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DecimationMode Mode { get; set; } = DecimationMode.Local;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="progress"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task Decimate(IProgress<object> progress = null, CancellationToken cancellationToken = default)
         {
             if (this.MaxErrorSquared <= 0.0)
@@ -458,8 +538,17 @@ namespace Vascular.IO.Triangulation
             return true;
         }
 
+        /// <summary>
+        /// Controls how the difference between old and new costs impacts the ordering of decimation steps.
+        /// </summary>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        /// <returns></returns>
         public delegate double CombineCost(double oldValue, double newValue);
 
+        /// <summary>
+        /// 
+        /// </summary>
         public CombineCost CombineErrorCost { get; set; } = (o, n) => 0;
 
         private double RemeshError(Vertex lost, VertexTriple[] remesh, out double oldError, out OriginalPoints[] points)
@@ -521,8 +610,19 @@ namespace Vascular.IO.Triangulation
             return newError;
         }
 
+        /// <summary>
+        /// Prevents sharp angle features.
+        /// </summary>
         public double MinDihedralCosine { get; set; } = -0.5;
+
+        /// <summary>
+        /// Prioritizing dihedral angles tends to give better file sizes.
+        /// </summary>
         public Func<double, double> DihedralAngleCost { get; set; } = x => -x;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public CombineCost CombineDihedralAngleCost { get; set; } = (o, n) => n - o;
 
         private bool RemeshDihedralSum(Vertex lost, List<Vertex> fan, VertexTriple[] remesh, out double newTotal)
@@ -586,8 +686,19 @@ namespace Vascular.IO.Triangulation
             return oldTotal;
         }
 
+        /// <summary>
+        /// Allows preventing highly distorted triangles.
+        /// </summary>
         public double MaxShapeCost { get; set; } = double.PositiveInfinity;
+
+        /// <summary>
+        /// Allows penalizing for FEA by aiming for aspect ratio rather than minimum file size.
+        /// </summary>
         public Func<Vector3, Vector3, Vector3, double> ShapeCost { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public CombineCost CombineShapeCost { get; set; } = (o, n) => 0;
 
         private double ExistingShapeSum(Vertex lost)
@@ -670,6 +781,9 @@ namespace Vascular.IO.Triangulation
             }
         }
 
+        /// <summary>
+        /// When <see cref="Mode"/> is <see cref="DecimationMode.Local"/>, how many times to try testing neighbours before accepting.
+        /// </summary>
         public int LocalIterations { get; set; } = 1;
 
         private Collapse GetBest(Edge edge)
@@ -760,6 +874,16 @@ namespace Vascular.IO.Triangulation
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="finalConfiguration"></param>
+        /// <param name="chunkConfiguration"></param>
+        /// <param name="chunks"></param>
+        /// <param name="maxConcurrency"></param>
+        /// <param name="progress"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public static async Task<Decimation> Decimate(
             Action<Decimation> finalConfiguration, Action<Decimation> chunkConfiguration,
             IEnumerable<Mesh> chunks, int maxConcurrency,

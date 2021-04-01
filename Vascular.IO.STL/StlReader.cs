@@ -7,12 +7,33 @@ using Vascular.Geometry.Triangulation;
 
 namespace Vascular.IO.STL
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class StlReader
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public const string MediaType = "model/stl";
+
+        /// <summary>
+        /// 
+        /// </summary>
         public const string MediaTypeBinary = "model/x.stl-binary";
+
+        /// <summary>
+        /// 
+        /// </summary>
         public const string MediaTypeASCII = "model/x.stl-ascii";
 
+        /// <summary>
+        /// See <see cref="FromStream(Stream, Func{Vector3, Vector3}, bool)"/> for options.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="transform"></param>
+        /// <param name="invertNormals"></param>
+        /// <returns></returns>
         public static Mesh FromFile(string path, Func<Vector3, Vector3> transform = null, bool invertNormals = false)
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -30,6 +51,14 @@ namespace Vascular.IO.STL
         private const string ENDLOOP = "endloop";
         private const string VERTEX = "vertex";
 
+        /// <summary>
+        /// Reads a single mesh from <paramref name="stream"/>, transforming each vertex using <paramref name="transform"/>.
+        /// If <paramref name="invertNormals"/> is true, reads vertices as ABC and creates triangles as ACB.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="transform"></param>
+        /// <param name="invertNormals"></param>
+        /// <returns></returns>
         public static Mesh FromStream(Stream stream, Func<Vector3, Vector3> transform = null, bool invertNormals = false)
         {
             transform ??= new Func<Vector3, Vector3>(v => v);
