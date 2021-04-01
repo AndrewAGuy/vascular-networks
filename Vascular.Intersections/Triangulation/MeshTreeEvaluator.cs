@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Surfaces;
@@ -11,21 +9,42 @@ using Vascular.Structure;
 
 namespace Vascular.Intersections.Triangulation
 {
+    /// <summary>
+    /// Wraps a mesh in a binary tree an implements a query pattern similar to the network collision detectors.
+    /// </summary>
     public class TreeEvaluator : IIntersectionEvaluator<TriangleIntersection>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public AxialBoundsBinaryTreeNode<TriangleSurfaceTest> Tree { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tree"></param>
         public TreeEvaluator(AxialBoundsBinaryTreeNode<TriangleSurfaceTest> tree)
         {
             this.Tree = tree;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
         public TreeEvaluator(Mesh mesh, double r = 0.0, double t2 = 1e-12)
         {
             var surfaceTests = mesh.T.Select(triangle => new TriangleSurfaceTest(triangle, r, t2)).ToList();
             this.Tree = AxialBoundsBinaryTree.Create(surfaceTests);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
         public IEnumerable<TriangleIntersection> Evaluate(Network network)
         {
             var intersections = new List<TriangleIntersection>();

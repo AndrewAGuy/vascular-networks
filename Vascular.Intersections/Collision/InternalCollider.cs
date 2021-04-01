@@ -7,17 +7,23 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Collision
 {
+    /// <summary>
+    /// Tests intersections within the network, making exceptions for close relations.
+    /// </summary>
     public class InternalCollider : Collider
     {
         private readonly Network network;
         private List<SegmentIntersection> intersections = null;
-        private bool testNonImmune = true;
-        public bool ImmuneSetContraction
-        {
-            get => testNonImmune;
-            set => testNonImmune = value;
-        }
 
+        /// <summary>
+        /// If true, reduce the immune set to just the segments until divergence.
+        /// </summary>
+        public bool ImmuneSetContraction { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nRoot"></param>
         public InternalCollider(Network nRoot)
         {
             network = nRoot;
@@ -55,7 +61,7 @@ namespace Vascular.Intersections.Collision
                 }
             }
             // Test the non-immune internals
-            if (testNonImmune && immuneBounds.Count > 1)
+            if (this.ImmuneSetContraction && immuneBounds.Count > 1)
             {
                 TestNonImmune(immuneBounds, from);
             }
@@ -105,6 +111,11 @@ namespace Vascular.Intersections.Collision
             }
         }
 
+        /// <summary>
+        /// Find the branch nodes at which divergence is complete.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <returns></returns>
         public static List<BranchNode> ImmuneBounds(Branch from)
         {
             var firstDiverged = new List<BranchNode>();
@@ -129,6 +140,10 @@ namespace Vascular.Intersections.Collision
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()
         {
             intersections = new List<SegmentIntersection>();

@@ -1,22 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Enforcement
 {
+    /// <summary>
+    /// Base type for enforcers that remove branches and all downstream.
+    /// </summary>
+    /// <typeparam name="TIntersection"></typeparam>
+    /// <typeparam name="TRecorder"></typeparam>
     public abstract class BranchEnforcer<TIntersection, TRecorder>
         : Enforcer<TIntersection, Branch, TRecorder>
         where TRecorder : Recorder<TIntersection, Branch>, new()
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="n"></param>
         public BranchEnforcer(Network[] n) : base(n)
         {
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="toCull"></param>
+        /// <param name="branch"></param>
         protected override void AddToCull(ICollection<Terminal> toCull, Branch branch)
         {
             if (branch.Start is Source)
@@ -29,7 +39,7 @@ namespace Vascular.Intersections.Enforcement
             }
             Terminal.ForDownstream(branch, term =>
             {
-                if (term.Partners != null)
+                if (term.Partners != null && this.CullMatched)
                 {
                     foreach (var t in term.Partners)
                     {

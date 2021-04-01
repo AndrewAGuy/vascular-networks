@@ -1,26 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
-using Vascular.Structure;
-using Vascular.Structure.Actions;
-
-namespace Vascular.Intersections.Enforcement
+﻿namespace Vascular.Intersections.Enforcement
 {
+    /// <summary>
+    /// The base type for segment based intersection recording.
+    /// </summary>
+    /// <typeparam name="TPenalizing"></typeparam>
     public abstract class SegmentRecorder<TPenalizing> : Recorder<SegmentIntersection, TPenalizing>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected double minimumNodePerturbation = 0.0;
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected double radialCaptureFraction = 1.25;
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected double aggressionFactor = 1.25;
 
+        /// <summary>
+        /// The minimum distance a node must be moved. Prevents long sequences of tiny movements or requests that when added to positions fall below precision.
+        /// </summary>
         public virtual double MinimumNodePerturbation
         {
-            get
-            {
-                return minimumNodePerturbation;
-            }
+            get => minimumNodePerturbation;
             set
             {
                 if (value >= 0)
@@ -30,12 +36,12 @@ namespace Vascular.Intersections.Enforcement
             }
         }
 
+        /// <summary>
+        /// How many multiples of the radius along the branch do we go before inserting transients rather than moving nodes.
+        /// </summary>
         public virtual double RadialCaptureFraction
         {
-            get
-            {
-                return radialCaptureFraction;
-            }
+            get => radialCaptureFraction;
             set
             {
                 if (value >= 1)
@@ -45,12 +51,12 @@ namespace Vascular.Intersections.Enforcement
             }
         }
 
+        /// <summary>
+        /// Safety tolerance - move further than the actual overlap in case the vessels expand a bit.
+        /// </summary>
         public virtual double AggressionFactor
         {
-            get
-            {
-                return aggressionFactor;
-            }
+            get => aggressionFactor;
             set
             {
                 if (value >= 1)

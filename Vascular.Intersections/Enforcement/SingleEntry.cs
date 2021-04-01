@@ -1,43 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
+﻿using Vascular.Geometry;
 
 namespace Vascular.Intersections.Enforcement
 {
+    /// <summary>
+    /// Records a position and count.
+    /// </summary>
     public class SingleEntry
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_v"></param>
         public SingleEntry(Vector3 _v)
         {
-            v = _v;
+            this.Value = _v;
             n = 1;
         }
 
-        private Vector3 v;
         private int n;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_v"></param>
         public void Add(Vector3 _v)
         {
-            v += _v;
+            this.Value += _v;
             n++;
         }
 
-        public Vector3 Value
-        {
-            get
-            {
-                return v;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3 Value { get; private set; }
 
-        public Vector3 Mean
-        {
-            get
-            {
-                return v / n;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3 Mean => this.Value / n;
     }
 }

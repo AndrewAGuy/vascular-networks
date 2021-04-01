@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Generators;
 using Vascular.Intersections.Enforcement;
@@ -11,15 +8,19 @@ using Vascular.Structure.Actions;
 
 namespace Vascular.Intersections.Segmental
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SegmentalRecorder : SegmentRecorder<Branch>
     {
         private double totalConsumptionRatio = 10.0;
+
+        /// <summary>
+        /// For large regions and small branches, don't bother going around. Disable by setting to 0.
+        /// </summary>
         public double TotalConsumptionRatio
         {
-            get
-            {
-                return totalConsumptionRatio;
-            }
+            get => totalConsumptionRatio;
             set
             {
                 if (value >= 0)
@@ -28,19 +29,23 @@ namespace Vascular.Intersections.Segmental
                 }
             }
         }
+
+        /// <summary>
+        /// If conflicting resolution paths given, the branch might get trapped. Prevent this by culling immediately.
+        /// </summary>
         public bool CullIfSurrounded { get; set; } = true;
 
-        public override int Count
-        {
-            get
-            {
-                return intersecting.Count;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public override int Count => intersecting.Count;
 
         private Dictionary<IMobileNode, SingleEntry> nodes = new Dictionary<IMobileNode, SingleEntry>();
         private Dictionary<Segment, DoubleEntry> segments = new Dictionary<Segment, DoubleEntry>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Reset()
         {
             base.Reset();
@@ -48,8 +53,14 @@ namespace Vascular.Intersections.Segmental
             segments = new Dictionary<Segment, DoubleEntry>();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public CubeGrayCode GrayCode { get; set; } = new CubeGrayCode();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Finish()
         {
             var actions = new List<GeometryAction>(nodes.Count + segments.Count);
@@ -71,6 +82,10 @@ namespace Vascular.Intersections.Segmental
             this.GeometryActions = actions;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
         protected override void RecordSingle(SegmentIntersection i)
         {
             intersecting.Add(i.B.Branch);

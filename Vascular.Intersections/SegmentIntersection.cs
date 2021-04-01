@@ -1,14 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Generators;
 using Vascular.Structure;
 
 namespace Vascular.Intersections
 {
+    /// <summary>
+    /// Data about the intersection of two segments.
+    /// </summary>
     public class SegmentIntersection
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="ng"></param>
+        /// <param name="s2">The test for codirectionality.</param>
+        /// <param name="t2">The test for vectors being zero.</param>
+        /// <param name="br"></param>
         public SegmentIntersection(Segment a, Segment b, CubeGrayCode ng, double s2 = 1.0e-8, double t2 = 1.0e-12, BranchRelationship br = BranchRelationship.None)
         {
             this.RelationshipAB = br;
@@ -35,23 +45,90 @@ namespace Vascular.Intersections
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Segment A { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Segment B { get; private set; }
+
+        /// <summary>
+        /// Whether a single closest point could be determined.
+        /// </summary>
         public bool Indeterminate { get; private set; }
+
+        /// <summary>
+        /// Whether an intersection was detected.
+        /// </summary>
         public bool Intersecting { get; private set; }
+
+        /// <summary>
+        /// The mutual normal, pointing from A to B.
+        /// </summary>
         public Vector3 NormalAB { get; private set; }
+
+        /// <summary>
+        /// The square distance of the centrelines at closest approach.
+        /// </summary>
         public double Distance2 { get; private set; }
+
+        /// <summary>
+        /// The amount of overlap at closest approach.
+        /// </summary>
         public double Overlap { get; private set; }
+
+        /// <summary>
+        /// The point in A of closest approach, defined as the intersection location. Used if <see cref="Indeterminate"/> is false.
+        /// </summary>
         public Vector3 ClosestA { get; private set; }
+
+        /// <summary>
+        /// The point in B of closest approach, defined as the intersection location. Used if <see cref="Indeterminate"/> is false.
+        /// </summary>
         public Vector3 ClosestB { get; private set; }
+
+        /// <summary>
+        /// The fraction along A at which the closest approach happens. Used if <see cref="Indeterminate"/> is false.
+        /// </summary>
         public double FractionA { get; private set; }
+
+        /// <summary>
+        /// The fraction along B at which the closest approach happens. Used if <see cref="Indeterminate"/> is false.
+        /// </summary>
         public double FractionB { get; private set; }
+
+        /// <summary>
+        /// The fraction along A at which the intersection starts. Used if <see cref="Indeterminate"/> is true.
+        /// </summary>
         public double StartA { get; private set; }
+
+        /// <summary>
+        /// The fraction along B at which the intersection starts. Used if <see cref="Indeterminate"/> is true.
+        /// </summary>
         public double StartB { get; private set; }
+
+        /// <summary>
+        /// The fraction along A at which the intersection ends. Used if <see cref="Indeterminate"/> is true.
+        /// </summary>
         public double EndA { get; private set; }
+
+        /// <summary>
+        /// The fraction along B at which the intersection ends. Used if <see cref="Indeterminate"/> is true.
+        /// </summary>
         public double EndB { get; private set; }
+
+        /// <summary>
+        /// The relationship that A has to B.
+        /// </summary>
         public BranchRelationship RelationshipAB { get; private set; }
 
+        /// <summary>
+        /// Converts generic upstream/downstream/none into parent/child/sibling if possible.
+        /// </summary>
+        /// <returns></returns>
         public BranchRelationship UpdateRelationshipDetail()
         {
             var branchA = this.A.Branch;

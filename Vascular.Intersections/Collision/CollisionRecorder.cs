@@ -5,44 +5,46 @@ using Vascular.Geometry;
 using Vascular.Intersections.Enforcement;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Collision
 {
-    public class CollisionRecorder : SegmentRecorder< INode>
+    /// <summary>
+    /// Records collisions.
+    /// </summary>
+    public class CollisionRecorder : SegmentRecorder<INode>
     {
-        private double immediateCullRatio = 0.0;
-        public double ImmediateCullRatio
-        {
-            get
-            {
-                return immediateCullRatio;
-            }
-            set
-            {
-                if (value >= 0)
-                {
-                    immediateCullRatio = value;
-                }
-            }
-        }
+        /// <summary>
+        /// If not null, try to intercept record with immediate culling. 
+        /// Can be used to prevent perturbing root vessels when terminals get in the way.
+        /// </summary>
+        public Func<Terminal, Segment, bool> ImmediateCull { get; set; }
+
+        /// <summary>
+        /// If one node is stationary, assign all perturbation to the other.
+        /// </summary>
         public bool ResetStationaryFractions { get; set; } = true;
 
+        /// <summary>
+        /// Try rewiring internal collisions based on proximity.
+        /// </summary>
         public bool RecordTopology { get; set; } = false;
 
-        public override int Count
-        {
-            get
-            {
-                // All immediate cull nodes are also present in the stationary set
-                return segments.Count + nodes.Count + intersecting.Count;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public override int Count =>
+            // All immediate cull nodes are also present in the stationary set
+            segments.Count + nodes.Count + intersecting.Count;
 
         private Dictionary<Segment, SingleEntry> segments = new Dictionary<Segment, SingleEntry>();
         private Dictionary<IMobileNode, SingleEntry> nodes = new Dictionary<IMobileNode, SingleEntry>();
 
         private HashSet<BranchAction> branchActions = new HashSet<BranchAction>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Reset()
         {
             base.Reset();
@@ -51,6 +53,10 @@ namespace Vascular.Intersections.Collision
             branchActions = new HashSet<BranchAction>();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
         protected override void RecordSingle(SegmentIntersection i)
         {
             if (!TryRecordTopology(i))
@@ -77,8 +83,8 @@ namespace Vascular.Intersections.Collision
             var tryPushA = tryPushAS || tryPushAE;
             var tryPushB = tryPushBS || tryPushBE;
             // If we need to try pushing, check if we can't manage for any attempts. This informs us if we need to push split or all on one
-            var notPushA = (tryPushAS && !(data.A.Start is IMobileNode)) || (tryPushAE && !(data.A.End is IMobileNode));
-            var notPushB = (tryPushBS && !(data.B.Start is IMobileNode)) || (tryPushBE && !(data.B.End is IMobileNode));
+            var notPushA = tryPushAS && !(data.A.Start is IMobileNode) || tryPushAE && !(data.A.End is IMobileNode);
+            var notPushB = tryPushBS && !(data.B.Start is IMobileNode) || tryPushBE && !(data.B.End is IMobileNode);
             // New weighting, gives high flow branches priority
             var compA = data.A.Branch.Network.RelativeCompliance * data.B.Flow;
             var compB = data.B.Branch.Network.RelativeCompliance * data.A.Flow;
@@ -94,20 +100,20 @@ namespace Vascular.Intersections.Collision
                     // Both need to be pushed
                     if (tryPushAS)
                     {
-                        Record(data.A.Start, -data.NormalAB * facA, data.B);
+                        Record(data.A.Start, -data.NormalAB * facA);
                     }
                     if (tryPushAE)
                     {
-                        Record(data.A.End, -data.NormalAB * facA, data.B);
+                        Record(data.A.End, -data.NormalAB * facA);
                     }
 
                     if (tryPushBS)
                     {
-                        Record(data.B.Start, data.NormalAB * facB, data.A);
+                        Record(data.B.Start, data.NormalAB * facB);
                     }
                     if (tryPushBE)
                     {
-                        Record(data.B.End, data.NormalAB * facB, data.A);
+                        Record(data.B.End, data.NormalAB * facB);
                     }
                 }
                 else
@@ -117,11 +123,11 @@ namespace Vascular.Intersections.Collision
                     // Push A
                     if (tryPushAS)
                     {
-                        Record(data.A.Start, -data.NormalAB * facA, data.B);
+                        Record(data.A.Start, -data.NormalAB * facA);
                     }
                     if (tryPushAE)
                     {
-                        Record(data.A.End, -data.NormalAB * facA, data.B);
+                        Record(data.A.End, -data.NormalAB * facA);
                     }
                     // Make transient node in B
                     Record(data.B, data.ClosestB + facB * data.NormalAB);
@@ -135,11 +141,11 @@ namespace Vascular.Intersections.Collision
                     var facB = bCompFrac * aggressionFactor * data.Overlap;
                     if (tryPushBS)
                     {
-                        Record(data.B.Start, data.NormalAB * facB, data.A);
+                        Record(data.B.Start, data.NormalAB * facB);
                     }
                     if (tryPushBE)
                     {
-                        Record(data.B.End, data.NormalAB * facB, data.A);
+                        Record(data.B.End, data.NormalAB * facB);
                     }
                     Record(data.A, data.ClosestA - facA * data.NormalAB);
                 }
@@ -185,11 +191,11 @@ namespace Vascular.Intersections.Collision
 
             foreach (var n in tryMoveA)
             {
-                Record(n, -pushA, data.B);
+                Record(n, -pushA);
             }
             foreach (var n in tryMoveB)
             {
-                Record(n, pushB, data.A);
+                Record(n, pushB);
             }
 
             if (!tryMoveA.All(n => n is IMobileNode))
@@ -224,7 +230,7 @@ namespace Vascular.Intersections.Collision
             }
         }
 
-        private void Record(INode n, Vector3 v, Segment s)
+        private void Record(INode n, Vector3 v)
         {
             if (n is IMobileNode m)
             {
@@ -240,26 +246,39 @@ namespace Vascular.Intersections.Collision
             else
             {
                 intersecting.Add(n);
-                if (immediateCullRatio != 0.0 && n.Parent != null) // Ensure that this isn't a source node
-                {
-                    var flowscaled = n.Parent.Flow * immediateCullRatio;
-                    if (s.Flow > flowscaled)
-                    {
-                        culling.Add(n);
-                    }
-                }
             }
         }
 
+        /// <summary>
+        /// It's not always worth rewiring small vessels, and they might provide some desired redundancy.
+        /// </summary>
         public Func<Branch, Branch, bool> BranchActionPredicate { get; set; } =
             (a, b) => Math.Min(a.Flow, b.Flow) > 4;
 
         private bool TryRecordTopology(SegmentIntersection i)
         {
+            if (this.ImmediateCull != null)
+            {
+                var intercepted = false;
+                if (i.A.End is Terminal tA && this.ImmediateCull(tA, i.B))
+                {
+                    culling.Add(tA);
+                    intercepted = true;
+                }
+                if (i.B.End is Terminal tB && this.ImmediateCull(tB, i.A))
+                {
+                    culling.Add(tB);
+                    intercepted = true;
+                }
+                if (intercepted)
+                {
+                    return true;
+                }
+            }
             var A = i.A.Branch;
             var B = i.B.Branch;
-            if (!this.RecordTopology || 
-                A.Network != B.Network || 
+            if (!this.RecordTopology ||
+                A.Network != B.Network ||
                 !this.BranchActionPredicate(A, B))
             {
                 return false;
@@ -297,6 +316,9 @@ namespace Vascular.Intersections.Collision
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Finish()
         {
             FinishGeometry();
@@ -332,6 +354,16 @@ namespace Vascular.Intersections.Collision
         private void FinishTopology()
         {
             this.BranchActions = branchActions;
+        }
+
+        /// <summary>
+        /// The default immediate cull - culls if <c>s.Q / t.Q > ratio</c>
+        /// </summary>
+        /// <param name="ratio"></param>
+        /// <returns></returns>
+        public static Func<Terminal, Segment, bool> ImmediateCullFlowRatio(double ratio)
+        {
+            return (t, s) => s.Flow > t.Flow * ratio;
         }
     }
 }

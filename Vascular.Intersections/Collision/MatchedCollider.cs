@@ -6,19 +6,26 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Collision
 {
+    /// <summary>
+    /// Tests for intersections allowing terminals which have non-empty <see cref="Terminal.Partners"/> to have intersections at their matching points.
+    /// </summary>
     public class MatchedCollider : Collider
     {
         private readonly Network networkA;
         private readonly Network networkB;
         private List<SegmentIntersection> intersections = null;
         private readonly List<Branch> ignore = new List<Branch>();
-        private bool testNonImmune = true;
-        public bool ImmuneSetContraction
-        {
-            get => testNonImmune;
-            set => testNonImmune = value;
-        }
 
+        /// <summary>
+        /// If true, reduce the immune set to just the segments until divergence.
+        /// </summary>
+        public bool ImmuneSetContraction { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         public MatchedCollider(Network a, Network b)
         {
             networkA = a;
@@ -49,7 +56,7 @@ namespace Vascular.Intersections.Collision
                 {
                     ignore.Add(p.Upstream);
                 }
-                if (testNonImmune)
+                if (this.ImmuneSetContraction)
                 {
                     TestNonIgnored(t.Partners);
                 }
@@ -80,6 +87,10 @@ namespace Vascular.Intersections.Collision
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()
         {
             intersections = new List<SegmentIntersection>();

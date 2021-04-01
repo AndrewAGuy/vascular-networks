@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure;
 
 namespace Vascular.Intersections.Segmental
 {
+    /// <summary>
+    /// Wraps a collection of segments in a tree.
+    /// </summary>
     public class SegmentTree : SegmentRegion
     {
         private readonly AxialBoundsBinaryTreeNode<Segment> tree;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="segments"></param>
         public SegmentTree(IEnumerable<Segment> segments)
         {
             tree = AxialBoundsBinaryTree.Create(segments);
         }
 
-        private List<SegmentIntersection> intersections = new List<SegmentIntersection>();
+        private readonly List<SegmentIntersection> intersections = new List<SegmentIntersection>();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate(Network network)
         {
             intersections.Clear();
@@ -75,14 +84,32 @@ namespace Vascular.Intersections.Segmental
             }
         }
 
-        public void Query(AxialBounds query, Action<Segment> action)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        public override void Query(AxialBounds query, Action<Segment> action)
         {
             tree.Query(query, action);
         }
 
-        public AxialBounds GetAxialBounds()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override AxialBounds GetAxialBounds()
         {
             return tree.GetAxialBounds();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override IEnumerator<Segment> GetEnumerator()
+        {
+            return tree.GetEnumerator();
         }
     }
 }

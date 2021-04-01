@@ -1,14 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Vascular.Structure;
 
 namespace Vascular.Intersections.Enforcement
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TIntersection"></typeparam>
     public interface IIntersectionEvaluator<TIntersection>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
         IEnumerable<TIntersection> Evaluate(Network network);
     }
 }

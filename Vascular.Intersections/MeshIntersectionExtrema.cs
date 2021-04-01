@@ -1,13 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Geometry.Surfaces;
+﻿using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
 
 namespace Vascular.Intersections
 {
+    /// <summary>
+    /// When testing a segment against a mesh, record the first exit and last entry.
+    /// </summary>
     public class MeshIntersectionExtrema
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ti"></param>
         public MeshIntersectionExtrema(TriangleIntersection ti)
         {
             this.Segment = ti.Segment;
@@ -27,12 +31,35 @@ namespace Vascular.Intersections
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Segment Segment { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TriangleSurfaceTest LastIn { get; private set; }
+
+        /// <summary>
+        /// The fraction along <see cref="Segment"/> at which <see cref="LastIn"/> is hit.
+        /// </summary>
         public double InFraction { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TriangleSurfaceTest FirstOut { get; private set; }
+
+        /// <summary>
+        /// The fraction along <see cref="Segment"/> at which <see cref="FirstOut"/> is hit.
+        /// </summary>
         public double OutFraction { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ti"></param>
         public void Add(TriangleIntersection ti)
         {
             if (ti.Outwards)

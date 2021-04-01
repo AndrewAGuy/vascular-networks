@@ -4,20 +4,35 @@ using Vascular.Structure;
 
 namespace Vascular.Intersections.Triangulation
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MeshRecorder : Recorder<TriangleIntersection, Branch>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public bool CullOutwards { get; set; } = true;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override int Count => intersecting.Count;
 
         private Dictionary<Segment, MeshIntersectionExtrema> intersections = new Dictionary<Segment, MeshIntersectionExtrema>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Reset()
         {
             intersections = new Dictionary<Segment, MeshIntersectionExtrema>();
             base.Reset();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Finish()
         {
             foreach (var i in intersections)
@@ -32,6 +47,10 @@ namespace Vascular.Intersections.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
         protected override void RecordSingle(TriangleIntersection t)
         {
             if (intersections.TryGetValue(t.Segment, out var existing))
