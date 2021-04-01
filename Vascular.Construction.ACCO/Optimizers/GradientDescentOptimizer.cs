@@ -1,21 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Vascular.Geometry;
-using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO.Optimizers
 {
+    /// <summary>
+    /// Attempts to find a more optimal position for the position by gradient descent.
+    /// Not worth the effort after the initial stages of growth, global optimizers are better.
+    /// </summary>
     public class GradientDescentOptimizer : IBifurcationOptimizer
     {
         public double TerminationLengthFraction { get; set; } = 0.2;
         public int MaxIterations { get; set; } = 100;
         public double ProbeFraction { get; set; } = 0.01;
         public double StepFraction { get; set; } = 0.1;
-        public Func<Source, double> Cost { get; set; } = s => s.Volume;
+        public Func<Source, double> Cost { get; set; }
         public double TerminationCostFraction { get; set; } = 0.0001;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
         public void Optimize(Bifurcation node)
         {
             var S = node.Network.Source;
@@ -50,7 +55,6 @@ namespace Vascular.Construction.ACCO.Optimizers
                 }
                 var lp = lm * this.ProbeFraction;
                 // Get derivative
-                // TODO: use gradient approximation
                 node.Position = x + b0 * lp;
                 node.UpdatePhysicalAndPropagate();
                 var v0p = this.Cost(S);

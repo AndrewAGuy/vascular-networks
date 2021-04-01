@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +24,7 @@ namespace Vascular
         public static IEnumerable<T> Permutation<T>(this IList<T> list, Random random = null)
         {
             random ??= new Random();
+            list = list.ToArray();
             for (var i = list.Count - 1; i > 0; --i)
             {
                 var swap = random.Next(i + 1);

@@ -4,6 +4,6 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(BuildDocs)'=='True'">
-    <DocumentationFile>$(TargetDir)$(TargetName).xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 </Project>

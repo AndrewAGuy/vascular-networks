@@ -1,14 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Construction.ACCO.Evaluators;
+﻿using Vascular.Construction.ACCO.Evaluators;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO.Selectors
 {
+    /// <summary>
+    /// The most aggressively work-shy selection policy. Moves downstream until the children are no longer better.
+    /// </summary>
     public class LazySelector : Selector
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public override Evaluation<Branch> Select(Branch from, Terminal to)
         {
             return Select(this.Evaluator.Evaluate(from, to), to);

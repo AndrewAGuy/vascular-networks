@@ -1,18 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Construction.ACCO.Evaluators;
+﻿using Vascular.Construction.ACCO.Evaluators;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO.Selectors
 {
+    /// <summary>
+    /// A more relaxed version of <see cref="LazySelector"/>. 
+    /// Moves downstream until <see cref="Limit"/> number of sequential failures to improve.
+    /// </summary>
     public class CountedSelector : Selector
     {
+        /// <summary>
+        /// The numner of sequential failures before termination.
+        /// </summary>
         public int Limit { get; set; } = 2;
 
+        /// <summary>
+        /// Compare to the best seen upstream rather than the parent. 
+        /// If false, performance may be reduced but a more optimal candidate may be found.
+        /// </summary>
         public bool CompareBest { get; set; } = false;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public override Evaluation<Branch> Select(Branch from, Terminal to)
         {
             var eval = this.Evaluator.Evaluate(from, to);

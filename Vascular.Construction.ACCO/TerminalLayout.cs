@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Vascular.Geometry;
 using Vascular.Geometry.Generators;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO
 {
+    /// <summary>
+    /// Methods for creating terminal layouts in simple geometries and some more complex.
+    /// </summary>
     public static class TerminalLayout
     {
+        /// <summary>
+        /// A cuboid with equal spacing and flow rates.
+        /// </summary>
+        /// <param name="count">The number of terminals in each direction.</param>
+        /// <param name="flow">The flow rate at each terminal.</param>
+        /// <param name="spacing">The terminal spacing.</param>
+        /// <param name="centred">Whether to shift back from the positive orthant to be centred around the origin.</param>
+        /// <param name="offset">Offset applied to each terminal.</param>
+        /// <returns></returns>
         public static Terminal[] UniformCuboidal(Vector3 count, double flow, double spacing, bool centred, Vector3 offset)
         {
             var x = (int)count.x;
@@ -38,6 +47,52 @@ namespace Vascular.Construction.ACCO
             return t;
         }
 
+        /// <summary>
+        /// A cuboid with nonequal spacing and equal flow rates.
+        /// </summary>
+        /// <param name="count">The number of terminals in each direction.</param>
+        /// <param name="flow">The flow rate at each terminal.</param>
+        /// <param name="spacing">The terminal spacing in each direction.</param>
+        /// <param name="centred">Whether to shift back from the positive orthant to be centred around the origin.</param>
+        /// <param name="offset">Offset applied to each terminal.</param>
+        /// <returns></returns>
+        public static Terminal[] NonUniformCuboidal(Vector3 count, double flow, Vector3 spacing, bool centred, Vector3 offset)
+        {
+            var x = (int)count.x;
+            var y = (int)count.y;
+            var z = (int)count.z;
+            var d = spacing;
+            var Q = flow;
+
+            var l = new Vector3((x - 1) * d.x, (y - 1) * d.y, (z - 1) * d.z);
+            var s = (centred ? -l * 0.5 : new Vector3()) + offset;
+            var t = new Terminal[x * y * z];
+            var n = 0;
+            for (var i = 0; i < x; ++i)
+            {
+                for (var j = 0; j < y; ++j)
+                {
+                    for (var k = 0; k < z; ++k)
+                    {
+                        var p = new Vector3(i * d.x, j * d.y, k * d.z);
+                        t[n++] = new Terminal(s + p, Q);
+                    }
+                }
+            }
+
+            return t;
+        }
+
+        /// <summary>
+        /// Creates a triangular prism with uniform spacing and flow rate.
+        /// </summary>
+        /// <param name="count">The number of terminals in each direction.</param>
+        /// <param name="flow">The flow rate at each terminal.</param>
+        /// <param name="spacing">The terminal spacing.</param>
+        /// <param name="flip_x">Whether to flip in the x direction.</param>
+        /// <param name="flip_y">Whether to flip in the y direction.</param>
+        /// <param name="round">Whether to round the edges by removing terminals.</param>
+        /// <returns></returns>
         public static Terminal[] UniformTriangular(Vector3 count, double flow, double spacing, bool flip_x, bool flip_y, bool round)
         {
             var x = count.x;
@@ -89,6 +144,15 @@ namespace Vascular.Construction.ACCO
             return t.ToArray();
         }
 
+        /// <summary>
+        /// Fills a cylinder with points on a cubic lattice.
+        /// </summary>
+        /// <param name="radius">The cylinder radius.</param>
+        /// <param name="height">The cylinder height.</param>
+        /// <param name="flow">The terminal flow rate.</param>
+        /// <param name="spacing">The terminal spacing.</param>
+        /// <param name="offset">Offset applied to each terminal.</param>
+        /// <returns></returns>
         public static Terminal[] UniformCylindrical(double radius, double height, double flow, double spacing, Vector3 offset)
         {
             var l = new List<Terminal>();
@@ -113,6 +177,14 @@ namespace Vascular.Construction.ACCO
             return l.ToArray();
         }
 
+        /// <summary>
+        /// Randomly generates points on a spherical shell by normalizing a Gaussian.
+        /// </summary>
+        /// <param name="radius">The sphere radius.</param>
+        /// <param name="flow">The terminal flow rate.</param>
+        /// <param name="total">The total number of points to generate.</param>
+        /// <param name="seed">The seed. If <see cref="int.MinValue"/>, uses default constructor.</param>
+        /// <returns></returns>
         public static Terminal[] RandomSphericalShell(double radius, double flow, int total, int seed = int.MinValue)
         {
             var t = new Terminal[total];
@@ -124,6 +196,13 @@ namespace Vascular.Construction.ACCO
             return t;
         }
 
+        /// <summary>
+        /// Attempts to generate equally spaced terminals on slices of a sphere. Always generates a single point at nadir and zenith.
+        /// </summary>
+        /// <param name="radius">The sphere radius.</param>
+        /// <param name="flow">The terminal flow rate.</param>
+        /// <param name="divisions">The number of slices of the sphere.</param>
+        /// <returns></returns>
         public static Terminal[] SlicedSphericalShell(double radius, double flow, int divisions)
         {
             var angle = Math.PI / divisions;
@@ -134,7 +213,7 @@ namespace Vascular.Construction.ACCO
             };
             for (var ring = 1; ring < divisions; ++ring)
             {
-                var azim = (angle * ring) - (Math.PI * 0.5);
+                var azim = angle * ring - Math.PI * 0.5;
                 var elems = Math.Floor(2 * divisions * Math.Cos(azim));
                 for (var elem = 0; elem < elems; ++elem)
                 {
@@ -150,7 +229,19 @@ namespace Vascular.Construction.ACCO
             return terms.ToArray();
         }
 
-        public static Terminal[] SolidAngleShell(double radius, double flow, int count, Vector3 direction, double angle, Vector3 offset)
+        /// <summary>
+        /// Generates random points in a solid angle shell using an inverse CDF method.
+        /// </summary>
+        /// <param name="radius">The shell radius.</param>
+        /// <param name="flow">The terminal flow rate.</param>
+        /// <param name="count">The number of terminals to generate.</param>
+        /// <param name="direction">The shell direction.</param>
+        /// <param name="angle">The shell angle.</param>
+        /// <param name="offset">Offset applied to each terminal.</param>
+        /// <param name="seed">Random seed. If <see cref="int.MinValue"/>, uses default constructor.</param>
+        /// <returns></returns>
+        public static Terminal[] SolidAngleShell(double radius, double flow, int count, Vector3 direction, 
+            double angle, Vector3 offset, int seed = int.MinValue)
         {
             // Define angle from directional axis as (a), and angle around axis as (b)
             // We must make arbitrary choice of the direction we start rotating (a) into, and then (b)
@@ -167,7 +258,7 @@ namespace Vascular.Construction.ACCO
             var tan = (dir ^ nor).Normalize();
 
             var terms = new Terminal[count];
-            var rand = new Random();
+            var rand = seed == int.MinValue ? new Random() : new Random(seed);
             var umax = 1.0 - Math.Cos(angle);
             var bmax = Math.PI * 2.0;
             for (var i = 0; i < terms.Length; ++i)
@@ -175,14 +266,23 @@ namespace Vascular.Construction.ACCO
                 var u = rand.NextDouble() * umax;
                 var a = Math.Acos(1.0 - u);
                 var b = rand.NextDouble() * bmax;
-                var x = (dir * Math.Cos(a))
-                    + (nor * (Math.Sin(a) * Math.Cos(b)))
-                    + (tan * (Math.Sin(a) * Math.Sin(b)));
-                terms[i] = new Terminal(offset + (radius * x), flow);
+                var x = dir * Math.Cos(a)
+                    + nor * (Math.Sin(a) * Math.Cos(b))
+                    + tan * (Math.Sin(a) * Math.Sin(b));
+                terms[i] = new Terminal(offset + radius * x, flow);
             }
             return terms;
         }
 
+        /// <summary>
+        /// A ring of terminals.
+        /// </summary>
+        /// <param name="radius">The circle radius.</param>
+        /// <param name="flow">The terminal flow rate.</param>
+        /// <param name="count">The number of terminals.</param>
+        /// <param name="direction">Normal to the plane in which the terminals lie.</param>
+        /// <param name="offset">Offset applied to each.</param>
+        /// <returns></returns>
         public static Terminal[] Ring(double radius, double flow, int count, Vector3 direction, Vector3 offset)
         {
             var da = Math.PI * 2.0 / count;
@@ -200,6 +300,15 @@ namespace Vascular.Construction.ACCO
             return t;
         }
 
+        /// <summary>
+        /// Fills a cone with points on a cubic lattice.
+        /// </summary>
+        /// <param name="r0">The base radius.</param>
+        /// <param name="r1">The radius at height <paramref name="h"/>.</param>
+        /// <param name="h">The total height.</param>
+        /// <param name="Q">The flow rate at each terminal.</param>
+        /// <param name="s">The terminal spacing.</param>
+        /// <returns></returns>
         public static Terminal[] Cone(double r0, double r1, double h, double Q, double s)
         {
             var l = new List<Terminal>();

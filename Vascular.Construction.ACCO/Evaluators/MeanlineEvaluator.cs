@@ -1,14 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Geometry;
+﻿using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO.Evaluators
 {
+    /// <summary>
+    /// The most basic evaluator. Tests for distance, as well as whether the branch has consumed the terminal.
+    /// </summary>
     public class MeanlineEvaluator : IEvaluator<Branch>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public Evaluation<Branch> Evaluate(Branch o, Terminal t)
         {
             var oS = o.Start.Position;
@@ -19,7 +25,6 @@ namespace Vascular.Construction.ACCO.Evaluators
 
             // Suitability determined by degeneracy of triangle
             // Rejection determined by consumption within segment
-            // TODO: Implement angle conditions beyond just cylinder test
 
             var f = LinearAlgebra.LineFactor(oS, dir, v);
             var p = oS + f * dir;
