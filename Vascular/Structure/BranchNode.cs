@@ -130,14 +130,14 @@ namespace Vascular.Structure
         public abstract void CalculatePhysical();
 
         /// <summary>
-        /// Generates bounds in a down-up pass. Defers to <see cref="Downstream"/>, calling <see cref="Branch.GenerateDownstreamBounds"/>, then
+        /// Generates bounds in a down-up pass. Defers to <see cref="Downstream"/>, calling <see cref="Branch.GenerateDownstreamBounds()"/>, then
         /// combines these on the way up.
         /// </summary>
         /// <returns></returns>
         public abstract AxialBounds GenerateDownstreamBounds();
 
         /// <summary>
-        /// See <see cref="GenerateDownstreamBounds"/>, <see cref="Branch.GenerateDownstreamBounds(double)"/>.
+        /// See <see cref="GenerateDownstreamBounds()"/>, <see cref="Branch.GenerateDownstreamBounds(double)"/>.
         /// </summary>
         /// <param name="pad"></param>
         /// <returns></returns>
