@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Construction.LSC
 {
+    /// <summary>
+    /// Represents a sequence of <see cref="LatticeState"/> and moves between them.
+    /// </summary>
     public class LatticeSequence
     {
         private LinkedListNode<LatticeState> currentNode;
@@ -19,6 +19,10 @@ namespace Vascular.Construction.LSC
                 state = currentNode.Value;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<LatticeState> Elements
         {
             get => this.Current.List;
@@ -32,13 +36,27 @@ namespace Vascular.Construction.LSC
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public InitialTerminalOrderingGenerator InitialTerminalOrderingGenerator { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public InitialTerminalPredicate InitialTerminalPredicate { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public InitialTerminalCostFunction InitialTerminalCostFunction { get; set; }
 
         private int generations;
         private int maxGenerations;
 
+        /// <summary>
+        /// The network already contains some branches.
+        /// </summary>
         public void Initialize()
         {
             state.Initialize();
@@ -46,6 +64,11 @@ namespace Vascular.Construction.LSC
             maxGenerations = state.GenerationsDown;
         }
 
+        /// <summary>
+        /// The network contains no branches. Makes the first.
+        /// </summary>
+        /// <param name="iterations"></param>
+        /// <returns></returns>
         public bool Begin(int iterations)
         {
             var b = state.Begin(iterations, this.InitialTerminalPredicate,
@@ -57,6 +80,10 @@ namespace Vascular.Construction.LSC
             return b;
         }
 
+        /// <summary>
+        /// Spread, then try to move to a different lattice if needed.
+        /// </summary>
+        /// <returns>False if no more iterations may be made.</returns>
         public bool Advance()
         {
             state.Spread();
@@ -74,6 +101,9 @@ namespace Vascular.Construction.LSC
             return true;
         }
 
+        /// <summary>
+        /// Advances until complete.
+        /// </summary>
         public void Complete()
         {
             while (Advance())

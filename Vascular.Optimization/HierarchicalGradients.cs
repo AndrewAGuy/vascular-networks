@@ -1,24 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization
 {
+    /// <summary>
+    /// Gradients of common properties: <see cref="Branch.Flow"/>, <see cref="Branch.ReducedResistance"/>.
+    /// </summary>
     public class HierarchicalGradients
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary<Bifurcation, BifurcationGradients> Local { get; } = new Dictionary<Bifurcation, BifurcationGradients>();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary<Branch, BranchGradients> Global { get; } = new Dictionary<Branch, BranchGradients>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Source Source { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch Root => this.Source.Child.Branch;
 
         private double dr_dR, dr_dQ;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public (double dr_dR, double dr_dQ) RadiusGradients => (dr_dR, dr_dQ);
 
         private void SetRadius()
@@ -39,6 +56,9 @@ namespace Vascular.Optimization
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetCache()
         {
             this.Local.Clear();
@@ -59,6 +79,11 @@ namespace Vascular.Optimization
             this.Global[b] = new BranchGradients(RR, RQ);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bf"></param>
+        /// <returns></returns>
         public Vector3 PositionGradient(Bifurcation bf)
         {
             var p = bf.Upstream;
@@ -73,6 +98,11 @@ namespace Vascular.Optimization
                 + g1.dRe_dR * gd.dR1_dx;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tr"></param>
+        /// <returns></returns>
         public Vector3 PositionGradient(Transient tr)
         {
             var br = tr.Parent.Branch;

@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Construction.LSC.Defaults
 {
+    /// <summary>
+    /// Delegates used on moving to a more fine lattice.
+    /// </summary>
     public static class Refinement
     {
+        /// <summary>
+        /// Snap positions and set flows to targets.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static Action SetSingleTerminalPositionAndFlow(LatticeState element)
         {
             return () =>
@@ -42,6 +48,12 @@ namespace Vascular.Construction.LSC.Defaults
             };
         }
 
+        /// <summary>
+        /// Flow rate is fixed per unit volume, so per-terminal is dependent on the lattice determinant.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <param name="baseFlow"></param>
+        /// <param name="baseGenerations"></param>
         public static void DeterminantRatioFlowAndGenerations(IEnumerable<LatticeState> elements, 
             double baseFlow = 1.0, int baseGenerations = 1)
         {

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
-using Vascular.Geometry.Lattices;
 using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -12,8 +8,18 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Topological
 {
+    /// <summary>
+    /// Topological actions based on bifurcation balance.
+    /// </summary>
     public static class Balancing
     {
+        /// <summary>
+        /// Tries to drop branches that are too long for their flow rate.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="L0">The target length of a branch that carries 1 unit of flow.</param>
+        /// <param name="lengthRatio">The factor of <paramref name="L0"/> before removing.</param>
+        /// <returns></returns>
         public static BranchAction LengthFlowRatio(Branch branch, double L0, double lengthRatio)
         {
             // L0 is the flow rate that a branch carrying 1 unit of flow should carry.
@@ -35,6 +41,13 @@ namespace Vascular.Optimization.Topological
             return null;
         }
 
+        /// <summary>
+        /// Try to move bifurcations if they are highly unbalanced in either flow or radius.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="flowRatio"></param>
+        /// <param name="rqRatio"></param>
+        /// <returns></returns>
         public static BranchAction BifurcationRatio(Branch branch, double flowRatio, double rqRatio)
         {
             if (branch.End is not Bifurcation bifurcation)
@@ -83,12 +96,28 @@ namespace Vascular.Optimization.Topological
             return null;
         }
 
+        /// <summary>
+        /// Tries to swap the crowns of the branches.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <returns></returns>
         public static IEnumerable<BranchAction> ExchangeTerminals(Branch a, Branch b,
             ClosestBasisFunction toIntegral, Vector3[] connections)
         {
             return TerminalActionBase(a, b, toIntegral, connections, (x, y) => new SwapEnds(x, y));
         }
 
+        /// <summary>
+        /// Tries to offload terminals to another crown.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <returns></returns>
         public static IEnumerable<BranchAction> TransferTerminals(Branch from, Branch to,
             ClosestBasisFunction toIntegral, Vector3[] connections)
         {

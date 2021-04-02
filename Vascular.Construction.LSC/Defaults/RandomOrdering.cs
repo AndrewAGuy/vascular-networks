@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
-using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC.Defaults
 {
-    using MultipleMapEntry = KeyValuePair<Vector3, ICollection<Terminal>>;
-
+    /// <summary>
+    /// Delegates for random ordering of exteriors.
+    /// </summary>
     public static class RandomOrdering
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <returns></returns>
         public static ExteriorOrderingGenerator PermuteExterior(Random random)
         {
             return E =>
@@ -22,6 +23,11 @@ namespace Vascular.Construction.LSC.Defaults
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <returns></returns>
         public static InitialTerminalOrderingGenerator PermuteInitial(Random random)
         {
             return V =>

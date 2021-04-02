@@ -9,8 +9,6 @@ namespace Vascular.Geometry.Surfaces
     /// Fraction along the ray where the object is hit.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="Object"></param>
-    /// <param name="Fraction"></param>
     public record RayIntersection<T>(T Object, double Fraction);
 
     /// <summary>

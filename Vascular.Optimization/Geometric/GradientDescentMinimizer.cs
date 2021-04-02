@@ -1,27 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
-using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Geometric
 {
+    /// <summary>
+    /// Wraps a collection of sources of gradients, and tries to minimize this collection.
+    /// </summary>
     public class GradientDescentMinimizer
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
         public GradientDescentMinimizer(Network network)
         {
             this.Network = network;
         }
 
+        /// <summary>
+        /// Sets the stride so that the maximum step taken is <paramref name="s"/>.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public static double InitialMaxStrideFactor(IEnumerable<Vector3> v, double s)
         {
             var V = Math.Sqrt(v.Max(x => x * x));
             return s / V;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gradient"></param>
+        /// <param name="stride"></param>
+        /// <param name="predicate"></param>
         public static void Move(IDictionary<IMobileNode, Vector3> gradient, double stride, Predicate<IMobileNode> predicate)
         {
             foreach (var kv in gradient)
@@ -33,6 +49,11 @@ namespace Vascular.Optimization.Geometric
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <returns></returns>
         public GradientDescentMinimizer Add(Func<Network, IDictionary<IMobileNode, Vector3>> cost)
         {
             costs.Add(cost);
@@ -42,6 +63,9 @@ namespace Vascular.Optimization.Geometric
         private readonly List<Func<Network, IDictionary<IMobileNode, Vector3>>> costs
             = new List<Func<Network, IDictionary<IMobileNode, Vector3>>>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Predicate<IMobileNode> MovingPredicate { get; set; } = n => true;
 
         private IDictionary<IMobileNode, Vector3> CalculateGradient()
@@ -58,12 +82,29 @@ namespace Vascular.Optimization.Geometric
             return gradients;
         }
 
+        /// <summary>
+        /// Set to 0 to get the stride reset.
+        /// </summary>
         public double Stride { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Network Network { get; set; }
 
+        /// <summary>
+        /// Tries to ensure that stability is maintained.
+        /// </summary>
         public double TargetStep { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public bool UpdateStrideToTarget { get; set; } = true;
 
+        /// <summary>
+        /// Calculates gradients, updates strides if needed, moves and recalculates.
+        /// </summary>
         public void Iterate()
         {
             var gradient = CalculateGradient();

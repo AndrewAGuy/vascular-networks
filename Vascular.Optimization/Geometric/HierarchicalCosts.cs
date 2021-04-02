@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 
 namespace Vascular.Optimization.Geometric
 {
+    /// <summary>
+    /// Represents a collection of costs that have hierarchical gradients and update rules.
+    /// </summary>
     public class HierarchicalCosts
     {
         private readonly HierarchicalGradients hierarchicalGradients;
         private readonly FluidMechanicalWork fluidMechanicalWork;
+
+        /// <summary>
+        /// Multiplier for work under HP flow assumption.
+        /// </summary>
         public double WorkFactor { get; set; } = 0.0;
+
         private readonly List<SchreinerCost> schreinerCosts = new List<SchreinerCost>();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
         public HierarchicalCosts(Network network)
         {
             hierarchicalGradients = new HierarchicalGradients()
@@ -24,6 +34,13 @@ namespace Vascular.Optimization.Geometric
             fluidMechanicalWork = new FluidMechanicalWork(hierarchicalGradients);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lengthExponent"></param>
+        /// <param name="radiusExponent"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
         public HierarchicalCosts AddSchreinerCost(double lengthExponent, double radiusExponent, double factor)
         {
             schreinerCosts.Add(new SchreinerCost(factor,
@@ -31,8 +48,15 @@ namespace Vascular.Optimization.Geometric
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<IDictionary<IMobileNode, Vector3>> Wrapper => () => Evaluate().gradients;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public (double cost, IDictionary<IMobileNode, Vector3> gradients) Evaluate()
         {
             hierarchicalGradients.SetCache();

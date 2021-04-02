@@ -1,40 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Geometric
 {
+    /// <summary>
+    /// Uses a linear and angular spring combination to smooth branches.
+    /// </summary>
     public class Smoother
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Terminal, Vector3> TerminalDirection { get; set; } = GroupTerminalDirection();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Source, Vector3> SourceDirection { get; set; } = InletSourceDirection();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Segment, double> LinearSpringConstant { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Segment, double> AngularSpringConstant { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double NormalTolerance { get; set; } = 1.0e-9;
+
+        /// <summary>
+        /// Multiplicative factor: set to -1 for forces -> gradient descent.
+        /// </summary>
         public double Scaling { get; set; } = 1.0;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k0"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static Func<Segment, double> ThinShellLinearSpring(double k0, Func<Segment, double> t)
         {
             return s => k0 * s.Radius * t(s);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k0"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static Func<Segment, double> ThinShellAngularSpring(double k0, Func<Segment, double> t)
         {
             return s => k0 * Math.Pow(s.Radius, 3) * t(s);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public static Func<Segment, double> LinearShellThickness(double k)
         {
             return s => k * s.Radius;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public static Func<Terminal, Vector3> GroupTerminalDirection()
         {
             return t =>
@@ -49,11 +92,20 @@ namespace Vascular.Optimization.Geometric
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public static Func<Source, Vector3> InletSourceDirection()
         {
             return s => s.Network.InletDirection;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
         public IDictionary<IMobileNode, Vector3> Forces(Network network)
         {
             var forces = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
@@ -68,6 +120,11 @@ namespace Vascular.Optimization.Geometric
             return forces;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="forces"></param>
         public void AddAngularForces(INode node, IDictionary<IMobileNode, Vector3> forces)
         {
             switch (node)
@@ -163,6 +220,11 @@ namespace Vascular.Optimization.Geometric
             TryAddForce(forces, source.Child.End, -cForce);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="forces"></param>
         public void AddLinearForces(Branch branch, IDictionary<IMobileNode, Vector3> forces)
         {
             var naturalLength = branch.DirectLength / branch.Segments.Count;

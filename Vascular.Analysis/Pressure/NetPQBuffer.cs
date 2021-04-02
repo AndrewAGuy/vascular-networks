@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
-using Vascular;
 using System.IO;
 using System.Threading;
 
 namespace Vascular.Analysis.Pressure
 {
+    /// <summary>
+    /// Build a command buffer before running on a <see cref="NetPQ"/> instance.
+    /// </summary>
     public class NetPQBuffer
     {
         private struct BranchEntry
@@ -33,12 +34,20 @@ namespace Vascular.Analysis.Pressure
         private double[] solution;
         private byte[] commands;
 
+        /// <summary>
+        /// Once solved, query the pressure at a node.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
         public double GetPressure(INode node)
         {
             return nodes.TryGetValue(node.Position, out var idx)
                 ? solution[idx] : double.NaN;
         }
 
+        /// <summary>
+        /// Compute the resistance of a segment chain. Defaults to HP flow.
+        /// </summary>
         public Func<IReadOnlyList<Segment>, double> Resistance { get; set; } =
             S => S.Sum(s => s.Length / Math.Pow(s.Radius, 4));
 
@@ -47,12 +56,22 @@ namespace Vascular.Analysis.Pressure
             return nodes.ExistingOrNew(node.Position, () => nodes.Count);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <returns></returns>
         public NetPQBuffer Add(Branch branch)
         {
             Add(branch.Segments);
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="branches"></param>
+        /// <returns></returns>
         public NetPQBuffer Add(IEnumerable<Branch> branches)
         {
             foreach (var b in branches)
@@ -62,6 +81,11 @@ namespace Vascular.Analysis.Pressure
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="segments"></param>
+        /// <returns></returns>
         public NetPQBuffer Add(IReadOnlyList<Segment> segments)
         {
             var i = Id(segments[0].Start);
@@ -71,18 +95,34 @@ namespace Vascular.Analysis.Pressure
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="pressure"></param>
+        /// <returns></returns>
         public NetPQBuffer SetPressure(INode node, double pressure)
         {
             pressures[Id(node)] = pressure;
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="flow"></param>
+        /// <returns></returns>
         public NetPQBuffer SetFlow(INode node, double flow)
         {
             flows[Id(node)] = flow;
             return this;
         }
 
+        /// <summary>
+        /// Builds the buffer. Must be called before <see cref="Run(NetPQ, CancellationToken)"/>.
+        /// </summary>
+        /// <returns></returns>
         public NetPQBuffer Prepare()
         {
             var total =
@@ -122,6 +162,12 @@ namespace Vascular.Analysis.Pressure
             return this;
         }
 
+        /// <summary>
+        /// Solve for pressures.
+        /// </summary>
+        /// <param name="netPQ"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<bool> Run(NetPQ netPQ, CancellationToken token = default)
         {
             async Task send(Stream stream)

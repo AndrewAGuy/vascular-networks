@@ -4,8 +4,15 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization
 {
+    /// <summary>
+    /// Gradients at a bifurcation depend on the splitting rule used.
+    /// </summary>
     public class BifurcationGradients
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bf"></param>
         public BifurcationGradients(Bifurcation bf)
         {
             var sr = bf.Network.Splitting;
@@ -52,31 +59,119 @@ namespace Vascular.Optimization
         }
 
 #pragma warning disable IDE1006 // Naming Styles
+        /// <summary>
+        /// Derivative of parent reduced resistance with respect to child reduced resistance.
+        /// </summary>
         public double dRp_dR0 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child reduced resistance.
+        /// </summary>
         public double df0_dR0 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child reduced resistance.
+        /// </summary>
         public double df1_dR0 { get; }
+
+        /// <summary>
+        /// Derivative of parent reduced resistance with respect to child reduced resistance.
+        /// </summary>
         public double dRp_dR1 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child reduced resistance.
+        /// </summary>
         public double df0_dR1 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child reduced resistance.
+        /// </summary>
         public double df1_dR1 { get; }
 
+        /// <summary>
+        /// Derivative of parent reduced resistance with respect to child flow.
+        /// </summary>
         public double dRp_dQ0 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child flow.
+        /// </summary>
         public double df0_dQ0 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child flow.
+        /// </summary>
         public double df1_dQ0 { get; }
+
+        /// <summary>
+        /// Derivative of parent reduced resistance with respect to child flow.
+        /// </summary>
         public double dRp_dQ1 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child flow.
+        /// </summary>
         public double df0_dQ1 { get; }
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to child flow.
+        /// </summary>
         public double df1_dQ1 { get; }
 
+        /// <summary>
+        /// Parent length.
+        /// </summary>
         public double Lp { get; }
+
+        /// <summary>
+        /// Child length.
+        /// </summary>
         public double L0 { get; }
+
+        /// <summary>
+        /// Child length.
+        /// </summary>
         public double L1 { get; }
+
+        /// <summary>
+        /// Derivative of parent length with respect to node position.
+        /// </summary>
         public Vector3 dLp_dx { get; }
+
+        /// <summary>
+        /// Derivative of child length with respect to node position.
+        /// </summary>
         public Vector3 dL0_dx { get; }
+
+        /// <summary>
+        /// Derivative of child length with respect to node position.
+        /// </summary>
         public Vector3 dL1_dx { get; }
 
+        /// <summary>
+        /// Derivative of child reduced resistance with respect to node position.
+        /// </summary>
         public Vector3 dR0_dx => this.dL0_dx;
+
+        /// <summary>
+        /// Derivative of child reduced resistance with respect to node position.
+        /// </summary>
         public Vector3 dR1_dx => this.dL1_dx;
+
+        /// <summary>
+        /// Derivative of parent reduced resistance with respect to node position.
+        /// </summary>
         public Vector3 dRp_dx => this.dLp_dx + this.dRp_dR0 * this.dR0_dx + this.dRp_dR1 * this.dR1_dx;
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to node position.
+        /// </summary>
         public Vector3 df0_dx => this.df0_dR0 * this.dR0_dx + this.df0_dR1 * this.dR1_dx;
+
+        /// <summary>
+        /// Derivative of child radius fraction with respect to node position.
+        /// </summary>
         public Vector3 df1_dx => this.df1_dR0 * this.dR0_dx + this.df1_dR1 * this.dR1_dx;
 #pragma warning restore IDE1006 // Naming Styles
     }

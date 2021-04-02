@@ -1,15 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC.Defaults
 {
+    /// <summary>
+    /// Delegates related to the spreading phase.
+    /// </summary>
     public static class Spread
     {
+        /// <summary>
+        /// Simple heuristic for bifurcation placement.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static Vector3 FlowWeightedPosition(Bifurcation b)
         {
             var c0 = b.Downstream[0].End;
@@ -24,11 +28,22 @@ namespace Vascular.Construction.LSC.Defaults
             return p / (2.0 * wP);
         }
 
+        /// <summary>
+        /// Simple heuristic for bifurcation placement.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static Vector3 MeanPosition(Bifurcation b)
         {
             return (b.Downstream[0].End.Position + b.Downstream[1].End.Position + b.Upstream.Start.Position) / 3.0;
         }
 
+        /// <summary>
+        /// Rank by ratios of lengths in the bifurcation triad.
+        /// </summary>
+        /// <param name="maxPower"></param>
+        /// <param name="minPower"></param>
+        /// <returns></returns>
         public static TerminalPairCostFunction TerminalPairLengthRatioCost(double maxPower = 2, double minPower = 1)
         {
             return (T, t) =>
@@ -45,6 +60,12 @@ namespace Vascular.Construction.LSC.Defaults
             };
         }
 
+        /// <summary>
+        /// Disallow sharp and shallow angles.
+        /// </summary>
+        /// <param name="dotMax"></param>
+        /// <param name="dotMin"></param>
+        /// <returns></returns>
         public static TerminalPairPredicate TerminalPairAnglePredicate(double dotMax = 0.95, double dotMin = -0.25)
         {
             return (T, t) =>
@@ -56,6 +77,11 @@ namespace Vascular.Construction.LSC.Defaults
             };
         }
 
+        /// <summary>
+        /// Disallow bifurcations from narrow vessels.
+        /// </summary>
+        /// <param name="criticalRadius"></param>
+        /// <returns></returns>
         public static TerminalPairPredicate TerminalPairRadiusPredicate(double criticalRadius)
         {
             return (T, t) => T.Upstream.Radius >= criticalRadius;

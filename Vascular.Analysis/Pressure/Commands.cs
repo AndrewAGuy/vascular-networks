@@ -1,13 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Vascular.Analysis.Pressure
+﻿namespace Vascular.Analysis.Pressure
 {
+    /// <summary>
+    /// See NetPQ.py.
+    /// </summary>
     internal enum Commands
     {
-        Quit, New, Branch, Pressure, Flow, Default, Verify, Solve, Clear
+        /// <summary>
+        /// 
+        /// </summary>
+        Quit,
+        /// <summary>
+        /// 
+        /// </summary>
+        New,
+        /// <summary>
+        /// 
+        /// </summary>
+        Branch,
+        /// <summary>
+        /// 
+        /// </summary>
+        Pressure,
+        /// <summary>
+        /// 
+        /// </summary>
+        Flow,
+        /// <summary>
+        /// 
+        /// </summary>
+        Default,
+        /// <summary>
+        /// 
+        /// </summary>
+        Verify,
+        /// <summary>
+        /// 
+        /// </summary>
+        Solve,
+        /// <summary>
+        /// 
+        /// </summary>
+        Clear
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices;
 using Vascular.Geometry.Lattices.Manipulation;
@@ -15,8 +12,14 @@ namespace Vascular.Construction.LSC
     using SingleMap = Dictionary<Vector3, Terminal>;
     using MultipleMap = Dictionary<Vector3, ICollection<Terminal>>;
 
+    /// <summary>
+    /// Wraps a lattice, interior and exterior maps, and a set of actions and delegates.
+    /// </summary>
     public class LatticeState
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public LatticeState(Network network, Lattice lattice)
         {
             this.Network = network;
@@ -25,37 +28,144 @@ namespace Vascular.Construction.LSC
             this.ClosestBasisFunction = v => this.Lattice.ClosestVectorBasis(v);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Network Network { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Lattice Lattice { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public SingleMap SingleInterior { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public MultipleMap MultipleInterior { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public MultipleMap Exterior { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3[] Connections { get; private set; }
 
+        /// <summary>
+        /// How many iterations before coarsening, when refined into.
+        /// </summary>
         public int GenerationsDown { get; set; }
+
+        /// <summary>
+        /// How many iterations before coarsening, when coarsened into.
+        /// </summary>
         public int GenerationsUp { get; set; }
+
+        /// <summary>
+        /// Whether to reintroduce lost interior vectors on re-refining.
+        /// </summary>
         public bool ReintroduceDown { get; set; }
+
+        /// <summary>
+        /// Whether to reintroduce lost interior vectors on coarsening.
+        /// </summary>
         public bool ReintroduceUp { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public ExteriorOrderingGenerator ExteriorOrderingGenerator { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public ExteriorPredicate ExteriorPredicate { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalFlowFunction TerminalFlowFunction { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairPredicate TerminalPairPredicate { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairCostFunction TerminalPairCostFunction { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public BifurcationPositionFunction BifurcationPositionFunction { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairBuildAction TerminalPairBuildAction { get; set; }
 
+        /// <summary>
+        /// Called before each iteration.
+        /// </summary>
         public Action BeforeSpreadAction { get; set; }
+
+        /// <summary>
+        /// Called before leaving this lattice for a previously unvisited fine lattice.
+        /// </summary>
         public Action BeforeRefineAction { get; set; }
+
+        /// <summary>
+        /// Called before leaving this lattice for a more coarse one.
+        /// </summary>
         public Action BeforeCoarsenAction { get; set; }
+
+        /// <summary>
+        /// Called before leaving this lattice for a more fine one, which has already been visited.
+        /// </summary>
         public Action BeforeReRefineAction { get; set; }
+
+        /// <summary>
+        /// Called after each iteration.
+        /// </summary>
         public Action AfterSpreadAction { get; set; }
+
+        /// <summary>
+        /// Called when entered into from a more coarse lattice.
+        /// </summary>
         public Action AfterRefineAction { get; set; }
+
+        /// <summary>
+        /// Called when entered into from a more fine lattice.
+        /// </summary>
         public Action AfterCoarsenAction { get; set; }
+
+        /// <summary>
+        /// Called when entered into multiple times.
+        /// </summary>
         public Action AfterReRefineAction { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public ClosestBasisFunction ClosestBasisFunction { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iterations"></param>
+        /// <param name="predicate"></param>
+        /// <param name="cost"></param>
+        /// <param name="order"></param>
+        /// <returns></returns>
         public bool Begin(int iterations, InitialTerminalPredicate predicate,
             InitialTerminalCostFunction cost, InitialTerminalOrderingGenerator order)
         {
@@ -106,12 +216,18 @@ namespace Vascular.Construction.LSC
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Initialize()
         {
             this.SingleInterior = LatticeActions.GetSingleInterior(this.Network.Root, this.ClosestBasisFunction);
             this.Exterior = LatticeActions.GetExterior<List<Terminal>>(this.SingleInterior, this.Connections);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Propagate()
         {
             this.Exterior = this.MultipleInterior != null
@@ -119,6 +235,11 @@ namespace Vascular.Construction.LSC
                 : LatticeActions.PropagateExterior<List<Terminal>>(this.SingleInterior, this.Connections, this.Exterior.Keys);
         }
 
+        /// <summary>
+        /// Enter into this lattice from a more refined lattice. Always results in a multiple map interior.
+        /// </summary>
+        /// <param name="fine"></param>
+        /// <param name="reintroduce"></param>
         public void Coarsen(LatticeState fine, bool reintroduce)
         {
             var newInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
@@ -156,6 +277,11 @@ namespace Vascular.Construction.LSC
             this.SingleInterior = null;
         }
 
+        /// <summary>
+        /// Enters into this lattice from a more coarse one. If <paramref name="reintroduce"/> is true, any interior vectors
+        /// that were lost at the more coarse stage are added to the exterior, as we might be able to rebuild them.
+        /// </summary>
+        /// <param name="reintroduce"></param>
         public void Refine(bool reintroduce)
         {
             if (this.MultipleInterior != null)
@@ -196,6 +322,11 @@ namespace Vascular.Construction.LSC
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="terminal"></param>
+        /// <returns></returns>
         public bool Remove(Terminal terminal)
         {
             var index = this.ClosestBasisFunction(terminal.Position);
@@ -210,6 +341,10 @@ namespace Vascular.Construction.LSC
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="exterior"></param>
         public void AddExterior(Vector3 exterior)
         {
             if (this.MultipleInterior != null)
@@ -222,6 +357,9 @@ namespace Vascular.Construction.LSC
             }
         }
 
+        /// <summary>
+        /// For each element in the exterior, attempts to add into the network.
+        /// </summary>
         public void Spread()
         {
             this.BeforeSpreadAction?.Invoke();

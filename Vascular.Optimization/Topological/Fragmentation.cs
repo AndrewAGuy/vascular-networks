@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -10,8 +6,17 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Topological
 {
+    /// <summary>
+    /// Methods for controlling the number of transients in a branch.
+    /// </summary>
     public static class Fragmentation
     {
+        /// <summary>
+        /// Tries to split each segment into parts with prescribed slenderness, up to the given limit.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="slenderness"></param>
+        /// <param name="limit"></param>
         public static void Fragment(Branch branch, double slenderness, int limit)
         {
             var reinit = false;
@@ -26,6 +31,12 @@ namespace Vascular.Optimization.Topological
             }
         }
 
+        /// <summary>
+        /// Remove transients matching <paramref name="predicate"/>, assigning <paramref name="newRadius"/> to the replacement segment.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="predicate"></param>
+        /// <param name="newRadius"></param>
         public static void Defragment(Branch branch, Predicate<Transient> predicate, Func<Transient, double> newRadius)
         {
             var current = branch.Segments[0].End;
@@ -53,16 +64,25 @@ namespace Vascular.Optimization.Topological
             }
         }
 
-        public static Func<Transient, double> MeanRadius()
-        {
-            return t => (t.Parent.Radius + t.Child.Radius) * 0.5;
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Func<Transient, double> MeanRadius => t => (t.Parent.Radius + t.Child.Radius) * 0.5;
 
-        public static Func<Transient, double> BranchRadius()
-        {
-            return t => t.Child.Branch.Radius;
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static Func<Transient, double> BranchRadius => t => t.Child.Branch.Radius;
+        
 
+        /// <summary>
+        /// Removes transients which don't do much in terms of excursions.
+        /// </summary>
+        /// <param name="deviationRatio"></param>
+        /// <param name="captureFactor"></param>
+        /// <returns></returns>
         public static Predicate<Transient> DeviationOrTouching(double deviationRatio, double captureFactor)
         {
             return t =>
@@ -84,11 +104,23 @@ namespace Vascular.Optimization.Topological
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="probability"></param>
+        /// <returns></returns>
         public static Predicate<Transient> RandomDrop(Random random, double probability)
         {
             return t => random.NextDouble() < probability;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="probability"></param>
+        /// <returns></returns>
         public static Predicate<Transient> RandomDrop(Random random, Func<Transient, double> probability)
         {
             return t => random.NextDouble() < probability(t);

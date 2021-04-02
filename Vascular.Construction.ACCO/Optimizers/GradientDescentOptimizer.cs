@@ -10,11 +10,34 @@ namespace Vascular.Construction.ACCO.Optimizers
     /// </summary>
     public class GradientDescentOptimizer : IBifurcationOptimizer
     {
+        /// <summary>
+        /// Terminate when bifurcation gets too close to any other node in the triad.
+        /// </summary>
         public double TerminationLengthFraction { get; set; } = 0.2;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int MaxIterations { get; set; } = 100;
+
+        /// <summary>
+        /// Fraction of triad length to probe.
+        /// </summary>
         public double ProbeFraction { get; set; } = 0.01;
+
+        /// <summary>
+        /// The fraction of the gradient to step.
+        /// </summary>
         public double StepFraction { get; set; } = 0.1;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Source, double> Cost { get; set; }
+
+        /// <summary>
+        /// Stop when the fractional progress gets too low.
+        /// </summary>
         public double TerminationCostFraction { get; set; } = 0.0001;
 
         /// <summary>

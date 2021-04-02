@@ -1,27 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
+﻿using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization
 {
+    /// <summary>
+    /// Represents the work done to move fluid through the tubes.
+    /// </summary>
     public class FluidMechanicalWork
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="c"></param>
         public FluidMechanicalWork(HierarchicalGradients c)
         {
             this.Cache = c;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public HierarchicalGradients Cache { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double Cost { get; private set; }
 
         private double dW_dQ, dW_dR;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetCache()
         {
             var (dr_dR, dr_dQ) = this.Cache.RadiusGradients;
@@ -37,11 +48,21 @@ namespace Vascular.Optimization
             dW_dR = Q2 * r4i - 4 * this.Cost / r * dr_dR;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
         public double FlowGradient(Branch br)
         {
             return dW_dQ;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public Vector3 PositionGradient(IMobileNode n)
         {
             return n switch

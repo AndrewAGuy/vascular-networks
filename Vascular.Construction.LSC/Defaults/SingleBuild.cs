@@ -1,21 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC.Defaults
 {
+    /// <summary>
+    /// A set of delegates that ensure that in each iteration, only one bifurcation happens from each terminal.
+    /// Compensates for this by readding candidates, so more iterations are taken overall.
+    /// </summary>
     public class SingleBuild
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public Action BeforeSpread { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairPredicate Predicate { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairBuildAction OnBuild { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Action AfterSpread { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="toIntegral"></param>
         public SingleBuild(LatticeState state, ClosestBasisFunction toIntegral)
         {
             var built = new HashSet<Terminal>();

@@ -90,7 +90,7 @@ namespace Vascular.Construction.ACCO
         public int Processed => rejected.Count + built.Count + culled.Count;
 
         /// <summary>
-        /// The random number generator for reordering (see <see cref="Reorder"/> and overloads).
+        /// The random number generator for reordering (see <see cref="Reorder()"/> and overloads).
         /// </summary>
         public Random Random
         {

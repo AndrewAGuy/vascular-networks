@@ -64,7 +64,14 @@ namespace Vascular.Intersections.Enforcement
         /// </summary>
         public virtual IEnumerable<TPenalizing> Culling => culling;
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected HashSet<TPenalizing> intersecting = new HashSet<TPenalizing>();
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected HashSet<TPenalizing> culling = new HashSet<TPenalizing>();
 
         /// <summary>

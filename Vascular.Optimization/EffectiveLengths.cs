@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization
 {
+    /// <summary>
+    /// For <see cref="SchreinerCost"/> terms.
+    /// </summary>
     public class EffectiveLengths
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="l"></param>
+        /// <param name="c"></param>
         public EffectiveLengths(double r, double l, HierarchicalGradients c)
         {
             this.ExpR = r;
@@ -20,24 +26,70 @@ namespace Vascular.Optimization
             this.Cache = c;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double ExpR { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double ExpL { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double ExpDL { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double ExpDR { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public struct RootGradient
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public double dLe_dQ;
+
+            /// <summary>
+            /// 
+            /// </summary>
             public double dLe_dR;
+
+            /// <summary>
+            /// 
+            /// </summary>
             public double dLe_dL;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary<Branch, double> Values { get; } = new Dictionary<Branch, double>();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary<Branch, RootGradient> Gradients { get; } = new Dictionary<Branch, RootGradient>();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public HierarchicalGradients Cache { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double Value { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetLengths()
         {
             this.Values.Clear();
@@ -57,6 +109,9 @@ namespace Vascular.Optimization
             return e;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetGradients()
         {
             this.Gradients.Clear();
@@ -97,6 +152,11 @@ namespace Vascular.Optimization
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bf"></param>
+        /// <returns></returns>
         public Vector3 PositionGradient(Bifurcation bf)
         {
             var p = bf.Upstream;
@@ -114,6 +174,11 @@ namespace Vascular.Optimization
                 + g1.dLe_dL * this.ExpL * Math.Pow(gd.L1, this.ExpDL) * gd.dL1_dx;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tr"></param>
+        /// <returns></returns>
         public Vector3 PositionGradient(Transient tr)
         {
             var br = tr.Parent.Branch;

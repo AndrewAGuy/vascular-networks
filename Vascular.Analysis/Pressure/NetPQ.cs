@@ -1,27 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Vascular.Analysis.Pressure
 {
+    /// <summary>
+    /// Wraps a python process that solves for pressures.
+    /// </summary>
     public class NetPQ : IAsyncDisposable
     {
         private readonly Process process;
         private readonly Task error;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Stream Input => process.StandardInput.BaseStream;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Stream Output => process.StandardOutput.BaseStream;
 
         private readonly byte[] quitBuffer = new byte[sizeof(int)];
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
 
+        /// <summary>
+        /// How long to wait on termination.
+        /// </summary>
         public int TimeoutMilliseconds { get; set; } = 1000;
 
+        /// <summary>
+        /// For options, see NetPQ.py.
+        /// </summary>
+        /// <param name="pythonPath">Path to the python executable.</param>
+        /// <param name="scriptPath">Path to the NetPQ.py script.</param>
+        /// <param name="errorPath">Path to write stderr to.</param>
+        /// <param name="sparse"></param>
+        /// <param name="solver"></param>
+        /// <param name="densify"></param>
+        /// <param name="verbose"></param>
         public NetPQ(string pythonPath, string scriptPath, string errorPath = null,
             bool sparse = false, string solver = null, bool densify = false, bool verbose = false)
         {
@@ -52,6 +73,10 @@ namespace Vascular.Analysis.Pressure
             writer.Write((int)Commands.Quit);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
             async Task send()

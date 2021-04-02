@@ -81,6 +81,9 @@ namespace Vascular.IO.STL
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         ~StlWriter()
         {
             Dispose(false);
