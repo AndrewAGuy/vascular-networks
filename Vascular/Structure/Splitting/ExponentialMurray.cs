@@ -1,21 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
+    /// <summary>
+    /// A simple type of <see cref="FlowContextualMurray"/> where the exponent decreases linearly with bifurcation depth in a balanced tree.
+    /// </summary>
     [DataContract]
     public class ExponentialMurray : FlowContextualMurray
     {
+        /// <summary>
+        /// Exponent calculated as <c>a * exp(-b * Q) + c</c>
+        /// </summary>
         [DataMember]
         protected double a, b, c;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Q_min"></param>
+        /// <param name="e_max"></param>
+        /// <param name="Q_max"></param>
+        /// <param name="e_min"></param>
+        /// <param name="rate"></param>
         public ExponentialMurray(double Q_min, double e_max, double Q_max, double e_min, double rate)
         {
             Set(Q_min, e_max, Q_max, e_min, rate);
         }
 
+        /// <summary>
+        /// Works out a decay rate to match the three points given.
+        /// </summary>
+        /// <param name="Q_min"></param>
+        /// <param name="e_max"></param>
+        /// <param name="Q_max"></param>
+        /// <param name="e_min"></param>
+        /// <param name="Q_mid"></param>
+        /// <param name="e_mid"></param>
+        /// <param name="tol"></param>
+        /// <param name="iter"></param>
         public ExponentialMurray(double Q_min, double e_max, double Q_max, double e_min, double Q_mid, double e_mid, double tol, int iter)
         {
             // Find sensible guess of initial rate
@@ -103,11 +126,21 @@ namespace Vascular.Structure.Splitting
             return a * Math.Exp(-b * Q) + c;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Q"></param>
+        /// <returns></returns>
         public override double Exponent(double Q)
         {
             return a * Math.Exp(-b * Q) + c;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Q"></param>
+        /// <returns></returns>
         public override double ExponentGradient(double Q)
         {
             return -a * b * Math.Exp(-b * Q);

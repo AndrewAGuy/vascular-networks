@@ -1,21 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Vascular.Structure.Actions
+﻿namespace Vascular.Structure.Actions
 {
+    /// <summary>
+    /// Base type for topology actions that impact multiple branches.
+    /// </summary>
     public abstract class BranchAction : TopologyAction
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         public BranchAction(Branch a, Branch b)
         {
             this.a = a;
             this.b = b;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected Branch a;
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected Branch b;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch A => a;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch B => b;
 
+        /// <summary>
+        /// Sets the branches referenced to <see cref="Branch.CurrentTopologicallyValid"/>, then checks for collapse or complete removal.
+        /// </summary>
+        /// <returns></returns>
         public virtual bool Update()
         {
             a = a.CurrentTopologicallyValid;
@@ -25,12 +49,21 @@ namespace Vascular.Structure.Actions
                 && b != null; // In case anything has been completely removed
         }
 
+        /// <summary>
+        /// Makes sure that the branches referenced haven't been removed.
+        /// </summary>
+        /// <returns></returns>
         public virtual bool IsValid()
         {
             return a.IsTopologicallyValid
                 && b.IsTopologicallyValid;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public virtual bool Intersects(BranchAction other)
         {
             return ReferenceEquals(a, other.a)

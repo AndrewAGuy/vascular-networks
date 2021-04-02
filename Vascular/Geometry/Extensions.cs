@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Geometry
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="V"></param>
+        /// <returns></returns>
         public static Vector3 Sum(this IEnumerable<Vector3> V)
         {
             var e = V.GetEnumerator();

@@ -1,15 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using Vascular.Geometry.Bounds;
-using Vascular.Geometry.Generators;
 
 namespace Vascular.Geometry
 {
+    /// <summary>
+    /// Useful methods for linaer algebra.
+    /// </summary>
     public static class LinearAlgebra
     {
+        /// <summary>
+        /// Finds the extent around which the directions can intersect either side of their closest point with a given separation.
+        /// </summary>
+        /// <param name="da"></param>
+        /// <param name="db"></param>
+        /// <param name="r2"></param>
+        /// <returns></returns>
         public static (double A, double B) BranchBranchExtrema(Vector3 da, Vector3 db, double r2)
         {
             var da2 = da * da;
@@ -21,6 +25,14 @@ namespace Vascular.Geometry
             return (A, B);
         }
 
+        /// <summary>
+        /// Used when performance is important.
+        /// </summary>
+        /// <param name="col1"></param>
+        /// <param name="col2"></param>
+        /// <param name="col3"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static Vector3 SolveMatrix3x3(Vector3 col1, Vector3 col2, Vector3 col3, Vector3 v)
         {
             var row1 = col2 ^ col3;
@@ -31,11 +43,26 @@ namespace Vascular.Geometry
             return temp * invdet;
         }
 
+        /// <summary>
+        /// How far along the direction <paramref name="dir"/> from <paramref name="clamp"/> do we go to get to the closest point to <paramref name="target"/>. 
+        /// </summary>
+        /// <param name="clamp"></param>
+        /// <param name="dir"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public static double LineFactor(Vector3 clamp, Vector3 dir, Vector3 target)
         {
             return (target - clamp) * dir / dir.LengthSquared;
         }
 
+        /// <summary>
+        /// See <see cref="LineFactor(Vector3, Vector3, Vector3)"/>.
+        /// </summary>
+        /// <param name="clamp"></param>
+        /// <param name="dir"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public static (double S, double E) LineFactors(Vector3 clamp, Vector3 dir, Vector3 start, Vector3 end)
         {
             var dot = dir / dir.LengthSquared;
@@ -43,11 +70,25 @@ namespace Vascular.Geometry
             return (start * dot - cd, end * dot - cd);
         }
 
+        /// <summary>
+        /// For a unit vector <paramref name="d"/>, remove the component from <paramref name="v"/>.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="d"></param>
+        /// <returns></returns>
         public static Vector3 RemoveComponent(Vector3 v, Vector3 d)
         {
             return v - d * (v * d);
         }
 
+        /// <summary>
+        /// Moves the vector <paramref name="v"/> towards the line defined by <paramref name="d"/> by scaling the
+        /// perpendicular component by <paramref name="a"/>.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="d"></param>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public static Vector3 MoveTowardsLine(Vector3 v, Vector3 d, double a)
         {
             var vl = d * (v * d);
@@ -55,6 +96,11 @@ namespace Vascular.Geometry
             return vl + a * vp;
         }
 
+        /// <summary>
+        /// Takes the gradient of the unit vector of <paramref name="v"/>.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static Matrix3 GradientOfDirection(Vector3 v)
         {
             // Gradient of magnitude d(|v|)/dv = v/|v|
@@ -78,6 +124,12 @@ namespace Vascular.Geometry
                 zx, yz, zd) * s;
         }
 
+        /// <summary>
+        /// Gets the eignevalues of the real symmetric matrix <paramref name="A"/>.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="t2"></param>
+        /// <returns></returns>
         public static Vector3 RealSymmetricEigenvalues(Matrix3 A, double t2 = 1e-12)
         {
             // Solving characteristic eqn for eigenvalues
@@ -104,6 +156,14 @@ namespace Vascular.Geometry
             }
         }
 
+        /// <summary>
+        /// Gets the eigenvector of <paramref name="A"/> associated with eigenvalue <paramref name="e"/>.
+        /// See <see cref="RealSymmetricEigenvalues(Matrix3, double)"/>.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="e"></param>
+        /// <param name="t2"></param>
+        /// <returns></returns>
         public static Vector3 RealSymmetricEigenvector(Matrix3 A, double e, double t2 = 1e-12)
         {
             // Gets eigenvector associated with eigenvalue e
@@ -135,6 +195,13 @@ namespace Vascular.Geometry
             return null;
         }
 
+        /// <summary>
+        /// Gets the distance of <paramref name="v"/> to the line linking <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static double DistanceToLine(Vector3 a, Vector3 b, Vector3 v)
         {
             var d = b - a;

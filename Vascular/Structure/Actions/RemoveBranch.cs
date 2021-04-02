@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Vascular.Structure.Actions
+﻿namespace Vascular.Structure.Actions
 {
+    /// <summary>
+    /// Wrapper for <see cref="Topology.RemoveBranch(Branch, bool, bool, bool, bool)"/>.
+    /// </summary>
     public class RemoveBranch : BranchAction
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
         public RemoveBranch(Branch a) : base(a, a)
         {
         }
 
+        /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
             var transient = Topology.RemoveBranch(a, true, true, false, true);
@@ -25,23 +27,27 @@ namespace Vascular.Structure.Actions
             }
         }
 
+        /// <inheritdoc/>
         public override bool Update()
         {
             a = a.CurrentTopologicallyValid;
             return a != null;
         }
 
+        /// <inheritdoc/>
         public override bool IsValid()
         {
             return a.IsTopologicallyValid;
         }
 
+        /// <inheritdoc/>
         public override bool Intersects(BranchAction other)
         {
             return ReferenceEquals(a, other.A)
                 || ReferenceEquals(a, other.B);
         }
 
+        /// <inheritdoc/>
         public override bool IsPermissable()
         {
             return a.IsRooted;

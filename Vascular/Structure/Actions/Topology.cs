@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Structure.Nodes;
+﻿using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions
 {
+    /// <summary>
+    /// Helper methods for changing the network topology.
+    /// </summary>
     public static class Topology
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="seg"></param>
+        /// <returns></returns>
         public static Transient InsertTransient(Segment seg)
         {
             var end = seg.End;
@@ -25,6 +30,11 @@ namespace Vascular.Structure.Actions
             return tran;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tran"></param>
+        /// <returns></returns>
         public static Segment RemoveTransient(Transient tran)
         {
             // Simple case of rewiring existing parent to existing child end.
@@ -36,6 +46,12 @@ namespace Vascular.Structure.Actions
             return seg;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="term"></param>
+        /// <param name="nullParent"></param>
+        /// <returns></returns>
         public static Transient CullTerminal(Terminal term, bool nullParent = true)
         {
             // Was terminal ever actually built?
@@ -72,6 +88,12 @@ namespace Vascular.Structure.Actions
             return tran;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="term"></param>
+        /// <param name="nullParent"></param>
+        /// <returns></returns>
         public static Transient CullTerminalAndPropagate(Terminal term, bool nullParent = true)
         {
             var tran = CullTerminal(term, nullParent);
@@ -83,6 +105,12 @@ namespace Vascular.Structure.Actions
             return tran;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public static Branch MakeFirst(Source s, Terminal t)
         {
             // Must create branch beforehand, since setting source child segment will pull branch in
@@ -94,6 +122,12 @@ namespace Vascular.Structure.Actions
             return br;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public static Bifurcation CreateBifurcation(Segment from, BranchNode to)
         {
             // Existing segment becomes parent of bifurcation
@@ -131,6 +165,15 @@ namespace Vascular.Structure.Actions
             return bifurc;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bifurc"></param>
+        /// <param name="keptChild"></param>
+        /// <param name="markDownstream"></param>
+        /// <param name="nullDownstream"></param>
+        /// <param name="nullLost"></param>
+        /// <returns></returns>
         public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild,
             bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
@@ -166,6 +209,15 @@ namespace Vascular.Structure.Actions
             return tran;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="throwIfRoot"></param>
+        /// <param name="markDownstream"></param>
+        /// <param name="nullDownstream"></param>
+        /// <param name="nullLost"></param>
+        /// <returns></returns>
         public static Transient RemoveBranch(Branch branch, bool throwIfRoot = true,
             bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
@@ -196,6 +248,11 @@ namespace Vascular.Structure.Actions
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         public static void SwapEnds(Branch a, Branch b)
         {
             var endA = a.End;
@@ -206,6 +263,11 @@ namespace Vascular.Structure.Actions
             b.Reset();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
         public static void SwapConnections(Segment a, Segment b)
         {
             // Update segment endings
@@ -224,6 +286,12 @@ namespace Vascular.Structure.Actions
             b.Branch.Reinitialize();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="moving"></param>
+        /// <param name="from"></param>
+        /// <returns></returns>
         public static (Transient, Bifurcation) MoveBifurcation(Branch moving, Branch from)
         {
             if (moving.Start is Bifurcation bifurc)

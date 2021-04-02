@@ -1,19 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
+    /// <summary>
+    /// Murray's law where the exponent depends on flow rate.
+    /// </summary>
     [DataContract]
     [KnownType(typeof(ClampedMurray))]
     [KnownType(typeof(ExponentialMurray))]
     public abstract class FlowContextualMurray : ISplittingFunction
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Q"></param>
+        /// <returns></returns>
         public abstract double Exponent(double Q);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Q"></param>
+        /// <returns></returns>
         public abstract double ExponentGradient(double Q);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double f1, double f2) Fractions(double rs1, double q1, double rs2, double q2)
         {
             var c1 = Math.Pow(rs1 * q1, 0.25);
@@ -33,6 +52,14 @@ namespace Vascular.Structure.Splitting
             return (D - c1 * F, -c2 * F);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2)
         {
             // fj = Fj(c1(Q1),c2,e(Q1)) => dfj/dQ1 = dFj/dc1*dc1/dQ1 + dFj/de*de/dQ1  => extra term from exponent
@@ -68,6 +95,14 @@ namespace Vascular.Structure.Splitting
             return (df1_dq1_c + df1_dq1_e, df2_dq1_c + df2_dq1_e);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double df1_drs1, double df2_drs1) ReducedResistanceGradient(double rs1, double q1, double rs2, double q2)
         {
             // Exponent constant, so same as other

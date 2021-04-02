@@ -1,18 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Structure.Splitting
 {
+    /// <summary>
+    /// A constant exponent Murray's law.
+    /// </summary>
     [DataContract]
     public class Murray : ISplittingFunction
     {
         [DataMember]
         private double e, e_ni, e_dd, e_dn;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double Exponent
         {
+            get => e;
             set
             {
                 e = value;
@@ -23,6 +28,14 @@ namespace Vascular.Structure.Splitting
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double f1, double f2) Fractions(double rs1, double q1, double rs2, double q2)
         {
             var c1 = Math.Pow(rs1 * q1, 0.25);
@@ -41,6 +54,14 @@ namespace Vascular.Structure.Splitting
             return (D - c1 * F, -c2 * F);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2)
         {
             var c1 = Math.Pow(rs1 * q1, 0.25);
@@ -50,6 +71,14 @@ namespace Vascular.Structure.Splitting
             return (df1_dc1 * dc1_dq1, df2_dc1 * dc1_dq1);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rs1"></param>
+        /// <param name="q1"></param>
+        /// <param name="rs2"></param>
+        /// <param name="q2"></param>
+        /// <returns></returns>
         public (double df1_drs1, double df2_drs1) ReducedResistanceGradient(double rs1, double q1, double rs2, double q2)
         {
             var c1 = Math.Pow(rs1 * q1, 0.25);

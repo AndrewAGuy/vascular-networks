@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Structure.Nodes;
+﻿using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions
 {
+    /// <summary>
+    /// Promotion is a special case of <see cref="MoveBifurcation"/>.
+    /// </summary>
     public class PromoteNode : TopologyAction
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="promoting"></param>
         public PromoteNode(BranchNode promoting)
         {
             promoted = promoting;
@@ -40,12 +42,16 @@ namespace Vascular.Structure.Actions
             return new MoveBifurcation(moving, target);
         }
 
+        /// <summary>
+        /// Only access this after the forwards action has been executed.
+        /// </summary>
         public PromoteNode Inverse =>
             // Promotion was achieved by moving 2 -> 1, so now we undo this by promoting 1,
             // which will move 2 -> 3. Only access after making move though, as we create a
             // bifurcation move request which needs the structure created by execution.
             executed ? new PromoteNode(demoted) : null;
 
+        /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
             if (!executed)
@@ -55,6 +61,7 @@ namespace Vascular.Structure.Actions
             }
         }
 
+        /// <inheritdoc/>
         public override bool IsPermissable()
         {
             return action != null && !executed;

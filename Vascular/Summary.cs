@@ -2,23 +2,45 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular
 {
+    /// <summary>
+    /// Summary statistics, including moments and orders (quantiles).
+    /// </summary>
     [DataContract]
     public class Summary
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public double Mean { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public double Variance { get; }
+
+        /// <summary>
+        /// Defined as <c>Expectation[pow(X - mean, n)] / pow(std, n)</c> 
+        /// </summary>
         [DataMember]
         public double[] StandardizedMoments { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public double[] OrderStatistics { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="standardizedMoments"></param>
+        /// <param name="orders"></param>
         public Summary(IEnumerable<double> values, IEnumerable<int> standardizedMoments = null, IEnumerable<double> orders = null)
         {
             this.Mean = values.Average();
@@ -40,12 +62,22 @@ namespace Vascular
             }
         }
 
+        /// <summary>
+        /// Creates <paramref name="n"/> + 1 quantiles, equally spaced.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static IEnumerable<double> Quantiles(int n)
         {
             var d = 1.0 / n;
             return Enumerable.Range(0, n + 1).Select(x => x * d);
         }
 
+        /// <summary>
+        /// Mean and variance already computed, so create moments as { 3, ... , 3 + n - 1 }
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static IEnumerable<int> MomentsFromThird(int n)
         {
             return Enumerable.Range(3, n);

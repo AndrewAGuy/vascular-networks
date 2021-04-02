@@ -1,18 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Structure.Nodes;
+﻿using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions
 {
+    /// <summary>
+    /// Wrapper for <see cref="Topology.CullTerminal(Terminal, bool)"/>.
+    /// </summary>
     public class CullTerminal : TopologyAction
     {
         private readonly Terminal t;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
         public CullTerminal(Terminal t)
         {
             this.t = t;
         }
 
+        /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
             if (Topology.CullTerminal(t) is Transient T)
@@ -28,6 +34,7 @@ namespace Vascular.Structure.Actions
             }
         }
 
+        /// <inheritdoc/>
         public override bool IsPermissable()
         {
             return t.Parent != null && !(t.Upstream.Start is Source);

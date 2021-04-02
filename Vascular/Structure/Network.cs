@@ -10,12 +10,18 @@ using Vascular.Structure.Splitting;
 
 namespace Vascular.Structure
 {
+    /// <summary>
+    /// Wraps a <see cref="Nodes.Source"/> and some other associated data such as the <see cref="Viscosity"/> and <see cref="ISplittingFunction"/>.
+    /// </summary>
     [DataContract]
     public class Network : IAxialBoundsQueryable<Segment>, IAxialBoundsQueryable<Branch>
     {
         [DataMember]
         private Source source;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Source Source
         {
             get => source;
@@ -29,8 +35,14 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch Root => source.Child?.Branch;
 
+        /// <summary>
+        /// The matching group this belongs to.
+        /// </summary>
         [DataMember]
         public Network[] Partners { get; set; } = null;
 
@@ -39,6 +51,9 @@ namespace Vascular.Structure
         [DataMember]
         private double scaledViscosity = 4.0e-6 * 8.0 / Math.PI;
         
+        /// <summary>
+        /// Typically set in kPa &#183; s.
+        /// </summary>
         public double Viscosity
         {
             get => viscosity;
@@ -52,28 +67,52 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// Used in calculating resistances for Hagen-Poiseuille flow.
+        /// </summary>
         public double ScaledViscosity => scaledViscosity;
 
+        /// <summary>
+        /// Typically in kPa.
+        /// </summary>
         [DataMember]
         public double PressureOffset { get; set; } = 0.0;
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public ISplittingFunction Splitting { get; set; } = new Murray() { Exponent = 3.0 };
 
+        /// <summary>
+        /// Used in collision resolution.
+        /// </summary>
         [DataMember]
         public double RelativeCompliance { get; set; } = 1;
 
+        /// <summary>
+        /// Whether the flow is from <see cref="Terminal"/> to <see cref="Source"/>.
+        /// </summary>
         [DataMember]
         public bool Output { get; set; } = false;
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public string Name { get; set; } = "";
 
+        /// <summary>
+        /// Used in smoothing.
+        /// </summary>
         [DataMember]
-        public Vector3 InletDirection { get; set; } = null;
+        public Vector3 InletDirection { get; set; } = null;       
 
-        //public Func<Terminal, Vector3> TerminalDirection { get; set; } = t => null;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public Network Clone(Source s)
         {
             var n = new Network()
@@ -142,16 +181,31 @@ namespace Vascular.Structure
             return c;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public AxialBounds GetAxialBounds()
         {
             return this.Root.GlobalBounds;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Branch> action)
         {
             BranchQuery(query, action, this.Root);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <param name="branch"></param>
         public static void BranchQuery(AxialBounds query, Action<Branch> action, Branch branch)
         {
             if (query.Intersects(branch.LocalBounds))
@@ -167,11 +221,22 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Segment> action)
         {
             SegmentQuery(query, action, this.Root);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <param name="branch"></param>
         public static void SegmentQuery(AxialBounds query, Action<Segment> action, Branch branch)
         {
             if (query.Intersects(branch.LocalBounds))
@@ -193,21 +258,36 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<Segment> GetEnumerator()
         {
             return this.Segments.GetEnumerator();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             yield break;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IEnumerator<Branch> IEnumerable<Branch>.GetEnumerator()
         {
             return this.Branches.GetEnumerator();
         }
 
+        /// <summary>
+        /// Stack based iteration.
+        /// </summary>
         public IEnumerable<Branch> Branches
         {
             get
@@ -227,6 +307,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<Segment> Segments
         {
             get
@@ -241,6 +324,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<BranchNode> BranchNodes
         {
             get
@@ -253,6 +339,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<INode> Nodes
         {
             get
@@ -265,6 +354,10 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// Stack-based. See <see cref="Terminal.ForDownstream(Branch, Action{Terminal})"/>, <see cref="Terminal.GetDownstream(Branch, int)"/>
+        /// for a recursive implementation.
+        /// </summary>
         public IEnumerable<Terminal> Terminals
         {
             get
@@ -290,11 +383,24 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// Visits each downstream branch, spawining new tasks until a depth of <paramref name="splitDepth"/>.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="splitDepth"></param>
+        /// <returns></returns>
         public async Task VisitAsync(Action<Branch> action, int splitDepth)
         {
             await VisitAsync(this.Root, action, splitDepth);
         }
 
+        /// <summary>
+        /// Similar to <see cref="VisitAsync(Action{Branch}, int)"/> but from any starting branch.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="action"></param>
+        /// <param name="splitDepth"></param>
+        /// <returns></returns>
         public static async Task VisitAsync(Branch branch, Action<Branch> action, int splitDepth)
         {
             if (splitDepth > 0)

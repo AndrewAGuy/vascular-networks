@@ -8,22 +8,37 @@ using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure
 {
+    /// <summary>
+    /// Links <see cref="BranchNode"/> together, allowing more efficient traversal in highly fragmented branches compared to
+    /// using only <see cref="Segment"/>.
+    /// </summary>
     [DataContract]
     public class Branch : IAxialBoundsQueryable<Segment>, IAxialBoundable
     {
         [DataMember]
         private List<Segment> segments = new List<Segment>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch()
         {
 
         }
 
+        /// <summary>
+        /// <see cref="Initialize(Segment)"/>.
+        /// </summary>
+        /// <param name="s"></param>
         public Branch(Segment s)
         {
             Initialize(s);
         }
 
+        /// <summary>
+        /// Works down from <paramref name="s"/> until a <see cref="BranchNode"/> is hit.
+        /// </summary>
+        /// <param name="s"></param>
         public void Initialize(Segment s)
         {
             segments.Clear();
@@ -35,11 +50,17 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// From the first segment, walk to the next <see cref="BranchNode"/> and update <see cref="Segments"/>.
+        /// </summary>
         public void Reinitialize()
         {
             Initialize(segments[0]);
         }
 
+        /// <summary>
+        /// Works up from <see cref="End"/> until a <see cref="BranchNode"/> is hit.
+        /// </summary>
         public void Initialize()
         {
             segments.Clear();
@@ -53,13 +74,16 @@ namespace Vascular.Structure
             segments.Reverse();
         }
 
+        /// <summary>
+        /// If the segment list is complete, initialize from this.
+        /// </summary>
         public void SetEndpoints()
         {
-            if (!(segments[0].Start is BranchNode start))
+            if (segments[0].Start is not BranchNode start)
             {
                 throw new TopologyException("Branch does not start with BranchNode instance");
             }
-            if (!(segments[^1].End is BranchNode end))
+            if (segments[^1].End is not BranchNode end)
             {
                 throw new TopologyException("Branch does not end with BranchNode instance");
             }
@@ -73,6 +97,9 @@ namespace Vascular.Structure
             s.Branch = this;
         }
 
+        /// <summary>
+        /// Link <see cref="Start"/> and <see cref="End"/> by a single <see cref="Segment"/>.
+        /// </summary>
         public void Reset()
         {
             var s = segments[0];
@@ -81,8 +108,14 @@ namespace Vascular.Structure
             this.End.Parent = s;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IReadOnlyList<Segment> Segments => segments;
 
+        /// <summary>
+        /// Includes <see cref="Start"/>, <see cref="End"/>, <see cref="Transients"/>.
+        /// </summary>
         public IEnumerable<INode> Nodes
         {
             get
@@ -95,6 +128,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IEnumerable<INode> Transients
         {
             get
@@ -106,6 +142,10 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IReadOnlyList<INode> GetTransients()
         {
             var list = new List<INode>(segments.Count - 1);
@@ -116,33 +156,69 @@ namespace Vascular.Structure
             return list;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public BranchNode Start { get; set; } = null;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch Parent => this.Start.Upstream;
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public BranchNode End { get; set; } = null;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Branch[] Children => this.End.Downstream;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Network Network  => this.End.Network;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 Direction => this.End.Position - this.Start.Position;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 NormalizedDirection => this.Direction.Normalize();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double DirectLength => this.Direction.Length;
 
+        /// <summary>
+        /// Most simple estimate, arc length / chord length.
+        /// </summary>
         public double Tortuosity  => this.Length / this.DirectLength;
 
+        /// <summary>
+        /// Radial slenderness.
+        /// </summary>
         public double Slenderness => this.Length / this.Radius;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsTerminal => this.End is Terminal;
 
         [DataMember]
         private double radius = 0.0;
 
+        /// <summary>
+        /// The branch radius. Ensure that the sum over <see cref="Segments"/> of <c>s.L / pow(s.r, 4)</c> is compatible with this radius.
+        /// </summary>
         public double Radius
         {
             get => radius;
@@ -155,14 +231,28 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// The cached sum of <see cref="Segment.Length"/>.
+        /// </summary>
         [DataMember]
         public double Length { get; private set; } = 0.0;
 
+        /// <summary>
+        /// Defined as <c>R * pow(r, 4)</c>, is propagated upstream. Allows radii ratios to be set without knowing the actual values.
+        /// In this case, we always define <c>8 * mu / pi = 1</c> for efficiency, so is not the 'true' reduced resistance. 
+        /// </summary>
         [DataMember]
         public double ReducedResistance { get; private set; } = 0.0;
 
+        /// <summary>
+        /// Assumes Hagen-Poiseuille flow.
+        /// </summary>
         public double Resistance => this.Length * this.Network.ScaledViscosity / Math.Pow(radius, 4);
 
+        /// <summary>
+        /// Rrecalculates the lengths of each <see cref="Segment"/> in the branch. 
+        /// Does not update <see cref="Length"/> - for this, use <see cref="UpdatePhysicalLocal"/>.
+        /// </summary>
         public void UpdateLengths()
         {
             foreach (var s in segments)
@@ -171,6 +261,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// Sets each radius to <see cref="Radius"/>.
+        /// </summary>
         public void UpdateRadii()
         {
             foreach (var s in segments)
@@ -179,6 +272,9 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// Updates <see cref="Length"/>.
+        /// </summary>
         public void UpdatePhysicalLocal()
         {
             this.Length = segments[0].Length;
@@ -189,10 +285,16 @@ namespace Vascular.Structure
         }
 
 #if !NoEffectiveLength
+        /// <summary>
+        /// For efficient update of volume. Introduced in DOI: 10.1109/TBME.2019.2942313
+        /// </summary>
         [DataMember]
         public double EffectiveLength { get; private set; } = 0.0;
 #endif
 
+        /// <summary>
+        /// Updates the physical (legacy naming for geometric) parameters that are propagated upstream.
+        /// </summary>
         public void UpdatePhysicalGlobal()
         {
 #if !NoEffectiveLength
@@ -201,25 +303,42 @@ namespace Vascular.Structure
             this.ReducedResistance = this.Length + this.End.ReducedResistance;
         }
 
+        /// <summary>
+        /// Updates then propagates upstream. See <see cref="UpdatePhysicalGlobal"/>, <see cref="BranchNode.PropagatePhysicalUpstream"/>.
+        /// </summary>
         public void PropagatePhysicalUpstream()
         {
             UpdatePhysicalGlobal();
             this.Start.PropagatePhysicalUpstream();
         }
 
+        /// <summary>
+        /// By default, this is set through <see cref="BranchNode.Flow"/> of <see cref="End"/>.
+        /// Can be set for testing hypothetical scenarios using <see cref="SetFlow(double)"/>.
+        /// </summary>
         [DataMember]
         public double Flow { get; private set; } = 0.0;
 
+        /// <summary>
+        /// See <see cref="Flow"/>.
+        /// </summary>
+        /// <param name="Q"></param>
         public void SetFlow(double Q)
         {
             this.Flow = Q;
         }
 
+        /// <summary>
+        /// Updates logical (legacy naming for topological) fields that are propagated upstream.
+        /// </summary>
         public void UpdateLogical()
         {
             this.Flow = this.End.Flow;
         }
 
+        /// <summary>
+        /// Use in a single down-up pass to recalculate all flows.
+        /// </summary>
         public void SetLogical()
         {
             foreach (var c in this.Children)
@@ -229,15 +348,25 @@ namespace Vascular.Structure
             UpdateLogical();
         }
 
+        /// <summary>
+        /// Propagates the flow changes up to the root.
+        /// </summary>
         public void PropagateLogicalUpstream()
         {
             UpdateLogical();
             this.Start.PropagateLogicalUpstream();
         }
 
+        /// <summary>
+        /// The <see cref="AxialBounds"/> containing all <see cref="Segments"/>.
+        /// </summary>
         [DataMember]
         public AxialBounds LocalBounds { get; private set; } = new AxialBounds();
 
+        /// <summary>
+        /// Updates each <see cref="Segment.Bounds"/> in <see cref="Segments"/>, then <see cref="LocalBounds"/> from these.
+        /// </summary>
+        /// <returns></returns>
         public AxialBounds GenerateLocalBounds()
         {
             this.LocalBounds = new AxialBounds(segments[0].GenerateBounds());
@@ -248,6 +377,12 @@ namespace Vascular.Structure
             return this.LocalBounds;
         }
 
+        /// <summary>
+        /// Updates each <see cref="Segment.Bounds"/> in <see cref="Segments"/>, extending using <paramref name="pad"/>, 
+        /// then <see cref="LocalBounds"/> from these.
+        /// </summary>
+        /// <param name="pad"></param>
+        /// <returns></returns>
         public AxialBounds GenerateLocalBounds(double pad)
         {
             this.LocalBounds = new AxialBounds(segments[0].GenerateBounds(pad));
@@ -258,9 +393,18 @@ namespace Vascular.Structure
             return this.LocalBounds;
         }
 
+        /// <summary>
+        /// The <see cref="AxialBounds"/> bounding <see cref="LocalBounds"/> and the result generated by
+        /// <see cref="BranchNode.GenerateDownstreamBounds"/>.
+        /// </summary>
         [DataMember]
         public AxialBounds GlobalBounds { get; private set; } = new AxialBounds();
 
+        /// <summary>
+        /// Generates <see cref="LocalBounds"/>, then combines with <see cref="BranchNode.GenerateDownstreamBounds"/> to update
+        /// <see cref="GlobalBounds"/>.
+        /// </summary>
+        /// <returns></returns>
         public AxialBounds GenerateDownstreamBounds()
         {
             GenerateLocalBounds();
@@ -269,6 +413,12 @@ namespace Vascular.Structure
             return this.GlobalBounds;
         }
 
+        /// <summary>
+        /// See <see cref="GenerateDownstreamBounds"/>, but calls <see cref="GenerateDownstreamBounds(double)"/> and
+        /// <see cref="BranchNode.GenerateDownstreamBounds(double)"/>.
+        /// </summary>
+        /// <param name="pad"></param>
+        /// <returns></returns>
         public AxialBounds GenerateDownstreamBounds(double pad)
         {
             GenerateLocalBounds(pad);
@@ -277,11 +427,20 @@ namespace Vascular.Structure
             return this.GlobalBounds;
         }
 
+        /// <summary>
+        /// Returns <see cref="LocalBounds"/>.
+        /// </summary>
+        /// <returns></returns>
         public AxialBounds GetAxialBounds()
         {
             return this.LocalBounds;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Segment> action)
         {
             foreach (var s in segments)
@@ -294,9 +453,17 @@ namespace Vascular.Structure
         }
 
 #if !NoDepthPathLength
+        /// <summary>
+        /// Returns the depth of the end node, so the <see cref="Network.Root"/> has depth 1.
+        /// </summary>
         public int Depth => this.End.Depth;
 #endif
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public Branch GetNthUpstream(int n)
         {
             var u = this;
@@ -307,10 +474,23 @@ namespace Vascular.Structure
             return u;
         }
 
+        /// <summary>
+        /// If we went to <see cref="End"/> and then <see cref="BranchNode.Upstream"/>, would we be back here?
+        /// See <see cref="CurrentTopologicallyValid"/>.
+        /// </summary>
         public bool IsTopologicallyValid => ReferenceEquals(this, this.CurrentTopologicallyValid);
 
+        /// <summary>
+        /// Sometimes branches are rewired but references are held elsewhere. This returns the branch that is
+        /// the <see cref="BranchNode.Upstream"/> of the node <see cref="End"/>.
+        /// </summary>
         public Branch CurrentTopologicallyValid => this.End?.Upstream;
 
+        /// <summary>
+        /// Similar to <see cref="IsStrictAncestorOf(Branch)"/> but allows b &lt;= a
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool IsAncestorOf(Branch b)
         {
             while (b != null)
@@ -324,6 +504,11 @@ namespace Vascular.Structure
             return false;
         }
 
+        /// <summary>
+        /// Tests if b &lt; a
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool IsStrictAncestorOf(Branch b)
         {
             b = b.Parent;
@@ -338,21 +523,39 @@ namespace Vascular.Structure
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool IsSiblingOf(Branch b)
         {
             return ReferenceEquals(this.Start, b.Start);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool IsChildOf(Branch b)
         {
             return ReferenceEquals(this.Start, b.End);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool IsParentOf(Branch b)
         {
             return ReferenceEquals(this.End, b.Start);
         }
 
+        /// <summary>
+        /// Test if we can get to a source node from here.
+        /// </summary>
         public bool IsRooted
         {
             get
@@ -366,6 +569,12 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        /// These must belong to the same <see cref="Network"/>, else null dereferencing will occur.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static Branch CommonAncestor(Branch a, Branch b)
         {
             while (!ReferenceEquals(a, b))
@@ -382,11 +591,19 @@ namespace Vascular.Structure
             return a;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<Segment> GetEnumerator()
         {
             return segments.GetEnumerator();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
