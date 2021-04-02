@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices
 {
+    /// <summary>
+    /// A lattice with different lengths in each axis.
+    /// </summary>
     [DataContract]
     public class CuboidLattice : Lattice
     {
@@ -14,15 +14,40 @@ namespace Vascular.Geometry.Lattices
         [DataMember]
         private readonly double inverseX, inverseY, inverseZ;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum Connection
         {
+            /// <summary>
+            /// 
+            /// </summary>
             SquareEdges,
+            /// <summary>
+            /// 
+            /// </summary>
             SquareEdgesVertices,
+            /// <summary>
+            /// 
+            /// </summary>
             CubeFaces,
+            /// <summary>
+            /// 
+            /// </summary>
             CubeFacesEdges,
+            /// <summary>
+            /// 
+            /// </summary>
             CubeFacesEdgesVertices
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lengthX"></param>
+        /// <param name="lengthZ"></param>
+        /// <param name="lengthY"></param>
+        /// <param name="connection"></param>
         public CuboidLattice(double lengthX, double lengthZ, double lengthY = 0.0, Connection connection = Connection.CubeFaces)
         {
             this.lengthX = lengthX;
@@ -54,16 +79,19 @@ namespace Vascular.Geometry.Lattices
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return new Vector3(v.x * inverseX, v.y * inverseY, v.z * inverseZ);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return new Vector3(u.x * lengthX, u.y * lengthY, u.z * lengthZ);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return NearestBasisRounding(v);

@@ -1,27 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Vascular.Geometry.Lattices.Manipulation
 {
+    /// <summary>
+    /// Walks the Voronoi cell of a lattice to find the closest basis.
+    /// Gives more consistency than the <see cref="Lattice"/> methods at higher cost.
+    /// </summary>
     public class VoronoiCellWalker
     {
         private Lattice lattice;
         private VoronoiCell voronoiCell;
         private ICollection<Vector3> visited = new List<Vector3>();
 
+        /// <summary>
+        /// How to record the vectors already visited.
+        /// </summary>
         public enum RecordMode
         {
+            /// <summary>
+            /// 
+            /// </summary>
             Set,
+            /// <summary>
+            /// 
+            /// </summary>
             List
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Lattice Lattice
         {
-            get
-            {
-                return lattice;
-            }
+            get => lattice;
             set
             {
                 lattice = value;
@@ -29,6 +40,9 @@ namespace Vascular.Geometry.Lattices.Manipulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public RecordMode Mode
         {
             set
@@ -41,12 +55,22 @@ namespace Vascular.Geometry.Lattices.Manipulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <param name="mode"></param>
         public VoronoiCellWalker(Lattice lattice, RecordMode mode = RecordMode.Set)
         {
             this.Lattice = lattice;
             this.Mode = mode;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public Vector3 NearestBasis(Vector3 v)
         {
             var u = lattice.ToBasis(v).NearestIntegral();

@@ -1,26 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Geometry.Graphs
 {
+    /// <summary>
+    /// Links vertices.
+    /// </summary>
     public class Edge
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="e"></param>
         public Edge(Vertex s, Vertex e)
         {
             (S, E) = (s, e);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Vertex S, E;
 
+        /// <summary>
+        /// Use only when certain that <paramref name="v"/> is either <see cref="S"/> or <see cref="E"/>.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public Vertex Other(Vertex v)
         {
             return v == S ? E : S;
         }
 
+        /// <summary>
+        /// Returns null if not present in edge.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public Vertex OtherSafe(Vertex v)
         {
             return v == S ? E : v == E ? S : null;
@@ -53,7 +70,14 @@ namespace Vascular.Geometry.Graphs
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static IEqualityComparer<Edge> Undirected => new UndirectedComparer();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static IEqualityComparer<Edge> Directed => new DirectedComparer();
     }
 }

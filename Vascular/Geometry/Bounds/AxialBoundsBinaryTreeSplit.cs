@@ -1,15 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Vascular.Geometry.Bounds
 {
+    /// <summary>
+    /// A splitting node with 2 children.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AxialBoundsBinaryTreeSplit<T> : AxialBoundsBinaryTreeNode<T> where T : IAxialBoundable
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public AxialBoundsBinaryTreeNode<T> Left { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public AxialBoundsBinaryTreeNode<T> Right { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elements"></param>
         public AxialBoundsBinaryTreeSplit(IEnumerable<T> elements) : base(elements.GetTotalBounds(), elements.Count())
         {
             if (this.Count == 2)
@@ -48,6 +62,7 @@ namespace Vascular.Geometry.Bounds
             this.Right = AxialBoundsBinaryTree.Create(above);
         }
 
+        /// <inheritdoc/>
         public override void Query(AxialBounds query, Action<T> action)
         {
             if (bounds.Intersects(query))
@@ -57,6 +72,7 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <inheritdoc/>
         public override void UpdateBounds()
         {
             this.Left.UpdateBounds();

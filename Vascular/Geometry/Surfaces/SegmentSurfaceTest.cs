@@ -8,6 +8,9 @@ using Vascular.Structure;
 
 namespace Vascular.Geometry.Surfaces
 {
+    /// <summary>
+    /// Fast testing intersections with segments.
+    /// </summary>
     public class SegmentSurfaceTest : IAxialBoundable
     {
         private readonly Vector3 start;
@@ -18,6 +21,10 @@ namespace Vascular.Geometry.Surfaces
         private readonly Vector3 multiplier;
         private readonly AxialBounds bounds;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
         public SegmentSurfaceTest(Segment s)
         {
             start = s.Start.Position;
@@ -30,6 +37,11 @@ namespace Vascular.Geometry.Surfaces
             bounds = new AxialBounds(s);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public double DistanceToSurface(Vector3 x)
         {
             var lineFactor = x * multiplier - offset;
@@ -37,6 +49,11 @@ namespace Vascular.Geometry.Surfaces
             return Vector3.Distance(linePoint, x) - radius;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public (double d, Vector3 n) DistanceAndNormalToSurface(Vector3 x)
         {
             var lineFactor = x * multiplier - offset;
@@ -46,6 +63,7 @@ namespace Vascular.Geometry.Surfaces
             return magnitude == 0.0 ? (-radius, null) : (magnitude - radius, outwards / magnitude);
         }
 
+        /// <inheritdoc/>
         public AxialBounds GetAxialBounds()
         {
             return bounds;

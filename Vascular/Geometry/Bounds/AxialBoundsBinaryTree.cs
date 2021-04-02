@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using Vascular.Structure;
 
 namespace Vascular.Geometry.Bounds
 {
+    /// <summary>
+    /// Helper methods for trees.
+    /// </summary>
     public static class AxialBoundsBinaryTree
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="elements"></param>
+        /// <returns></returns>
         public static AxialBoundsBinaryTreeNode<T> Create<T>(IEnumerable<T> elements) where T : IAxialBoundable
         {
             return elements.Count() == 1
@@ -16,6 +22,14 @@ namespace Vascular.Geometry.Bounds
                 : (AxialBoundsBinaryTreeNode<T>)new AxialBoundsBinaryTreeSplit<T>(elements);
         }
 
+        /// <summary>
+        /// Tests recursively, but might have stack issues.
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <param name="a"></param>
         public static void TestRecursive<U, V>(AxialBoundsBinaryTreeNode<U> u, AxialBoundsBinaryTreeNode<V> v, Action<U, V> a)
             where U : IAxialBoundable
             where V : IAxialBoundable
@@ -68,6 +82,14 @@ namespace Vascular.Geometry.Bounds
             public AxialBoundsBinaryTreeNode<V> v;
         }
 
+        /// <summary>
+        /// Tests using a stack rather than recursion.
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <param name="a"></param>
         public static void TestFlat<U, V>(AxialBoundsBinaryTreeNode<U> u, AxialBoundsBinaryTreeNode<V> v, Action<U, V> a)
             where U : IAxialBoundable
             where V : IAxialBoundable
@@ -113,6 +135,12 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <summary>
+        /// Visits recursively.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        /// <param name="leafAction"></param>
         public static void Visit<T>(AxialBoundsBinaryTreeNode<T> node, Action<AxialBoundsBinaryTreeLeaf<T>> leafAction)
             where T : IAxialBoundable
         {

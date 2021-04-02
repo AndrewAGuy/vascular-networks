@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
+    /// <summary>
+    /// Arbitrary affine transform.
+    /// </summary>
     [DataContract]
     public class RotatedOffsetLattice : Lattice
     {
@@ -17,6 +17,12 @@ namespace Vascular.Geometry.Lattices.Transformed
         [DataMember]
         private readonly Vector3 offset;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <param name="rotation"></param>
+        /// <param name="offset"></param>
         public RotatedOffsetLattice(Lattice lattice, Matrix3 rotation, Vector3 offset)
         {
             this.lattice = lattice;
@@ -27,16 +33,19 @@ namespace Vascular.Geometry.Lattices.Transformed
             voronoiCell = new VoronoiCell(lattice.VoronoiCell.Connections, this.Basis);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return lattice.ClosestVectorBasis(inverse * (v - offset));
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return lattice.ToBasis(inverse * (v - offset));
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return rotation * lattice.ToSpace(u) + offset;

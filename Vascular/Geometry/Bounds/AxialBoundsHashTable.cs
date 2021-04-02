@@ -2,10 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Vascular.Geometry.Bounds
 {
+    /// <summary>
+    /// An implementation of a multi-level hash table in a single <see cref="Dictionary{TKey, TValue}"/> through the use of a level appended to the key.
+    /// Taken from Eitz and Lixu, 'Hierarchical Spatial Hashing for Real-time Collision Detection'
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AxialBoundsHashTable<T> : IEnumerable<T>, IAxialBoundsQueryable<T>, IAxialBoundable where T : IAxialBoundable
     {
         private struct Key : IEquatable<Key>
@@ -49,6 +53,12 @@ namespace Vascular.Geometry.Bounds
             return baseStride * Math.Pow(factor, level);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <param name="stride">The base stride. All boxes will be multiples of this.</param>
+        /// <param name="factor">The scaling factor between levels.</param>
         public AxialBoundsHashTable(IEnumerable<T> elements, double stride = 1.0, double factor = 2.0)
         {
             baseStride = stride;
@@ -72,6 +82,10 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="element"></param>
         public void Add(T element)
         {
             var bounds = element.GetAxialBounds();
@@ -94,6 +108,10 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <summary>
+        /// Does not update the total bounds.
+        /// </summary>
+        /// <param name="element"></param>
         public void Remove(T element)
         {
             var bounds = element.GetAxialBounds();
@@ -121,11 +139,13 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <inheritdoc/>
         public AxialBounds GetAxialBounds()
         {
             return totalBounds;
         }
 
+        /// <inheritdoc/>
         public void Query(AxialBounds query, Action<T> action)
         {
             query = query.Copy().Trim(totalBounds);
@@ -157,6 +177,7 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             foreach (var list in table.Values)
@@ -168,6 +189,7 @@ namespace Vascular.Geometry.Bounds
             }
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

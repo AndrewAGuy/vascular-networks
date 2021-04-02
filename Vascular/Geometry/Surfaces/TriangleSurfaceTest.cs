@@ -1,21 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
 
 namespace Vascular.Geometry.Surfaces
 {
+    /// <summary>
+    /// Fast surface testing by caching.
+    /// </summary>
     public class TriangleSurfaceTest : IAxialBoundable
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tr"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
         public TriangleSurfaceTest(Triangle tr, double r = 0.0, double t2 = 1.0e-12) : this(tr.A.P, tr.B.P, tr.C.P, r, t2)
         {
             tri = tr;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <param name="C"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
         public TriangleSurfaceTest(Vector3 A, Vector3 B, Vector3 C, double r = 0.0, double t2 = 1.0e-12)
         {
             // Copy position vectors, calculate edges
@@ -61,26 +74,40 @@ namespace Vascular.Geometry.Surfaces
         private readonly Vector3 b01, b02;
         private readonly double t2;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 A => p0;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 B => p1;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 C => p2;
 
-        public Triangle Triangle
-        {
-            get
-            {
-                return tri;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Triangle Triangle => tri;
 
-        public Vector3 Normal
-        {
-            get
-            {
-                return n;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3 Normal => n;
 
+        /// <summary>
+        /// The key method, used for testing segment intersections with meshes.
+        /// </summary>
+        /// <param name="r0"></param>
+        /// <param name="rd"></param>
+        /// <param name="t"></param>
+        /// <param name="f"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
         public bool TestRay(Vector3 r0, Vector3 rd, double t, ref double f, ref Vector3 p)
         {
             // We want the first point of contact. Test if we start the ray above or below the testing planes, and if the ray moves away.
@@ -345,16 +372,30 @@ namespace Vascular.Geometry.Surfaces
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public AxialBounds GetAxialBounds()
         {
             return ab;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public double DistanceToPlane(Vector3 v)
         {
             return v * n - d;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public Vector3 ProjectToPlane(Vector3 v)
         {
             // v = p + a * n
@@ -363,6 +404,12 @@ namespace Vascular.Geometry.Surfaces
             return v - f * n;
         }
 
+        /// <summary>
+        /// Closest point in triangle to <paramref name="p"/>, returns distance <paramref name="d"/>.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="d"></param>
+        /// <returns></returns>
         public Vector3 ClosestPoint(Vector3 p, out double d)
         {
             var inPlane = ProjectToPlane(p);
@@ -404,6 +451,11 @@ namespace Vascular.Geometry.Surfaces
             }
         }
 
+        /// <summary>
+        /// Distance from triangle to point.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public double DistanceSquared(Vector3 v)
         {
             var inPlane = ProjectToPlane(v);
@@ -441,6 +493,14 @@ namespace Vascular.Geometry.Surfaces
             }
         }
 
+        /// <summary>
+        /// Honestly I'm not sure why I wrote this now.
+        /// </summary>
+        /// <param name="clamp"></param>
+        /// <param name="direction"></param>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <returns></returns>
         public bool Extremum(Vector3 clamp, Vector3 direction, out Vector3 position, out Vector3 normal)
         {
             // Work in edge coords
@@ -550,6 +610,13 @@ namespace Vascular.Geometry.Surfaces
             return true;
         }
 
+        /// <summary>
+        /// Test a triangle against another naiively.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3 a, out Vector3 b)
         {
             var f = 0.0;

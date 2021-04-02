@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices
 {
+    /// <summary>
+    /// A collection of half spaces that define the Voronoi cell of a lattice.
+    /// </summary>
     [DataContract]
     public class VoronoiCell
     {
@@ -21,6 +21,11 @@ namespace Vascular.Geometry.Lattices
         [DataMember]
         private readonly HalfSpace[] halfSpaces;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="basisConnections"></param>
+        /// <param name="basis"></param>
         public VoronoiCell(Vector3[] basisConnections, Matrix3 basis)
         {
             this.Connections = basisConnections;
@@ -36,9 +41,17 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
         public Vector3[] Connections { get; }
 
+        /// <summary>
+        /// The connection vector associated with the greatest half-space violation.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public Vector3 MostViolatedConnection(Vector3 v)
         {
             Vector3 mostViolated = null;

@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Geometry.Generators
 {
+    /// <summary>
+    /// Generates vectors around the corners of a cube. Not random, but useful for generating normals.
+    /// </summary>
     [DataContract]
     public class CubeGrayCode : IVector3Generator
     {
@@ -22,11 +23,18 @@ namespace Vascular.Geometry.Generators
         [DataMember]
         private uint index = uint.MaxValue;
 
+        /// <inheritdoc/>
         public Vector3 NextVector3()
         {
             return DIRECTIONS[++index % 8];
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="tol2"></param>
+        /// <returns></returns>
         public Vector3 GenerateArbitraryNormal(Vector3 v, double tol2 = 1.0e-10)
         {
             // Arbitrary axis chosen, remove component in v and see what remains.

@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Vascular.Geometry.Lattices
+﻿namespace Vascular.Geometry.Lattices
 {
+    /// <summary>
+    /// Various connectivity patterns.
+    /// </summary>
     public static class Connectivity
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] CubeFaces
         {
             get
@@ -22,6 +24,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] CubeFacesEdges
         {
             get
@@ -50,6 +55,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] CubeFacesEdgesVertices
         {
             get
@@ -86,6 +94,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] Tetrahedron
         {
             get
@@ -108,6 +119,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] SquareEdges
         {
             get
@@ -122,6 +136,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] SquareEdgesVertices
         {
             get
@@ -140,6 +157,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] Triangle
         {
             get
@@ -156,6 +176,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] HexagonalPrismFaces
         {
             get
@@ -174,6 +197,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] HexagonalPrismFacesEdges
         {
             get
@@ -204,6 +230,9 @@ namespace Vascular.Geometry.Lattices
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static Vector3[] BodyCentredCubic
         {
             get

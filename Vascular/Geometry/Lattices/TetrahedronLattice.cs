@@ -1,22 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Geometry.Lattices
 {
+    /// <summary>
+    /// A tetrahedral lattice.
+    /// </summary>
     [DataContract]
     public class TetrahedronLattice : Lattice
     {
         [DataMember]
         private readonly Matrix3 inverse;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum Connection
         {
+            /// <summary>
+            /// Triangles in plane.
+            /// </summary>
             Triangle,
+            /// <summary>
+            /// Full 3D.
+            /// </summary>
             Tetrahedron
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="length"></param>
+        /// <param name="connection"></param>
         public TetrahedronLattice(double length, Connection connection = Connection.Tetrahedron)
         {
             var b0 = new Vector3(1.0 * length, 0, 0);
@@ -40,16 +55,19 @@ namespace Vascular.Geometry.Lattices
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return inverse * v;
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return NearestBasisVoronoi(v, 2);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return basis * u;

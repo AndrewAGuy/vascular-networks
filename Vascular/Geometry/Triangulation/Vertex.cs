@@ -2,30 +2,53 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using Vascular.Geometry;
 
 namespace Vascular.Geometry.Triangulation
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [DataContract]
     public class Vertex
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p"></param>
         public Vertex(Vector3 p)
         {
             P = p;
         }
 
+        /// <summary>
+        /// Position.
+        /// </summary>
         [DataMember]
         public Vector3 P;
 
+        /// <summary>
+        /// Edges.
+        /// </summary>
         [DataMember]
         public LinkedList<Edge> E = new LinkedList<Edge>();
+
+        /// <summary>
+        /// Triangles.
+        /// </summary>
         [DataMember]
         public LinkedList<Triangle> T = new LinkedList<Triangle>();
 
+        /// <summary>
+        /// Normal.
+        /// </summary>
         [DataMember]
         public Vector3 N;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weighting"></param>
+        /// <returns></returns>
         public Vector3 SetGroupNormal(Func<Triangle, Vertex, double> weighting)
         {
             var v = new Vector3();
@@ -39,6 +62,12 @@ namespace Vascular.Geometry.Triangulation
             return N = (v / w).Normalize();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static double AngleWeighting(Triangle t, Vertex v)
         {
             double a, b, c;
@@ -69,11 +98,18 @@ namespace Vascular.Geometry.Triangulation
             return Math.Acos(x);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Vector3 SetGroupNormal()
         {
             return SetGroupNormal(AngleWeighting);
         }
 
+        /// <summary>
+        /// The vertices attached to this in order.
+        /// </summary>
         public List<Vertex> Fan
         {
             get
@@ -101,6 +137,9 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// If a boundary vertex, the vertices attached to this as an open arc.
+        /// </summary>
         public List<Vertex> BoundaryFan
         {
             get
@@ -149,6 +188,9 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// The vertices attached to this.
+        /// </summary>
         public List<Vertex> UnorderedFan
         {
             get
@@ -162,6 +204,11 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
         public List<Vertex> FanFrom(Vertex start)
         {
             if (EdgeTo(start) is not Edge edge)
@@ -198,6 +245,11 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public Edge EdgeTo(Vertex other)
         {
             foreach (var e in E)
@@ -210,11 +262,19 @@ namespace Vascular.Geometry.Triangulation
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool IsConnected(Vertex other)
         {
             return E.Any(e => e.Other(this) == other);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsInterior
         {
             get
@@ -230,6 +290,9 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool VerifyEdgeCounts
         {
             get
@@ -245,6 +308,12 @@ namespace Vascular.Geometry.Triangulation
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public bool TriangleExists(Vertex u, Vertex v)
         {
             foreach (var t in T)

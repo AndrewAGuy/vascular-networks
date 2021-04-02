@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Vascular.Geometry.Generators
 {
+    /// <summary>
+    /// Uses a Box-Muller transform to turn unit uniform numbers to Gaussian.
+    /// </summary>
     [DataContract]
     public class GaussianRandom : IVector3Generator
     {
@@ -15,16 +16,27 @@ namespace Vascular.Geometry.Generators
         [DataMember]
         private bool generate = true;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="seed"></param>
         public GaussianRandom(int seed)
         {
             random = new Random(seed);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public GaussianRandom()
         {
             random = new Random();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public double NextDouble()
         {
             if (!generate)
@@ -45,6 +57,7 @@ namespace Vascular.Geometry.Generators
             return uu * Math.Cos(vv);
         }
 
+        /// <inheritdoc/>
         public Vector3 NextVector3()
         {
             return new Vector3(NextDouble(), NextDouble(), NextDouble());

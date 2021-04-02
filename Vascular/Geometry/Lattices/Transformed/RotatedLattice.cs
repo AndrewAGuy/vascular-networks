@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
+    /// <summary>
+    /// Lattice with rotation. Does not verify that the rotation is a rotation.
+    /// </summary>
     [DataContract]
     public class RotatedLattice : Lattice
     {
@@ -15,6 +15,11 @@ namespace Vascular.Geometry.Lattices.Transformed
         [DataMember]
         private readonly Matrix3 inverse;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <param name="rotation"></param>
         public RotatedLattice(Lattice lattice, Matrix3 rotation)
         {
             this.lattice = lattice;
@@ -24,16 +29,19 @@ namespace Vascular.Geometry.Lattices.Transformed
             voronoiCell = new VoronoiCell(lattice.VoronoiCell.Connections, this.Basis);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return lattice.ClosestVectorBasis(inverse * v);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return lattice.ToBasis(inverse * v);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return rotation * lattice.ToSpace(u);

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices
 {
+    /// <summary>
+    /// The most basic type of lattice.
+    /// </summary>
     [DataContract]
     public class CubeLattice : Lattice
     {
@@ -13,13 +13,30 @@ namespace Vascular.Geometry.Lattices
         [DataMember]
         private readonly double inverse;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum Connection
         {
+            /// <summary>
+            /// 
+            /// </summary>
             Faces,
+            /// <summary>
+            /// 
+            /// </summary>
             FacesEdges,
+            /// <summary>
+            /// 
+            /// </summary>
             FacesEdgesVertices
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="length"></param>
+        /// <param name="connection"></param>
         public CubeLattice(double length, Connection connection = Connection.Faces)
         {
             this.length = length;
@@ -41,16 +58,19 @@ namespace Vascular.Geometry.Lattices
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return NearestBasisRounding(v);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return v * inverse;
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return u * length;

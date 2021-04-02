@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace Vascular.Geometry.Lattices.Transformed
 {
+    /// <summary>
+    /// A lattice whose basis has been scaled, useful for subdivision.
+    /// Uses integral scaling, so returns a superlattice.
+    /// </summary>
     [DataContract]
     public class RefinedLattice : Lattice
     {
@@ -13,6 +14,11 @@ namespace Vascular.Geometry.Lattices.Transformed
         [DataMember]
         private readonly Lattice lattice;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <param name="refinement"></param>
         public RefinedLattice(Lattice lattice, int refinement)
         {
             this.Basis = lattice.Basis / refinement;
@@ -21,16 +27,19 @@ namespace Vascular.Geometry.Lattices.Transformed
             this.lattice = lattice;
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToBasis(Vector3 v)
         {
             return lattice.ToBasis(v * refinement);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ClosestVectorBasis(Vector3 v)
         {
             return lattice.ClosestVectorBasis(v * refinement);
         }
 
+        /// <inheritdoc/>
         public override Vector3 ToSpace(Vector3 u)
         {
             return lattice.ToSpace(u) / refinement;

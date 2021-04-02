@@ -1,20 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Geometry.Generators
 {
+    /// <summary>
+    /// Generates points uniformly on the unit sphere.
+    /// </summary>
     public class SphericalRandom : IVector3Generator
     {
         private readonly Random random;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="random"></param>
         public SphericalRandom(Random random)
         {
             this.random = random;
         }
 
+        /// <inheritdoc/>
         public Vector3 NextVector3()
         {
             // Archimedes' Theorem (cylinder and sphere)

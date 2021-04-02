@@ -1,18 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vascular.Geometry.Surfaces;
+﻿using System.Collections.Generic;
 using Vascular.Geometry.Triangulation;
 
 namespace Vascular.Geometry.Bounds
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class AxialBoundsExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public static IAxialBoundsQueryable<T> AsQueryable<T>(this IEnumerable<T> e) where T : IAxialBoundable
         {
             return new AxialBoundsQuerySequence<T>(e);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="es"></param>
+        /// <returns></returns>
         public static AxialBounds GetTotalBounds<T>(this IEnumerable<T> es) where T : IAxialBoundable
         {
             var e = es.GetEnumerator();
@@ -24,6 +36,12 @@ namespace Vascular.Geometry.Bounds
             return b;
         }
 
+        /// <summary>
+        /// Converts bounds to a series of points and multiples by <paramref name="m"/>.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
         public static AxialBounds Transform(this AxialBounds b, Matrix3 m)
         {
             var l = b.Lower;
@@ -40,6 +58,11 @@ namespace Vascular.Geometry.Bounds
                 .Append(m * v100).Append(m * v101).Append(m * v110).Append(m * v111);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static Vector3[] Vertices(this AxialBounds b)
         {
             var v000 = new Vector3(b.Lower);
@@ -53,6 +76,11 @@ namespace Vascular.Geometry.Bounds
             return new Vector3[8] { v000, v001, v010, v011, v100, v101, v110, v111 };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static Mesh ToMesh(this AxialBounds b)
         {
             var m = new Mesh();

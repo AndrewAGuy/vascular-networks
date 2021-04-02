@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
 
 namespace Vascular.Geometry.Surfaces
 {
+    
     public record RayIntersection<T>(T Object, double Fraction);
 
+    /// <summary>
+    /// 
+    /// </summary>
     public static class SurfaceExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="rayTolerance"></param>
+        /// <returns></returns>
         public static IEnumerable<RayIntersection<TriangleSurfaceTest>> RayIntersections(
             this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 direction, double rayTolerance)
@@ -30,6 +39,14 @@ namespace Vascular.Geometry.Surfaces
             return intersections;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="rayTolerance"></param>
+        /// <returns></returns>
         public static int RayIntersectionCount(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 direction, double rayTolerance)
         {
@@ -47,6 +64,14 @@ namespace Vascular.Geometry.Surfaces
             return intersections;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="rayTolerance"></param>
+        /// <returns></returns>
         public static (int inwards, int outwards) RayIntersectionCounts(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 direction, double rayTolerance)
         {
@@ -72,6 +97,15 @@ namespace Vascular.Geometry.Surfaces
             return (inwards, outwards);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirection"></param>
+        /// <param name="rayTolerance"></param>
+        /// <param name="fractionRounding"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 testDirection, double rayTolerance, int fractionRounding)
         {
@@ -89,6 +123,16 @@ namespace Vascular.Geometry.Surfaces
             return hits.Count % 2 != 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirections"></param>
+        /// <param name="minHits"></param>
+        /// <param name="rayTolerance"></param>
+        /// <param name="fractionRounding"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3[] testDirections, int minHits, double rayTolerance, int fractionRounding)
         {
@@ -103,6 +147,14 @@ namespace Vascular.Geometry.Surfaces
             return hits >= minHits;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirection"></param>
+        /// <param name="tol"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 testDirection, double tol)
         {
@@ -120,6 +172,15 @@ namespace Vascular.Geometry.Surfaces
             return count % 2 != 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirections"></param>
+        /// <param name="minHits"></param>
+        /// <param name="tol"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3[] testDirections, int minHits, double tol)
         {
@@ -134,6 +195,13 @@ namespace Vascular.Geometry.Surfaces
             return hits >= minHits;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirection"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 testDirection)
         {
@@ -156,6 +224,14 @@ namespace Vascular.Geometry.Surfaces
             return minFraction <= 1.0 && outwards;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="testDirections"></param>
+        /// <param name="minHits"></param>
+        /// <returns></returns>
         public static bool IsPointInside(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3[] testDirections, int minHits)
         {
@@ -170,6 +246,11 @@ namespace Vascular.Geometry.Surfaces
             return hits >= minHits;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
         public static double Volume(this Mesh mesh)
         {
             var total = 0.0;
@@ -185,6 +266,11 @@ namespace Vascular.Geometry.Surfaces
             return Math.Abs(total) / 6.0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <returns></returns>
         public static double Volume(this IEnumerable<TriangleSurfaceTest> surface)
         {
             var total = 0.0;
@@ -200,6 +286,11 @@ namespace Vascular.Geometry.Surfaces
             return Math.Abs(total) / 6.0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <returns></returns>
         public static double Volume(this IAxialBoundsQueryable<TriangleSurfaceTest> surface)
         {
             var total = 0.0;
