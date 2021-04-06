@@ -6,7 +6,7 @@
     <authors>AGuy</authors>
     <description>Procedural Plumbing for Bioengineering</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright Andrew Guy 2021</copyright>
+    <copyright>Copyright (C) 2021 Andrew Guy</copyright>
     <projectUrl>https://github.com/AndrewAGuy/vascular-networks</projectUrl>
     <license type="expression">AGPL-3.0-only</license>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
