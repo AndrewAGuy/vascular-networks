@@ -109,7 +109,7 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// When terminals are removed from the network, we might want to do something with them.
         /// </summary>
-        public event Action<Terminal> TerminalCulled;
+        public Action<Terminal> TerminalCulled { get; set; }
 
         /// <summary>
         /// 

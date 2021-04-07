@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Vascular.Intersections.Enforcement;
 using Vascular.Structure;
 
@@ -10,7 +11,7 @@ namespace Vascular.Intersections.Triangulation
     public class MeshRecorder : Recorder<TriangleIntersection, Branch>
     {
         /// <summary>
-        /// 
+        /// All outwards intersections are added to <see cref="Recorder{TIntersection, TPenalizing}.Culling"/>.
         /// </summary>
         public bool CullOutwards { get; set; } = true;
 
@@ -20,6 +21,12 @@ namespace Vascular.Intersections.Triangulation
         public override int Count => intersecting.Count;
 
         private Dictionary<Segment, MeshIntersectionExtrema> intersections = new Dictionary<Segment, MeshIntersectionExtrema>();
+
+        /// <summary>
+        /// Some use cases require branches to cross from outside to inside a mesh.
+        /// In this case, we might want to ignore an intersection in the root branches and focus only on the extremities.
+        /// </summary>
+        public Predicate<Branch> Ignore { get; set; } = b => false;
 
         /// <summary>
         /// 
@@ -53,6 +60,11 @@ namespace Vascular.Intersections.Triangulation
         /// <param name="t"></param>
         protected override void RecordSingle(TriangleIntersection t)
         {
+            if (this.Ignore(t.Segment.Branch))
+            {
+                return;
+            }
+
             if (intersections.TryGetValue(t.Segment, out var existing))
             {
                 existing.Add(t);

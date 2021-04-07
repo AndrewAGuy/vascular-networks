@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure
 {
@@ -173,6 +174,26 @@ namespace Vascular.Structure
         public AxialBounds GetAxialBounds()
         {
             return this.Bounds;
+        }
+
+        /// <summary>
+        /// Creates an equivalent segment with dummy nodes and cloned positions, useful for cloning an immutable network.
+        /// </summary>
+        /// <returns></returns>
+        public Segment MakeDummy()
+        {
+            return new Segment()
+            {
+                Start = new Dummy()
+                {
+                    Position = new Vector3(this.Start.Position)
+                },
+                End = new Dummy()
+                {
+                    Position = new Vector3(this.End.Position)
+                },
+                Radius = radius
+            };
         }
     }
 }

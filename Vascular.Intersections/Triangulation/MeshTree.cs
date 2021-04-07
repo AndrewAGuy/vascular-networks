@@ -12,7 +12,7 @@ namespace Vascular.Intersections.Triangulation
     /// <summary>
     /// Wraps a mesh in a binary tree an implements a query pattern similar to the network collision detectors.
     /// </summary>
-    public class TreeEvaluator : IIntersectionEvaluator<TriangleIntersection>
+    public class MeshTree : IIntersectionEvaluator<TriangleIntersection>
     {
         /// <summary>
         /// 
@@ -23,7 +23,7 @@ namespace Vascular.Intersections.Triangulation
         /// 
         /// </summary>
         /// <param name="tree"></param>
-        public TreeEvaluator(AxialBoundsBinaryTreeNode<TriangleSurfaceTest> tree)
+        public MeshTree(AxialBoundsBinaryTreeNode<TriangleSurfaceTest> tree)
         {
             this.Tree = tree;
         }
@@ -34,7 +34,7 @@ namespace Vascular.Intersections.Triangulation
         /// <param name="mesh"></param>
         /// <param name="r"></param>
         /// <param name="t2"></param>
-        public TreeEvaluator(Mesh mesh, double r = 0.0, double t2 = 1e-12)
+        public MeshTree(Mesh mesh, double r = 0.0, double t2 = 1e-12)
         {
             var surfaceTests = mesh.T.Select(triangle => new TriangleSurfaceTest(triangle, r, t2)).ToList();
             this.Tree = AxialBoundsBinaryTree.Create(surfaceTests);

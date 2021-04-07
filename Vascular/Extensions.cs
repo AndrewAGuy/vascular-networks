@@ -64,6 +64,18 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Converts a single <typeparamref name="T"/> instance <paramref name="t"/> to a single element array.
+        /// Useful for methods that take <see cref="IEnumerable{T}"/> or arrays.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static T[] AsArray<T>(this T t)
+        {
+            return new T[] { t };
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="val"></param>
@@ -278,7 +290,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// If <paramref name="key"/> is present in <paramref name="dict"/>, sets to <paramref name="update"/>(old value, <paramref name="value"/>).
+        /// If <paramref name="key"/> is present in <paramref name="dict"/>, sets to <paramref name="update"/>(current, <paramref name="value"/>).
         /// Otherwise, sets the value associated with <paramref name="key"/> using <paramref name="add"/>(<paramref name="value"/>).
         /// </summary>
         /// <typeparam name="TKey"></typeparam>
@@ -288,10 +300,42 @@ namespace Vascular
         /// <param name="value"></param>
         /// <param name="add"></param>
         /// <param name="update"></param>
-        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value, 
+        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value,
             Func<TValue, TValue> add, Func<TValue, TValue, TValue> update)
         {
             dict[key] = dict.TryGetValue(key, out var current) ? update(current, value) : add(value);
+        }
+
+        /// <summary>
+        /// If <paramref name="key"/> is present in <paramref name="dict"/>, sets to <paramref name="update"/>(current, <paramref name="value"/>).
+        /// Otherwise, sets the value associated with <paramref name="key"/> to <paramref name="value"/>.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="update"></param>
+        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value,
+            Func<TValue, TValue, TValue> update)
+        {
+            dict[key] = dict.TryGetValue(key, out var current) ? update(current, value) : value;
+        }
+
+        /// <summary>
+        /// If <paramref name="key"/> is present in <paramref name="dict"/>, sets to <paramref name="update"/>(current).
+        /// Otherwise, sets the value associated with <paramref name="key"/> to <paramref name="value"/>.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="update"></param>
+        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value,
+            Func<TValue, TValue> update)
+        {
+            dict[key] = dict.TryGetValue(key, out var current) ? update(current) : value;
         }
 
         /// <summary>

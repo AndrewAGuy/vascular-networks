@@ -1,5 +1,6 @@
 ﻿using System;
 using Vascular.Geometry;
+using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC.Defaults
@@ -85,6 +86,26 @@ namespace Vascular.Construction.LSC.Defaults
         public static TerminalPairPredicate TerminalPairRadiusPredicate(double criticalRadius)
         {
             return (T, t) => T.Upstream.Radius >= criticalRadius;
+        }
+
+        /// <summary>
+        /// During <see cref="LatticeState.Spread"/>, newly added terminals do not trigger a propagation.
+        /// This must be performed manually in <see cref="LatticeState.AfterSpreadAction"/> if optimization is to be performed.
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="setRadii"></param>
+        /// <returns></returns>
+        public static Action UpdateLogicalAndPhysical(Network network, bool setRadii = true)
+        {
+            return () =>
+            {
+                network.Root.SetLogical();
+                network.Source.CalculatePhysical();
+                if (setRadii)
+                {
+                    network.Source.PropagateRadiiDownstream();
+                }
+            };
         }
     }
 }
