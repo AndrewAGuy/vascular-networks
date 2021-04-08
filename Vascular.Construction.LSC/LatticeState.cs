@@ -25,7 +25,7 @@ namespace Vascular.Construction.LSC
             this.Network = network;
             this.Lattice = lattice;
             this.Connections = lattice.VoronoiCell.Connections;
-            this.ClosestBasisFunction = v => this.Lattice.ClosestVectorBasis(v);
+            this.ClosestBasisFunction = this.Lattice.ClosestVectorBasis;
         }
 
         /// <summary>

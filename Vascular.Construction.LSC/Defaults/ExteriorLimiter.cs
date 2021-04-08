@@ -1,35 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 
 namespace Vascular.Construction.LSC.Defaults
 {
+    /// <summary>
+    /// Some schemes, particularly when running trimming actions as a <see cref="LatticeState.AfterSpreadAction"/>, 
+    /// can cause an infinite loop in which neighbouring exterior vectors with invalid candidate interior connections
+    /// are added and immediately removed. This causes the exterior to propagate back and forth between them.
+    /// <para/>
+    /// This class creates a set of delegates that track the number of times an exterior vector has been visisted, and
+    /// prevents it from being readded more than a given number of times. Can conflict with <see cref="SingleBuild"/>
+    /// delegates, which might require the limit to be raised.
+    /// </summary>
     public class ExteriorLimiter
     {
-        public Action AfterBuild { get; }
-
+        /// <summary>
+        /// Clears the tracked positions. Run this on <see cref="LatticeState.AfterCoarsenAction"/>, 
+        /// <see cref="LatticeState.AfterRefineAction"/>, <see cref="LatticeState.AfterReRefineAction"/>.
+        /// </summary>
         public Action OnEntry { get; }
 
-        public ExteriorLimiter(LatticeState latticeState, int limit)
+        /// <summary>
+        /// Tests the integral vector argument against the visited map. If limit is hit, returns false.
+        /// </summary>
+        public ExteriorPredicate Predicate { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="limit"></param>
+        /// <param name="capacity">The initial map capacity.</param>
+        public ExteriorLimiter(int limit, int capacity = 2048)
         {
-            var visited = new Dictionary<Vector3, int>();
-            this.OnEntry = () => visited.Clear();
-            this.AfterBuild = () =>
+            var visited = new Dictionary<Vector3, int>(capacity);
+            this.OnEntry = () => visited.Clear();            
+            this.Predicate = (z, x) =>
             {
-                foreach (var v in latticeState.Exterior.Keys)
+                if (visited.TryGetValue(z, out var n))
                 {
-                    visited.AddOrUpdate(v, 1, i => i + 1);
-                }
-                foreach (var kv in visited)
-                {
-                    if (kv.Value >= limit)
+                    if (n >= limit)
                     {
-                        latticeState.Exterior.Remove(kv.Key);
+                        return false;
                     }
+                    visited[z] = n + 1;
                 }
+                else
+                {
+                    visited[z] = 1;
+                }
+                return true;
             };
         }
     }

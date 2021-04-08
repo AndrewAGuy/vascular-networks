@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.IO.Text
 {
+    /// <summary>
+    /// Reads and writes segments to CSV format, with each segment being stored as start(x,y,z); end(x,y,z); radius.
+    /// </summary>
     public static class SegmentCsv
     {
+        /// <summary>
+        /// Creates a header row for a list of segments.
+        /// </summary>
+        /// <param name="sepChar"></param>
+        /// <returns></returns>
         public static string Header(char sepChar = ',')
         {
             return new StringBuilder()
@@ -24,6 +31,13 @@ namespace Vascular.IO.Text
                 .Append("radius").ToString();
         }
 
+        /// <summary>
+        /// Writes a sequence of segments using the specified conversion function and separator.
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="segments"></param>
+        /// <param name="sepChar"></param>
+        /// <param name="convert"></param>
         public static void Write(TextWriter writer, IEnumerable<Segment> segments,
             char sepChar = ',', Func<double, string> convert = null)
         {
@@ -45,10 +59,15 @@ namespace Vascular.IO.Text
             }
         }
 
+        /// <summary>
+        /// Reads a sequeuence of segments using the specified separator.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="sepChar"></param>
+        /// <returns></returns>
         public static IEnumerable<Segment> Read(TextReader reader, char sepChar = ',')
         {
-            var line = reader.ReadLine();
-            while (line != null)
+            for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
             {
                 var values = line.Split(sepChar)
                     .Select(t => double.TryParse(t, out var d) ? d : double.NaN)

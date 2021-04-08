@@ -37,8 +37,9 @@ namespace Vascular.Construction.LSC.Defaults
         /// </summary>
         /// <param name="state"></param>
         /// <param name="toIntegral"></param>
-        public SingleBuild(LatticeState state, ClosestBasisFunction toIntegral)
+        public SingleBuild(LatticeState state, ClosestBasisFunction toIntegral = null)
         {
+            toIntegral ??= state.ClosestBasisFunction;
             var built = new HashSet<Terminal>();
             var readding = new HashSet<Vector3>();
             this.BeforeSpread = () =>
