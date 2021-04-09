@@ -21,8 +21,10 @@ namespace Vascular.Construction.LSC.Defaults
         /// <param name="network"></param>
         /// <param name="map"></param>
         /// <param name="recalc"></param>
+        /// <param name="moveSource"></param>
         /// <returns></returns>
-        public static Action BeforeRefine(Network network, Func<Vector3, Vector3> map, bool recalc = false)
+        public static Action BeforeRefine(Network network, Func<Vector3, Vector3> map,
+            bool recalc = false, bool moveSource = true)
         {
             return () =>
             {
@@ -31,7 +33,10 @@ namespace Vascular.Construction.LSC.Defaults
                     switch (node)
                     {
                         case Source source:
-                            source.SetPosition(map(source.Position));
+                            if (moveSource)
+                            {
+                                source.SetPosition(map(source.Position));
+                            }
                             break;
                         case Terminal terminal:
                             terminal.SetPosition(map(terminal.Position));
@@ -80,7 +85,7 @@ namespace Vascular.Construction.LSC.Defaults
         /// <param name="newCentre"></param>
         /// <param name="newRadius"></param>
         /// <returns></returns>
-        public static Func<Vector3, Vector3> Homothety(Vector3 oldCentre, double oldRadius, 
+        public static Func<Vector3, Vector3> Homothety(Vector3 oldCentre, double oldRadius,
             Vector3 newCentre, double newRadius)
         {
             // v = a + f * (u - a)
