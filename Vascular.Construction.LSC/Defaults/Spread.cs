@@ -89,6 +89,15 @@ namespace Vascular.Construction.LSC.Defaults
         }
 
         /// <summary>
+        /// A simple cost, ranking by the distance to the direct line of the existing terminal branch.
+        /// </summary>
+        /// <returns></returns>
+        public static TerminalPairCostFunction TerminalPairDistanceCost()
+        {
+            return (T, t) => LinearAlgebra.DistanceToLine(T.Upstream.Start.Position, T.Position, t.Position);
+        }
+
+        /// <summary>
         /// During <see cref="LatticeState.Spread"/>, newly added terminals do not trigger a propagation.
         /// This must be performed manually in <see cref="LatticeState.AfterSpreadAction"/> if optimization is to be performed.
         /// </summary>

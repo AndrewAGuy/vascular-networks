@@ -55,7 +55,9 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public double FlowGradient(Branch br)
         {
-            return dW_dQ;
+            var dRe_dQ = this.Cache.Global[br].dRe_dQ;
+            return dW_dQ
+                + dW_dR * dRe_dQ;
         }
 
         /// <summary>
@@ -71,6 +73,16 @@ namespace Vascular.Optimization
                 Transient tr => this.Cache.PositionGradient(tr),
                 _ => Vector3.ZERO
             } * dW_dR;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        public double ReducedResistanceGradient(Branch br)
+        {
+            return dW_dR * this.Cache.Global[br].dRe_dR;
         }
     }
 }

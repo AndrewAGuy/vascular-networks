@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
+using Vascular.Optimization.Geometric;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
@@ -148,6 +149,19 @@ namespace Vascular.Optimization.Topological
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Using a given cost source, estimate the impact of promotion.
+        /// </summary>
+        /// <param name="toPromote"></param>
+        /// <param name="costs"></param>
+        /// <returns></returns>
+        public static PromoteNode TryPromote(Branch toPromote, HierarchicalCosts costs)
+        {
+
+
+            return null;
         }
     }
 }

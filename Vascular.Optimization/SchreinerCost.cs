@@ -86,5 +86,29 @@ namespace Vascular.Optimization
                 + dC_dRe * dRe_dQ 
                 + dC_dQe;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        public double ReducedResistanceGradient(Branch br)
+        {
+            var dLe_dR = this.EffectiveLengths.Gradients[br].dLe_dR;
+            var dRe_dR = this.Cache.Global[br].dRe_dR;
+            return dC_dLe * dLe_dR
+                + dC_dRe * dRe_dR;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        public double EffectiveLengthGradient(Branch br)
+        {
+            var dLe_dL = this.EffectiveLengths.Gradients[br].dLe_dL;
+            return dC_dLe * dLe_dL;
+        }
     }
 }
