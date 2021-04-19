@@ -84,5 +84,19 @@ namespace Vascular.Optimization
         {
             return dW_dR * this.Cache.Global[br].dRe_dR;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        public (double dC_dQ, double dC_dR) Gradients(Branch br)
+        {
+            var cg = this.Cache.Global[br];
+            var dC_dQ = dW_dQ
+                + dW_dR * cg.dRe_dQ;
+            var dC_dR = dW_dR * cg.dRe_dR;
+            return (dC_dQ, dC_dR);
+        }
     }
 }

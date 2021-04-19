@@ -189,10 +189,12 @@ namespace Vascular.Optimization.Geometric
             var dR = RSP - existing.ReducedResistance;
             var dQ = Q2;
 
-            var dC = this.WorkFactor != 0
-                ? this.WorkFactor * (fluidMechanicalWork.FlowGradient(existing) * dQ
-                    + fluidMechanicalWork.ReducedResistanceGradient(existing) * dR)
-                : 0.0;
+            var dC = 0.0;
+            if (this.WorkFactor != 0)
+            {
+                var (dW_dQ, dW_dR) = fluidMechanicalWork.Gradients(existing);
+                dC = this.WorkFactor * (dW_dQ * dQ + dW_dR * dR);
+            }
             foreach (var sc in schreinerCosts)
             {
                 var el = sc.EffectiveLengths;
@@ -205,10 +207,8 @@ namespace Vascular.Optimization.Geometric
                     + Math.Pow(f1, el.ExpR) * LS1 
                     + Math.Pow(f2, el.ExpR) * LS2;
                 var dL = LSP - LS;
-                var dS = sc.FlowGradient(existing) * dQ
-                    + sc.ReducedResistanceGradient(existing) * dR
-                    + sc.EffectiveLengthGradient(existing) * dL;
-                dC += dS * sc.Multiplier;
+                var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(existing);
+                dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
             }
             return dC;
         }

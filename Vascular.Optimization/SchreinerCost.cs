@@ -69,7 +69,7 @@ namespace Vascular.Optimization
                 Transient tr => (this.EffectiveLengths.PositionGradient(tr), this.Cache.PositionGradient(tr)),
                 _ => (Vector3.ZERO, Vector3.ZERO)
             };
-            return dLe_dx * dC_dLe 
+            return dLe_dx * dC_dLe
                 + dRe_dx * dC_dRe;
         }
 
@@ -82,8 +82,8 @@ namespace Vascular.Optimization
         {
             var dLe_dQ = this.EffectiveLengths.Gradients[br].dLe_dQ;
             var dRe_dQ = this.Cache.Global[br].dRe_dQ;
-            return dC_dLe * dLe_dQ 
-                + dC_dRe * dRe_dQ 
+            return dC_dLe * dLe_dQ
+                + dC_dRe * dRe_dQ
                 + dC_dQe;
         }
 
@@ -109,6 +109,24 @@ namespace Vascular.Optimization
         {
             var dLe_dL = this.EffectiveLengths.Gradients[br].dLe_dL;
             return dC_dLe * dLe_dL;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        public (double dC_dQ, double dC_dR, double dC_dL) Gradients(Branch br)
+        {
+            var cg = this.Cache.Global[br];
+            var el = this.EffectiveLengths.Gradients[br];
+            var dC_dQ = dC_dLe * el.dLe_dQ
+                + dC_dRe * cg.dRe_dQ
+                + dC_dQe;
+            var dC_dR = dC_dLe * el.dLe_dR
+                + dC_dRe * cg.dRe_dR;
+            var dC_dL = dC_dLe * el.dLe_dL;
+            return (dC_dQ, dC_dR, dC_dL);
         }
     }
 }
