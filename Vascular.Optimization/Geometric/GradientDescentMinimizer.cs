@@ -35,14 +35,27 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         /// 
         /// </summary>
+        public bool ThrowIfNaN { get; set; } = false;
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="gradient"></param>
         /// <param name="stride"></param>
         /// <param name="predicate"></param>
-        public static void Move(IDictionary<IMobileNode, Vector3> gradient, double stride, Predicate<IMobileNode> predicate)
+        /// <param name="throwIfNaN"></param>
+        public static void Move(IDictionary<IMobileNode, Vector3> gradient, double stride, Predicate<IMobileNode> predicate, bool throwIfNaN)
         {
             foreach (var kv in gradient)
             {
-                if (predicate(kv.Key))
+                if (kv.Value.IsNaN)
+                {
+                    if (throwIfNaN)
+                    {
+                        throw new PhysicalValueException("Gradient is NaN");
+                    }
+                }
+                else if (predicate(kv.Key))
                 {
                     kv.Key.Position -= stride * kv.Value;
                 }
@@ -60,8 +73,7 @@ namespace Vascular.Optimization.Geometric
             return this;
         }
 
-        private readonly List<Func<Network, IDictionary<IMobileNode, Vector3>>> costs
-            = new List<Func<Network, IDictionary<IMobileNode, Vector3>>>();
+        private readonly List<Func<Network, IDictionary<IMobileNode, Vector3>>> costs = new();
 
         /// <summary>
         /// 
@@ -116,7 +128,7 @@ namespace Vascular.Optimization.Geometric
             {
                 ClampStride(gradient.Values);
             }
-            Move(gradient, this.Stride, this.MovingPredicate);
+            Move(gradient, this.Stride, this.MovingPredicate, this.ThrowIfNaN);
             this.Network.Source.CalculatePhysical();
             this.Network.Source.PropagateRadiiDownstream();
         }

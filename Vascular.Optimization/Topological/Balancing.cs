@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Optimization.Geometric;
@@ -15,13 +16,13 @@ namespace Vascular.Optimization.Topological
     public static class Balancing
     {
         /// <summary>
-        /// Tries to drop branches that are too long for their flow rate.
+        /// Identifies branches that are too long for their flow rate, where length should scale as volume (hence flow) ^1/3.
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="L0">The target length of a branch that carries 1 unit of flow.</param>
         /// <param name="lengthRatio">The factor of <paramref name="L0"/> before removing.</param>
-        /// <returns></returns>
-        public static BranchAction LengthFlowRatio(Branch branch, double L0, double lengthRatio)
+        /// <returns>True if the branch is too long, false otherwise.</returns>
+        public static bool LengthFlowRatio(Branch branch, double L0, double lengthRatio)
         {
             // L0 is the flow rate that a branch carrying 1 unit of flow should carry.
             // Length should scale as volume (hence flow) ^1/3.
@@ -35,11 +36,30 @@ namespace Vascular.Optimization.Topological
             var L = branch.Length;
             var Q = branch.Flow;
             var LT = L0 * Math.Pow(Q, 1.0 / 3.0);
-            if (L > LT * lengthRatio)
+            return L > LT * lengthRatio;
+        }
+
+        /// <summary>
+        /// Small terminal vessels are an issue as it can lead to tiny (or even zero) values of <see cref="Branch.ReducedResistance"/> in their
+        /// upstream branches. This has lead to floating point issues in <see cref="Bifurcation.ReducedResistance"/> through a 0/0 error,
+        /// and might also have the potential for overflow. 
+        /// <para/>
+        /// While one option is to have <see cref="Terminal.ReducedResistance"/> return a small non-zero value, an alternative viewpoint is that
+        /// these terminals should not exist at all as something else has decided that their parent vessels should consume the terminal site.
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="Lmin"></param>
+        /// <param name="onCull"></param>
+        public static void RemoveShortTerminals(Network network, double Lmin, Action<Terminal> onCull = null)
+        {
+            onCull ??= t => { };
+            var removing = network.Terminals.Where(t => t.Upstream.Length <= Lmin).ToList();
+            foreach (var terminal in removing)
             {
-                return new RemoveBranch(branch);
+                onCull(terminal);
+                // Always choose to propagate as this should only happen very rarely.
+                Topology.CullTerminalAndPropagate(terminal, true);
             }
-            return null;
         }
 
         /// <summary>

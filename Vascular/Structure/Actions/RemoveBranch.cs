@@ -1,4 +1,7 @@
-﻿namespace Vascular.Structure.Actions
+﻿using System;
+using Vascular.Structure.Nodes;
+
+namespace Vascular.Structure.Actions
 {
     /// <summary>
     /// Wrapper for <see cref="Topology.RemoveBranch(Branch, bool, bool, bool, bool)"/>.
@@ -13,9 +16,18 @@
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Action<Terminal> OnCull { get; set; }
+
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
+            if (this.OnCull != null)
+            {
+                Terminal.ForDownstream(a, this.OnCull);
+            }
             var transient = Topology.RemoveBranch(a, true, true, false, true);
             if (propagateLogical)
             {

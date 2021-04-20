@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="CopyLibraries"
+  <Target Name="CopyRelease"
           AfterTargets="Build"
           Condition="'$(Configuration)'=='Release'">
     <ItemGroup>
@@ -7,6 +7,19 @@
     </ItemGroup>
     <Copy SourceFiles="@(OutputFiles)"
           DestinationFolder="$(ProjectDir)../$(Configuration)/lib/$(TargetFramework)/"
+          Condition="'@(OutputFiles)'!=''"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true"/>
+  </Target>
+
+  <Target Name="CopyDebug"
+          AfterTargets="Build"
+          Condition="'$(Configuration)'=='Debug'">
+    <ItemGroup>
+      <OutputFiles Include="$(TargetDir)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(OutputFiles)"
+          DestinationFolder="$(ProjectDir)../$(Configuration)/$(TargetFramework)/"
           Condition="'@(OutputFiles)'!=''"
           SkipUnchangedFiles="true"
           OverwriteReadOnlyFiles="true"/>

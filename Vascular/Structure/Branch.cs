@@ -27,7 +27,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// <see cref="Initialize(Segment)"/>.
+        /// See <see cref="Initialize(Segment)"/>.
         /// </summary>
         /// <param name="s"></param>
         public Branch(Segment s)

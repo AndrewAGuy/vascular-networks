@@ -1,4 +1,5 @@
-﻿using Vascular.Structure.Nodes;
+﻿using System;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions
 {
@@ -18,9 +19,15 @@ namespace Vascular.Structure.Actions
             this.t = t;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Action<Terminal> OnCull { get; set; }
+
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
+            this.OnCull?.Invoke(t);
             if (Topology.CullTerminal(t) is Transient T)
             {
                 if (propagateLogical)

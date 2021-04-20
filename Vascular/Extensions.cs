@@ -53,6 +53,24 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Get all pairs in a round-robin pattern.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static IEnumerable<(T a, T b)> Pairs<T>(this IEnumerable<T> t)
+        {
+            var ts = t.ToArray();
+            for (var i = 0; i < ts.Length; ++i)
+            {
+                for (var j = i + 1; j < ts.Length; ++j)
+                {
+                    yield return (ts[i], ts[j]);
+                }
+            }
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>

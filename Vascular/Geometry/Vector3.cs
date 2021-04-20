@@ -414,5 +414,10 @@ namespace Vascular.Geometry
         {
             return new double[3] { x, y, z };
         }
+
+        /// <summary>
+        /// Tests if any component is <see cref="double.NaN"/>.
+        /// </summary>
+        public bool IsNaN => double.IsNaN(x) || double.IsNaN(y) || double.IsNaN(z);
     }
 }
