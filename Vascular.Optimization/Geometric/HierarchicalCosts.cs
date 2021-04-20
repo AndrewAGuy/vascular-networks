@@ -336,5 +336,65 @@ namespace Vascular.Optimization.Geometric
             var bfLost = EstimatedChange(moving.Upstream);
             return bfGain + bfLost;
         }
+
+        /// <summary>
+        /// Estimates the change in cost associated with changing the branch <paramref name="rewiring"/>
+        /// to end with node <paramref name="target"/>, using a first order approximation.
+        /// </summary>
+        /// <param name="rewiring"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public double EstimatedChange(Branch rewiring, BranchNode target)
+        {
+            var Qold = rewiring.Flow;
+            var Qnew = target.Flow;
+            var dQ = Qnew - Qold;
+
+            var Lnew = Vector3.Distance(rewiring.Start.Position, target.Position);
+            var RSold = rewiring.ReducedResistance;
+            var RSNew = Lnew + target.ReducedResistance;
+            var dR = RSNew - RSold;
+
+            var dC = 0.0;
+            if (this.WorkFactor != 0)
+            {
+                var (dW_dQ, dW_dR) = fluidMechanicalWork.Gradients(rewiring);
+                dC = this.WorkFactor * (dW_dQ * dQ + dW_dR * dR);
+            }
+
+            foreach (var sc in schreinerCosts)
+            {
+                var el = sc.EffectiveLengths;
+                var LSold = el.Values[rewiring];
+                var LSnew = Math.Pow(Lnew, el.ExpL);
+                if (target is Bifurcation bf)
+                {
+                    var (f0, f1) = bf.Fractions;
+                    var d0 = bf.Downstream[0];
+                    var d1 = bf.Downstream[1];
+                    LSnew += Math.Pow(f0, el.ExpR) * el.Values[d0]
+                        + Math.Pow(f1, el.ExpR) * el.Values[d1];
+                }
+                var dL = LSnew - LSold;
+
+                var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(rewiring);
+                dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
+            }
+
+            return dC;
+        }
+
+        /// <summary>
+        /// Estimates the change in cost associated with the swap ends action, using 
+        /// <see cref="EstimatedChange(Branch, BranchNode)"/> on both branches.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public double EstimatedChange(Branch a, Branch b)
+        {
+            return EstimatedChange(a, b.End) 
+                + EstimatedChange(b, a.End);
+        }
     }
 }
