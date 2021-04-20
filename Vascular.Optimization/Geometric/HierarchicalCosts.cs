@@ -180,11 +180,11 @@ namespace Vascular.Optimization.Geometric
             var L2 = (x2 - xB).Length;
             var Q1 = existing.Flow;
             var Q2 = candidate.Flow;
-            var RS1 = L1;
-            var RS2 = L2 + existing.End.ReducedResistance;
+            var RS1 = L1 + existing.End.ReducedResistance;
+            var RS2 = L2;
             var (f1, f2) = candidate.Network.Splitting.Fractions(RS1, Q1, RS2, Q2);
-            var RSP = LP + 1.0 / 
-                (Math.Pow(f1, 4) / RS1 
+            var RSP = LP + 1.0 /
+                (Math.Pow(f1, 4) / RS1
                 + Math.Pow(f2, 4) / RS2);
             var dR = RSP - existing.ReducedResistance;
             var dQ = Q2;
@@ -203,14 +203,138 @@ namespace Vascular.Optimization.Geometric
                 var LS1 = LS
                     - Math.Pow(existing.Length, el.ExpL)
                     + Math.Pow(L1, el.ExpL);
-                var LSP = Math.Pow(LP, el.ExpL) 
-                    + Math.Pow(f1, el.ExpR) * LS1 
+                var LSP = Math.Pow(LP, el.ExpL)
+                    + Math.Pow(f1, el.ExpR) * LS1
                     + Math.Pow(f2, el.ExpR) * LS2;
                 var dL = LSP - LS;
                 var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(existing);
                 dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
             }
             return dC;
+        }
+
+        /// <summary>
+        /// Estimates the change in cost using a first order approximation associated with bifurcating from
+        /// <paramref name="existing"/> into <paramref name="target"/> with the new node placed at <paramref name="newPosition"/>.
+        /// Similar to <see cref="EstimatedChange(Branch, Terminal, Vector3)"/>, but slightly more expensive as it retrieves downstream
+        /// data for the children of <paramref name="target"/>.
+        /// </summary>
+        /// <param name="existing"></param>
+        /// <param name="target"></param>
+        /// <param name="newPosition"></param>
+        /// <returns></returns>
+        public double EstimatedChange(Branch existing, Bifurcation target, Vector3 newPosition)
+        {
+            var xP = existing.Start.Position;
+            var x1 = existing.End.Position;
+            var x2 = target.Position;
+            var xB = newPosition;
+            var LP = (xP - xB).Length;
+            var L1 = (x1 - xB).Length;
+            var L2 = (x2 - xB).Length;
+            var Q1 = existing.Flow;
+            var Q2 = target.Flow;
+            var RS1 = L1 + existing.End.ReducedResistance;
+            var RS2 = L2 + target.ReducedResistance;
+            var (f1, f2) = target.Network.Splitting.Fractions(RS1, Q1, RS2, Q2);
+            var RSP = LP + 1.0 /
+                (Math.Pow(f1, 4) / RS1
+                + Math.Pow(f2, 4) / RS2);
+            var dR = RSP - existing.ReducedResistance;
+            var dQ = Q2;
+
+            var dC = 0.0;
+            if (this.WorkFactor != 0)
+            {
+                var (dW_dQ, dW_dR) = fluidMechanicalWork.Gradients(existing);
+                dC = this.WorkFactor * (dW_dQ * dQ + dW_dR * dR);
+            }
+            var (F0, F1) = target.Fractions;
+            var D0 = target.Downstream[0];
+            var D1 = target.Downstream[1];
+            foreach (var sc in schreinerCosts)
+            {
+                var el = sc.EffectiveLengths;
+                var LS = el.Values[existing];
+                var LS2 = Math.Pow(L2, el.ExpL)
+                    + el.Values[D0] * Math.Pow(F0, el.ExpR)
+                    + el.Values[D1] * Math.Pow(F1, el.ExpR);
+                var LS1 = LS
+                    - Math.Pow(existing.Length, el.ExpL)
+                    + Math.Pow(L1, el.ExpL);
+                var LSP = Math.Pow(LP, el.ExpL)
+                    + Math.Pow(f1, el.ExpR) * LS1
+                    + Math.Pow(f2, el.ExpR) * LS2;
+                var dL = LSP - LS;
+                var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(existing);
+                dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
+            }
+            return dC;
+        }
+
+        /// <summary>
+        /// Estimates the cost change associated with removing this branch, and optionally straightening the surviving branch.
+        /// Uses a first order approximation.
+        /// </summary>
+        /// <param name="losing"></param>
+        /// <param name="straighten"></param>
+        /// <returns></returns>
+        public double EstimatedChange(Branch losing, bool straighten = true)
+        {
+            if (losing.Start is not Bifurcation bf)
+            {
+                throw new TopologyException("Invalid start node type");
+            }
+            var sibling = bf.Downstream[1 - bf.IndexOf(losing)];
+            var parent = bf.Upstream;
+
+            // Calculate new L, R*; dQ and dR follow and then we can get work estimate
+            var L = straighten
+                ? Vector3.Distance(sibling.End.Position, parent.Start.Position)
+                : sibling.Length + parent.Length;
+            var RS = L + sibling.End.ReducedResistance;
+            var dR = RS - parent.ReducedResistance;
+            var dQ = -losing.Flow;
+
+            var dC = 0.0;
+            if (this.WorkFactor != 0)
+            {
+                var (dW_dQ, dW_dR) = fluidMechanicalWork.Gradients(parent);
+                dC = this.WorkFactor * (dW_dQ * dQ + dW_dR * dR);
+            }
+
+            // For each Schreiner cost, get the new length and the downstream value
+            foreach (var sc in schreinerCosts)
+            {
+                var el = sc.EffectiveLengths;
+                var downLS = el.Values[sibling] - Math.Pow(sibling.Length, el.ExpL);
+                var newLS = Math.Pow(L, el.ExpL) + downLS;
+                var dL = newLS - el.Values[parent];
+
+                var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(parent);
+                dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
+            }
+
+            return dC;
+        }
+
+        /// <summary>
+        /// Estimates the cost change associated with the bifurcation moving action.
+        /// </summary>
+        /// <param name="moving"></param>
+        /// <param name="target"></param>
+        /// <param name="bifurcationPosition"></param>
+        /// <returns></returns>
+        public double EstimatedChange(BranchNode moving, Branch target, Vector3 bifurcationPosition)
+        {
+            var bfGain = moving switch
+            {
+                Bifurcation bf => EstimatedChange(target, bf, bifurcationPosition),
+                Terminal t => EstimatedChange(target, t, bifurcationPosition),
+                _ => throw new TopologyException("Invalid target node type")
+            };
+            var bfLost = EstimatedChange(moving.Upstream);
+            return bfGain + bfLost;
         }
     }
 }
