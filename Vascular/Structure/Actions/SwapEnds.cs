@@ -35,7 +35,7 @@
         }
 
         /// <inheritdoc/>
-        public override bool IsPermissable()
+        public override bool IsPermissible()
         {
             return !a.IsStrictAncestorOf(b) // Loop avoidance
                 && !b.IsStrictAncestorOf(a) //

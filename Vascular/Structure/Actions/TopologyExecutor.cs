@@ -45,7 +45,7 @@ namespace Vascular.Structure.Actions
         {
             if (!actions.MinSuitable(
                 t => -this.Priority(t.A, t.B),
-                t => t.IsPermissable() && this.Permissable(t.A, t.B),
+                t => t.IsPermissible() && this.Permissable(t.A, t.B),
                 out var a, out var v))
             {
                 return false;

@@ -34,9 +34,9 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <inheritdoc/>
-        public override bool IsPermissable()
+        public override bool IsPermissible()
         {
-            return inner.IsPermissable() && predicate(inner);
+            return inner.IsPermissible() && predicate(inner);
         }
 
         /// <inheritdoc/>

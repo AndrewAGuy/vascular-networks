@@ -62,7 +62,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <inheritdoc/>
-        public override bool IsPermissable()
+        public override bool IsPermissible()
         {
             return action != null && !executed;
         }

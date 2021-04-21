@@ -181,7 +181,7 @@ namespace Vascular.Structure
         /// <summary>
         /// 
         /// </summary>
-        public Network Network  => this.End.Network;
+        public Network Network => this.End.Network;
 
         /// <summary>
         /// 
@@ -201,7 +201,7 @@ namespace Vascular.Structure
         /// <summary>
         /// Most simple estimate, arc length / chord length.
         /// </summary>
-        public double Tortuosity  => this.Length / this.DirectLength;
+        public double Tortuosity => this.Length / this.DirectLength;
 
         /// <summary>
         /// Radial slenderness.
@@ -607,6 +607,22 @@ namespace Vascular.Structure
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Enumerates all branches between this and <paramref name="target"/>, exclusive of the endpoints.
+        /// If <paramref name="target"/> is not upstream of this, will enumerate all upstream to root, inclusive of the root.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public IEnumerable<Branch> UpstreamTo(Branch target)
+        {
+            var b = this.Parent;
+            while (b != null && b != target)
+            {
+                yield return b;
+                b = b.Parent;
+            }
         }
     }
 }

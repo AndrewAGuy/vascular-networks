@@ -45,7 +45,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <inheritdoc/>
-        public override bool IsPermissable()
+        public override bool IsPermissible()
         {
             return !a.IsStrictAncestorOf(b) // Creates a loop
                 && !a.IsSiblingOf(b)        // Waste of time

@@ -16,6 +16,6 @@
         /// Whether the action may be taken without creating a non-tree structure.
         /// </summary>
         /// <returns></returns>
-        public abstract bool IsPermissable();
+        public abstract bool IsPermissible();
     }
 }

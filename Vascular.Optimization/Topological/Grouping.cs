@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
+using Vascular.Optimization.Geometric;
 using Vascular.Structure;
+using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Topological
@@ -34,7 +36,7 @@ namespace Vascular.Optimization.Topological
         private static void LengthFlowRatio(Branch current, double L0r, ICollection<BranchNode> endpoints)
         {
             var LT = L0r * Math.Pow(current.Flow, 1.0 / 3.0);
-            if (current.Length > LT || 
+            if (current.Length > LT ||
                 current.Children.Length == 0)
             {
                 endpoints.Add(current.End);
@@ -87,14 +89,14 @@ namespace Vascular.Optimization.Topological
         /// <param name="parentStartWeight"></param>
         public static void ClosestPairs(ICollection<BranchNode> endpoints, Branch parent, double parentStartWeight = 0.0)
         {
-            var psW = parent.Flow * parentStartWeight;
-            var psX = parent.Start.Position * psW;
             while (endpoints.Count > 1)
             {
                 // Get the closest pair of nodes
                 var (a, b) = endpoints.Pairs().ArgMin(p => Vector3.DistanceSquared(p.a.Position, p.b.Position));
 
                 // Deciding where to put the new bifurcation is a heuristic job, go for flow weighting
+                var psW = (a.Flow + b.Flow) * parentStartWeight;
+                var psX = parent.Start.Position * psW;
                 var bf = new Bifurcation()
                 {
                     Position = (a.Position * a.Flow + b.Position * b.Flow + psX) / (a.Flow + b.Flow + psW),
@@ -147,6 +149,138 @@ namespace Vascular.Optimization.Topological
             node.Parent = seg;
             parent.End = node;
             parent.Reset();
+        }
+
+        /// <summary>
+        /// Gets all branches involved in a grouping between the <see cref="BranchNode.Upstream"/> 
+        /// branches of <paramref name="endpoints"/> up to <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static HashSet<Branch> AllInGrouping(IEnumerable<BranchNode> endpoints, Branch parent)
+        {
+            var branches = endpoints
+                .Select(e => e.Upstream)
+                .ToHashSet();
+            foreach (var e in endpoints)
+            {
+                foreach (var u in e.Upstream.UpstreamTo(parent))
+                {
+                    branches.Add(u);
+                }
+            }
+            branches.Add(parent);
+            return branches;
+        }
+
+        /// <summary>
+        /// For a bifurcation group, gets the permissible actions.
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <param name="parent"></param>
+        /// <param name="onlyEndpoints"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> PermissibleActions(
+            IEnumerable<BranchNode> endpoints, Branch parent, bool onlyEndpoints = true)
+        {
+            var branches = onlyEndpoints
+                ? endpoints.Select(n => n.Upstream)
+                : AllInGrouping(endpoints, parent);
+            // For each pair, work out if we can move A -> B, B -> A or swap A <-> B
+            // Making an action will invalidate the cost cache for this grouping
+            // So for all valid actions with negative cost impact, pick the smallest
+            static IEnumerable<BranchAction> generator(Branch a, Branch b)
+            {
+                yield return new MoveBifurcation(a, b);
+                yield return new MoveBifurcation(b, a);
+                yield return new SwapEnds(a, b);
+            }
+            return branches.Pairs()
+                .SelectMany(p => generator(p.a, p.b))
+                .Where(a => a.IsPermissible());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="c"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vector3 FlowWeightedPlacement(BranchNode p, BranchNode c, BranchNode t)
+        {
+            var Qab = c.Flow + t.Flow;
+            var Pt = p.Position * Qab + c.Position * c.Flow + t.Position * t.Flow;
+            return Pt / (2 * Qab);
+        }
+
+        /// <summary>
+        /// Places the bifurcation into target <paramref name="t"/> at the closest point on
+        /// the meanline between <paramref name="p"/> and <paramref name="c"/>.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="c"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Vector3 MeanlinePlacement(BranchNode p, BranchNode c, BranchNode t)
+        {
+            var dir = c.Position - p.Position;
+            var fAB = LinearAlgebra.LineFactor(p.Position, dir, t.Position);
+            return p.Position + fAB * dir;
+        }
+
+        /// <summary>
+        /// Estimates the cost change of executing action <paramref name="action"/> under the costs
+        /// <paramref name="costs"/>. For <see cref="MoveBifurcation"/> actions, uses <paramref name="placement"/>
+        /// to decide where to place the bifurcation. Note that typical weightings might not be valid as the topology
+        /// hasn't been changed at this point, so for flow weightings use 
+        /// <see cref="FlowWeightedPlacement(BranchNode, BranchNode, BranchNode)"/> (if no function supplied, this is
+        /// the default).
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="costs"></param>
+        /// <param name="placement">
+        /// For <see cref="MoveBifurcation"/> actions, takes the existing parent node,
+        /// child node and target node (in that order) and returns the bifurcation position.
+        /// </param>
+        /// <returns></returns>
+        public static double EstimateCostChange(BranchAction action, HierarchicalCosts costs,
+            Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
+        {
+            switch (action)
+            {
+                case MoveBifurcation m:
+                    placement ??= FlowWeightedPlacement;
+                    var p = placement(action.B.Start, action.B.End, action.A.End);
+                    switch (m.A.End)
+                    {
+                        case Terminal t:
+                            return costs.EstimatedChange(m.B, t, p);
+                        case Bifurcation b:
+                            return costs.EstimatedChange(m.B, b, p);
+                    }
+                    break;
+                case SwapEnds s:
+                    return costs.EstimatedChange(s.A, s.B);
+            }
+            return double.PositiveInfinity;
+        }
+
+        /// <summary>
+        /// Gets the optimal action from <paramref name="actions"/>. For a description of <paramref name="placement"/>
+        /// function, see <see cref="EstimateCostChange(BranchAction, HierarchicalCosts, Func{BranchNode, BranchNode, BranchNode, Vector3})"/>.
+        /// </summary>
+        /// <param name="actions"></param>
+        /// <param name="costs"></param>
+        /// <param name="placement"></param>
+        /// <returns></returns>
+        public static (BranchAction a, double dC) OptimalAction(IEnumerable<BranchAction> actions, HierarchicalCosts costs,
+            Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
+        {
+            return actions.ArgMin(a => EstimateCostChange(a, costs, placement), out var optimal, out var dC)
+                ? (optimal, dC)
+                : (null, double.PositiveInfinity);
         }
     }
 }
