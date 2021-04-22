@@ -419,5 +419,11 @@ namespace Vascular.Geometry
         /// Tests if any component is <see cref="double.NaN"/>.
         /// </summary>
         public bool IsNaN => double.IsNaN(x) || double.IsNaN(y) || double.IsNaN(z);
+
+        /// <summary>
+        /// Tests that all components are not <see cref="double.NaN"/>, <see cref="double.PositiveInfinity"/>
+        /// or <see cref="double.NegativeInfinity"/>.
+        /// </summary>
+        public bool IsFinite => double.IsFinite(x) && double.IsFinite(y) && double.IsFinite(z);
     }
 }

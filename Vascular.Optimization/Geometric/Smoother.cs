@@ -35,6 +35,11 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         /// 
         /// </summary>
+        public Func<Branch, double> TargetBranchLength { get; set; } = b => b.DirectLength;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double NormalTolerance { get; set; } = 1.0e-9;
 
         /// <summary>
@@ -99,6 +104,17 @@ namespace Vascular.Optimization.Geometric
         public static Func<Source, Vector3> InletSourceDirection()
         {
             return s => s.Network.InletDirection;
+        }
+
+        /// <summary>
+        /// Sets target length for a branch to be scaled as the volume of its crown ^1/3.
+        /// Assumes uniform terminal flow rates and spacing, so volume is proportional to flow rate.
+        /// </summary>
+        /// <param name="L0">The length of a branch that carries 1 unit of flow.</param>
+        /// <returns></returns>
+        public static Func<Branch, double> FlowLength(double L0)
+        {
+            return b => L0 * Math.Cbrt(b.Flow);
         }
 
         /// <summary>
@@ -227,7 +243,7 @@ namespace Vascular.Optimization.Geometric
         /// <param name="forces"></param>
         public void AddLinearForces(Branch branch, IDictionary<IMobileNode, Vector3> forces)
         {
-            var naturalLength = branch.DirectLength / branch.Segments.Count;
+            var naturalLength = this.TargetBranchLength(branch) / branch.Segments.Count;
             foreach (var segment in branch.Segments)
             {
                 AddLinearForces(segment, naturalLength, forces);

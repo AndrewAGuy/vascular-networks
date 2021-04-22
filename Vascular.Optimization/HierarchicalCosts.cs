@@ -5,7 +5,7 @@ using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Optimization.Geometric
+namespace Vascular.Optimization
 {
     /// <summary>
     /// Represents a collection of costs that have hierarchical gradients and update rules.
