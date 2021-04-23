@@ -36,28 +36,22 @@ namespace Vascular.Optimization.Geometric
         /// 
         /// </summary>
         public bool ThrowIfNotFinite { get; set; } = false;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gradient"></param>
-        /// <param name="stride"></param>
-        /// <param name="predicate"></param>
-        /// <param name="throwIfNotFinite"></param>
-        public static void Move(IDictionary<IMobileNode, Vector3> gradient, double stride, Predicate<IMobileNode> predicate, bool throwIfNotFinite)
+       
+        private void Move(IDictionary<IMobileNode, Vector3> gradient)
         {
             foreach (var kv in gradient)
             {
                 if (!kv.Value.IsFinite)
                 {
-                    if (throwIfNotFinite)
+                    if (this.ThrowIfNotFinite)
                     {
                         throw new PhysicalValueException("Gradient is NaN or infinity");
                     }
                 }
-                else if (predicate(kv.Key))
+                else if (this.MovingPredicate(kv.Key))
                 {
-                    kv.Key.Position -= stride * kv.Value;
+                    var delta = -this.Stride * kv.Value;
+                    kv.Key.Position += delta;
                 }
             }
         }
@@ -128,7 +122,7 @@ namespace Vascular.Optimization.Geometric
             {
                 ClampStride(gradient.Values);
             }
-            Move(gradient, this.Stride, this.MovingPredicate, this.ThrowIfNotFinite);
+            Move(gradient);
             this.Network.Source.CalculatePhysical();
             this.Network.Source.PropagateRadiiDownstream();
         }

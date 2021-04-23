@@ -355,6 +355,23 @@ namespace Vascular.Structure
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<IMobileNode> MobileNodes
+        {
+            get
+            {
+                foreach (var node in this.Nodes)
+                {
+                    if (node is IMobileNode mobile)
+                    {
+                        yield return mobile;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Stack-based. See <see cref="Terminal.ForDownstream(Branch, Action{Terminal})"/>, <see cref="Terminal.GetDownstream(Branch, int)"/>
         /// for a recursive implementation.
         /// </summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Vascular.Geometry.Generators
 {
@@ -40,6 +39,17 @@ namespace Vascular.Geometry.Generators
         public static Predicate<T> Bernoulli<T>(this Random r, Func<T, double> p)
         {
             return t => r.NextDouble() < p(t);
+        }
+
+        /// <summary>
+        /// Wraps an inverse CDF function and a generator.
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="invCDF"></param>
+        /// <returns></returns>
+        public static Func<double> InverseCDF(this Random r, Func<double, double> invCDF)
+        {
+            return () => invCDF(r.NextDouble());
         }
     }
 }
