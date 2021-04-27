@@ -17,7 +17,7 @@ namespace Vascular.Structure.Diagnostics
         /// </summary>
         /// <param name="net"></param>
         /// <returns></returns>
-        public static IEnumerable<object> First(Network net, bool testSegments = false)
+        public static IEnumerable<object> First(Network net)
         {
             var stack = new Stack<BranchNode>();
             stack.Push(net.Source);

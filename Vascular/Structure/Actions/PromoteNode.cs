@@ -23,6 +23,11 @@ namespace Vascular.Structure.Actions
         private readonly MoveBifurcation action;
         private bool executed = false;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public MoveBifurcation Action => action;
+
         private MoveBifurcation Make()
         {
             // Promoting a branch: the branch to be promoted is raised one level to the root.

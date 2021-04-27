@@ -154,6 +154,16 @@ namespace Vascular.Construction.LSC
         public Action AfterReRefineAction { get; set; }
 
         /// <summary>
+        /// Called before <see cref="AfterRefineAction"/>, <see cref="AfterReRefineAction"/>, <see cref="AfterCoarsenAction"/>.
+        /// </summary>
+        public Action OnEntry { get; set; }
+
+        /// <summary>
+        /// Called before <see cref="BeforeRefineAction"/>, <see cref="BeforeReRefineAction"/>, <see cref="BeforeCoarsenAction"/>.
+        /// </summary>
+        public Action OnExit { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public ClosestBasisFunction ClosestBasisFunction { get; set; }

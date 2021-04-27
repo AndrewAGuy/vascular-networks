@@ -121,14 +121,18 @@ namespace Vascular.Construction.LSC
 
             if (next.Value.SingleInterior != null || next.Value.MultipleInterior != null)
             {
+                this.Current.Value.OnExit?.Invoke();
                 this.Current.Value.BeforeReRefineAction?.Invoke();
                 next.Value.Refine(next.Value.ReintroduceDown);
+                next.Value.OnEntry?.Invoke();
                 next.Value.AfterReRefineAction?.Invoke();
             }
             else
             {
+                this.Current.Value.OnExit?.Invoke();
                 this.Current.Value.BeforeRefineAction?.Invoke();
                 next.Value.Initialize();
+                next.Value.OnEntry?.Invoke();
                 next.Value.AfterRefineAction?.Invoke();
             }
 
@@ -145,8 +149,10 @@ namespace Vascular.Construction.LSC
                 return;
             }
 
+            this.Current.Value.OnExit?.Invoke();
             this.Current.Value.BeforeCoarsenAction?.Invoke();
             previous.Value.Coarsen(this.Current.Value, previous.Value.ReintroduceUp);
+            previous.Value.OnEntry?.Invoke();
             previous.Value.AfterCoarsenAction?.Invoke();
 
             this.Current = previous;

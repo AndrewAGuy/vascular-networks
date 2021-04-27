@@ -114,6 +114,11 @@ namespace Vascular.Optimization.Geometric
         public void Iterate()
         {
             var gradient = CalculateGradient();
+            if (gradient.Count == 0)
+            {
+                return;
+            }
+
             if (this.Stride == 0)
             {
                 this.Stride = InitialMaxStrideFactor(gradient.Values, this.TargetStep);
@@ -122,6 +127,7 @@ namespace Vascular.Optimization.Geometric
             {
                 ClampStride(gradient.Values);
             }
+
             Move(gradient);
             this.Network.Source.CalculatePhysical();
             this.Network.Source.PropagateRadiiDownstream();

@@ -282,5 +282,18 @@ namespace Vascular.Optimization.Topological
                 ? (optimal, dC)
                 : (null, double.PositiveInfinity);
         }
+
+        /// <summary>
+        /// Gets all promotions that could be made, filtered by <see cref="TopologyAction.IsPermissible"/>.
+        /// </summary>
+        /// <param name="branches"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> Promotions(IEnumerable<Branch> branches)
+        {
+            return branches
+                .Select(b => new PromoteNode(b.End))
+                .Where(p => p.IsPermissible())
+                .Select(p => p.Action);
+        }
     }
 }
