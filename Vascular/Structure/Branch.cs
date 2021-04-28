@@ -16,7 +16,7 @@ namespace Vascular.Structure
     public class Branch : IAxialBoundsQueryable<Segment>, IAxialBoundable
     {
         [DataMember]
-        private List<Segment> segments = new List<Segment>();
+        private List<Segment> segments = new();
 
         /// <summary>
         /// 
@@ -592,6 +592,83 @@ namespace Vascular.Structure
         }
 
         /// <summary>
+        /// Similar to <see cref="CommonAncestor(Branch, Branch)"/>, but returns null if the branch with lower flow
+        /// is a root vessel while iterating.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Branch CommonAncestorSafe(Branch a, Branch b)
+        {
+            while (!ReferenceEquals(a, b))
+            {
+                if (a.Flow > b.Flow)
+                {
+                    b = b.Parent;
+                    if (b == null)
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    a = a.Parent;
+                    if (a == null)
+                    {
+                        return null;
+                    }
+                }
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Calls <see cref="CommonAncestor(Branch, Branch)"/> repeatedly on elements of <paramref name="B"/>.
+        /// If empty, returns null.
+        /// </summary>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static Branch CommonAncestor(IEnumerable<Branch> B)
+        {
+            var e = B.GetEnumerator();
+            if (!e.MoveNext())
+            {
+                return null;
+            }
+            var a = e.Current;
+            while (e.MoveNext())
+            {
+                a = CommonAncestor(a, e.Current);
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Similar to <see cref="CommonAncestor(IEnumerable{Branch})"/>, but returns null if the branches reside in
+        /// different trees.
+        /// </summary>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static Branch CommonAncestorSafe(IEnumerable<Branch> B)
+        {
+            var e = B.GetEnumerator();
+            if (!e.MoveNext())
+            {
+                return null;
+            }
+            var a = e.Current;
+            while (e.MoveNext())
+            {
+                a = CommonAncestorSafe(a, e.Current);
+                if (a == null)
+                {
+                    return null;
+                }
+            }
+            return a;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -622,6 +699,30 @@ namespace Vascular.Structure
             {
                 yield return b;
                 b = b.Parent;
+            }
+        }
+
+        /// <summary>
+        /// Enumerates all downstream branches, excluding the current branch.
+        /// To do this without allocating a new stack each time, see <see cref="Diagnostics.BranchEnumerator"/>.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Branch> DownstreamOf()
+        {
+            var stack = new Stack<Branch>();
+            foreach (var c in this.Children)
+            {
+                stack.Push(c);
+            }
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                yield return current;
+                var children = current.Children;
+                for (var i = 0; i < children.Length; ++i)
+                {
+                    stack.Push(children[i]);
+                }
             }
         }
     }
