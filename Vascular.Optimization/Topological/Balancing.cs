@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
-using Vascular.Optimization.Geometric;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
+using Vascular.Structure.Diagnostics;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Topological
@@ -58,6 +58,26 @@ namespace Vascular.Optimization.Topological
             {
                 onCull(terminal);
                 // Always choose to propagate as this should only happen very rarely.
+                Topology.CullTerminalAndPropagate(terminal, true);
+            }
+        }
+
+        /// <summary>
+        /// Similar to <see cref="RemoveShortTerminals(Network, double, Action{Terminal})"/> but can be more
+        /// efficient as no allocations are made if the stack is appropriately sized.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="Lmin"></param>
+        /// <param name="onCull"></param>
+        public static void RemoveShortTerminals(Branch branch, BranchEnumerator enumerator, double Lmin, Action<Terminal> onCull = null)
+        {
+            onCull ??= t => { };
+            var removing = enumerator.Terminals(branch)
+                .Where(t => t.Upstream.Length <= Lmin).ToList();
+            foreach (var terminal in removing)
+            {
+                onCull(terminal);
                 Topology.CullTerminalAndPropagate(terminal, true);
             }
         }
@@ -172,16 +192,42 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// Using a given cost source, estimate the impact of promotion.
+        /// Given a <paramref name="root"/> vessel, create the interior using <paramref name="toIntegral"/>.
+        /// Then for every terminal downstream of <paramref name="from"/>, find all connected terminals
+        /// (possibly also searching the local area, if <paramref name="tryAddLocal"/> is specified).
+        /// For each candidate terminal which is not preceded by <paramref name="from"/>, creates an action
+        /// that moves the offloaded terminal to bifurcate from the candidate.
         /// </summary>
-        /// <param name="toPromote"></param>
-        /// <param name="costs"></param>
+        /// <param name="root"></param>
+        /// <param name="from"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="tryAddLocal"></param>
         /// <returns></returns>
-        public static PromoteNode TryPromote(Branch toPromote, HierarchicalCosts costs)
+        public static IEnumerable<BranchAction> OffloadTerminals(Branch root, Branch from,
+            ClosestBasisFunction toIntegral, Vector3[] connections, BranchEnumerator enumerator,
+            bool tryAddLocal = false)
         {
+            var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
+            foreach (var terminal in enumerator.Terminals(root))
+            {
+                var index = toIntegral(terminal.Position);
+                var candidates = LatticeActions.GetConnected<List<Terminal>>(interior, connections, index);
 
+                if (tryAddLocal && interior.TryGetValue(index, out var local))
+                {
+                    candidates.AddRange(local);
+                }
 
-            return null;
+                foreach (var candidate in candidates)
+                {
+                    if (!from.IsAncestorOf(candidate.Upstream))
+                    {
+                        yield return new MoveBifurcation(terminal.Upstream, candidate.Upstream);
+                    }
+                }
+            }
         }
     }
 }

@@ -154,11 +154,16 @@ namespace Vascular.Optimization.Topological
         /// <summary>
         /// Gets all branches involved in a grouping between the <see cref="BranchNode.Upstream"/> 
         /// branches of <paramref name="endpoints"/> up to <paramref name="parent"/>.
+        /// If <paramref name="includeChildren"/> is specified, adds the children of <paramref name="endpoints"/>
+        /// to the returned set. This can prevent bugs due to potentially invalid branches, in which the creation
+        /// of new branches during <see cref="MoveBifurcation"/> actions causes a <see cref="KeyNotFoundException"/>
+        /// in <see cref="HierarchicalCosts"/>.
         /// </summary>
         /// <param name="endpoints"></param>
         /// <param name="parent"></param>
+        /// <param name="includeChildren"></param>
         /// <returns></returns>
-        public static HashSet<Branch> AllInGrouping(IEnumerable<BranchNode> endpoints, Branch parent)
+        public static HashSet<Branch> AllInGrouping(IEnumerable<BranchNode> endpoints, Branch parent, bool includeChildren = false)
         {
             var branches = endpoints
                 .Select(e => e.Upstream)
@@ -171,7 +176,37 @@ namespace Vascular.Optimization.Topological
                 }
             }
             branches.Add(parent);
+            if (includeChildren)
+            {
+                foreach (var e in endpoints)
+                {
+                    foreach (var c in e.Downstream)
+                    {
+                        branches.Add(c);
+                    }
+                }
+            }
             return branches;
+        }
+
+        /// <summary>
+        /// Tests whether the branches in <paramref name="grouping"/> have been visited already.
+        /// If so, returns false, as the branches may not have references in a <see cref="HierarchicalCosts"/>
+        /// gradient cache.
+        /// If not visited yet, adds the elements of <paramref name="grouping"/> to <paramref name="visited"/>
+        /// and returns true.
+        /// </summary>
+        /// <param name="visited"></param>
+        /// <param name="grouping"></param>
+        /// <returns></returns>
+        public static bool TryVisit(HashSet<Branch> visited, HashSet<Branch> grouping)
+        {
+            if (visited.Overlaps(grouping))
+            {
+                return false;
+            }
+            visited.UnionWith(grouping);
+            return true;
         }
 
         /// <summary>

@@ -142,9 +142,15 @@ namespace Vascular.Construction.LSC
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool CanCoarsen { get; set; } = true;
+
         private void Coarsen()
         {
-            if (this.Current.Previous is not LinkedListNode<LatticeState> previous)
+            if (!this.CanCoarsen ||
+                this.Current.Previous is not LinkedListNode<LatticeState> previous)
             {
                 return;
             }

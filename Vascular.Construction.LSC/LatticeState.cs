@@ -333,22 +333,33 @@ namespace Vascular.Construction.LSC
         }
 
         /// <summary>
-        /// 
+        /// Remove <paramref name="terminal"/> from the interior. If successful, <paramref name="tryAddExterior"/>
+        /// is true and the slot occupied by <paramref name="terminal"/> is empty, add the index back to
+        /// <see cref="Exterior"/>.
         /// </summary>
         /// <param name="terminal"></param>
-        /// <returns></returns>
-        public bool Remove(Terminal terminal)
+        /// <param name="tryAddExterior"></param>
+        /// <returns>True if the terminal was present in the network.</returns>
+        public bool Remove(Terminal terminal, bool tryAddExterior = false)
         {
             var index = this.ClosestBasisFunction(terminal.Position);
+            var result = false;
+
             if (this.MultipleInterior != null)
             {
-                return LatticeActions.Remove(this.MultipleInterior, this.Exterior, terminal, index, this.Connections);
+                result = LatticeActions.Remove(this.MultipleInterior, this.Exterior, terminal, index, this.Connections);
             }
             else if (this.SingleInterior != null)
             {
-                return LatticeActions.Remove(this.SingleInterior, this.Exterior, terminal, index, this.Connections);
+                result = LatticeActions.Remove(this.SingleInterior, this.Exterior, terminal, index, this.Connections);
             }
-            return false;
+
+            if (result && tryAddExterior)
+            {
+                AddExterior(index);
+            }
+
+            return result;
         }
 
         /// <summary>

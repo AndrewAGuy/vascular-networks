@@ -94,6 +94,17 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Creates a single element sequence.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> AsEnumerable<T>(this T t)
+        {
+            yield return t;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="val"></param>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Diagnostics
 {
@@ -46,6 +47,32 @@ namespace Vascular.Structure.Diagnostics
                 for (var i = 0; i < children.Length; ++i)
                 {
                     stack.Push(children[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns all terminals downstream of <paramref name="branch"/>, including the end node.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <returns></returns>
+        public IEnumerable<Terminal> Terminals(Branch branch)
+        {
+            stack.Push(branch);
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                if (current.End is Terminal terminal)
+                {
+                    yield return terminal;
+                }
+                else
+                {
+                    var children = current.Children;
+                    for (var i = 0; i < children.Length; ++i)
+                    {
+                        stack.Push(children[i]);
+                    }
                 }
             }
         }
