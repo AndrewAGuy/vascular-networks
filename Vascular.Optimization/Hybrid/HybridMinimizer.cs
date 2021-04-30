@@ -20,39 +20,75 @@ namespace Vascular.Optimization.Hybrid
     /// </summary>
     public class HybridMinimizer
     {
-        public HybridMinimizer(HierarchicalCosts costs)
+        public HybridMinimizer(Network network)
         {
-            this.costs = costs;
-            this.Network = costs.Network;
+            this.Network = network;
             this.Minimizer = new GradientDescentMinimizer(this.Network)
             {
                 UpdateStrideToTarget = true,
                 BlockLength = 10,
                 BlockRatio = 0.75
-            }.Add(n => costs.Evaluate().gradients);
+            };
         }
 
-        private readonly HashSet<BranchAction> branchActions = new();
+        private readonly HashSet<BranchAction> actions = new();
 
         public void Iterate(int iterations)
         {
             for (var i = 0; i < iterations; ++i)
             {
                 IterateGeometry();
-                GetTopology(branchActions);
-                // TODO: act on topology - fix executor class first
+                GetTopology();
+                ActTopology();
+            }
+            IterateGeometry();
+        }
+
+        private void ActTopology()
+        {
+            foreach (var prepare in prepareEstimators)
+            {
+                prepare();
+            }
+
+            var executor = new TopologyExecutor()
+            {
+                PropagateLogical = false,
+                PropagatePhysical = false,
+                TryUpdate = true
+            };
+
+            var ranked = actions
+                .Select(a =>
+                {
+                    var dC = 0.0;
+                    foreach (var estimator in topologyEstimators)
+                    {
+                        dC += estimator(a);
+                    }
+                    return (a, dC);
+                })
+                .Where(a => a.dC < this.CostChangeThreshold)
+                .OrderBy(a => a.dC)
+                .Select(a => a.a);
+
+            var taken = executor.IterateOrdered(ranked);
+            if (taken != 0)
+            {
+                topologyInvalid = true;
+                geometryInvalid = true;
             }
         }
 
-        private void GetTopology(HashSet<BranchAction> actions)
+        private void GetTopology()
         {
             actions.Clear();
             SetGeometryAndTopology();
-            GetRegrouping(actions);
-            GetRebalancing(actions);
-            GetPromotions(actions);
-            GetTerminalActions(actions);
-            GetExtraTopology(actions);
+            GetRegrouping();
+            GetRebalancing();
+            GetPromotions();
+            GetTerminalActions();
+            GetExtraTopology();
         }
 
         public ClosestBasisFunction ToIntegral { get; set; }
@@ -78,7 +114,7 @@ namespace Vascular.Optimization.Hybrid
         public Func<BranchNode, BranchNode, BranchNode, Vector3> EvaluationPlacement { get; set; }
         public double CostChangeThreshold { get; set; }
 
-        private void GetRegrouping(HashSet<BranchAction> actions)
+        private void GetRegrouping()
         {
             if (this.TryRegroup)
             {
@@ -95,8 +131,16 @@ namespace Vascular.Optimization.Hybrid
                     }
                     else
                     {
-                        var (optimal, dC) = Grouping.OptimalAction(permissible, costs, this.EvaluationPlacement);
-                        if (optimal != null && dC < this.CostChangeThreshold)
+                        if (permissible.ArgMin(a =>
+                            {
+                                var dC = 0.0;
+                                foreach (var estimator in topologyEstimators)
+                                {
+                                    dC += estimator(a);
+                                }
+                                return dC;
+                            }, out var optimal, out var dC) && 
+                            dC < this.CostChangeThreshold)
                         {
                             actions.Add(optimal);
                         }
@@ -113,7 +157,7 @@ namespace Vascular.Optimization.Hybrid
 
         public Func<Branch, int> TerminalCountEstimate { get; set; } = b => (int)b.Flow;
 
-        private void GetRebalancing(HashSet<BranchAction> actions)
+        private void GetRebalancing()
         {
             if (this.TryRebalance)
             {
@@ -133,7 +177,7 @@ namespace Vascular.Optimization.Hybrid
 
                     if (rebalance is RemoveBranch remove && this.AllowRebalanceRemoval)
                     {
-                        ProcessRemoval(actions, remove);
+                        ProcessRemoval(remove);
                     }
                     else if (rebalance != null)
                     {
@@ -143,7 +187,7 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
-        private void ProcessRemoval(HashSet<BranchAction> actions, RemoveBranch remove)
+        private void ProcessRemoval(RemoveBranch remove)
         {
             if (this.OffloadRemovedTerminals)
             {
@@ -168,7 +212,7 @@ namespace Vascular.Optimization.Hybrid
         public bool TryLocalTerminalActions { get; set; } = false;
         public Func<Terminal, IEnumerable<Branch>> TerminalActionExpansion { get; set; }
 
-        private void GetTerminalActions(HashSet<BranchAction> actions)
+        private void GetTerminalActions()
         {
             if (this.TryTerminals)
             {
@@ -223,7 +267,7 @@ namespace Vascular.Optimization.Hybrid
 
         public bool TryPromote { get; set; }
 
-        private void GetPromotions(HashSet<BranchAction> actions)
+        private void GetPromotions()
         {
             foreach (var p in Grouping.Promotions(this.Branches))
             {
@@ -241,13 +285,14 @@ namespace Vascular.Optimization.Hybrid
             {
                 this.Minimizer.Stride = 0;
             }
+            UpdateSoftTopology();
             for (var i = 0; i < this.GeometryIterations; ++i)
             {
                 ModifyGeomtry();
                 SetGeometryAndTopology();
                 this.Minimizer.Iterate();
-                TrimTerminals();
-                ModifyTransients();
+                this.LogCost?.Invoke(this.Minimizer.Cost);
+                UpdateSoftTopology();
             }
         }
 
@@ -278,12 +323,19 @@ namespace Vascular.Optimization.Hybrid
 
         private readonly List<Func<Network, IEnumerable<BranchAction>>> topologySource = new();
 
+        private readonly List<Func<BranchAction, double>> topologyEstimators = new();
+
         public void AddTopologySource(Func<Network, IEnumerable<BranchAction>> source)
         {
             topologySource.Add(source);
         }
 
-        private void GetExtraTopology(HashSet<BranchAction> actions)
+        public void AddTopologyEstimator(Func<BranchAction, double> estimator)
+        {
+            topologyEstimators.Add(estimator);
+        }
+
+        private void GetExtraTopology()
         {
             foreach (var topology in topologySource)
             {
@@ -319,8 +371,30 @@ namespace Vascular.Optimization.Hybrid
         }
 
         public Network Network { get; }
-        private readonly HierarchicalCosts costs;
-        public GradientDescentMinimizer Minimizer { get; }
+        public GradientDescentMinimizer Minimizer { get; set; }
+
+        private readonly List<Action> prepareEstimators = new();
+
+        private readonly List<Func<Network, double>> costs = new();
+
+        public void AddCost(Func<Network, double> cost)
+        {
+            costs.Add(cost);
+        }
+
+        public void AddEstimatorPrepare(Action prepare)
+        {
+            prepareEstimators.Add(prepare);
+        }
+
+        public void AddHierarchicalCosts(HierarchicalCosts costs)
+        {
+            this.Minimizer.Add(n => costs.Evaluate());
+            topologyEstimators.Add(t => Grouping.EstimateCostChange(t, costs, this.EvaluationPlacement));
+            AddEstimatorPrepare(() => costs.SetCache());
+        }
+
+        public Action<double> LogCost { get; set; }
 
         private readonly BranchEnumerator enumerator = new();
 
@@ -328,6 +402,12 @@ namespace Vascular.Optimization.Hybrid
 
         private bool geometryInvalid;
         private bool topologyInvalid;
+
+        private void UpdateSoftTopology()
+        {
+            TrimTerminals();
+            ModifyTransients();
+        }
 
         private void SetGeometryAndTopology()
         {

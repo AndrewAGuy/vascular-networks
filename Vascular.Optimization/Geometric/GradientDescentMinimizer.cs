@@ -61,13 +61,13 @@ namespace Vascular.Optimization.Geometric
         /// </summary>
         /// <param name="cost"></param>
         /// <returns></returns>
-        public GradientDescentMinimizer Add(Func<Network, IDictionary<IMobileNode, Vector3>> cost)
+        public GradientDescentMinimizer Add(Func<Network, (double c, IDictionary<IMobileNode, Vector3> g)> cost)
         {
             costs.Add(cost);
             return this;
         }
 
-        private readonly List<Func<Network, IDictionary<IMobileNode, Vector3>>> costs = new();
+        private readonly List<Func<Network, (double c, IDictionary<IMobileNode, Vector3> g)>> costs = new();
 
         /// <summary>
         /// 
@@ -77,16 +77,23 @@ namespace Vascular.Optimization.Geometric
         private IDictionary<IMobileNode, Vector3> CalculateGradient()
         {
             var gradients = new Dictionary<IMobileNode, Vector3>(this.Network.Segments.Count());
+            this.Cost = double.NaN;
             foreach (var cost in costs)
             {
-                var gradient = cost(this.Network);
-                foreach (var g in gradient)
+                var (c, G) = cost(this.Network);
+                if (!double.IsNaN(c))
+                {
+                    this.Cost = double.IsNaN(this.Cost) ? c : this.Cost + c;
+                }
+                foreach (var g in G)
                 {
                     gradients.AddOrUpdate(g.Key, g.Value, v => v, (u, v) => u + v);
                 }
             }
             return gradients;
         }
+
+        public double Cost { get; private set; }
 
         /// <summary>
         /// Set to 0 to get the stride reset.
