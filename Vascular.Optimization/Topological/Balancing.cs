@@ -40,6 +40,20 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
+        /// For use with internal collision detection for redundancy removal. Sets the radius of a branch to
+        /// be a fixed fraction of its target length as a function of flow rate. As usual, <paramref name="L0"/>
+        /// is the length of a branch with unit flow.
+        /// </summary>
+        /// <param name="L0"></param>
+        /// <param name="rFrac"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> FlowRadius(double L0, double rFrac)
+        {
+            var r0 = L0 * rFrac;
+            return b => r0 * Math.Pow(b.Flow, 1.0 / 3.0);
+        }
+
+        /// <summary>
         /// Small terminal vessels are an issue as it can lead to tiny (or even zero) values of <see cref="Branch.ReducedResistance"/> in their
         /// upstream branches. This has lead to floating point issues in <see cref="Bifurcation.ReducedResistance"/> through a 0/0 error,
         /// and might also have the potential for overflow. 
@@ -206,11 +220,18 @@ namespace Vascular.Optimization.Topological
         /// <param name="tryAddLocal"></param>
         /// <returns></returns>
         public static IEnumerable<BranchAction> OffloadTerminals(Branch root, Branch from,
-            ClosestBasisFunction toIntegral, Vector3[] connections, BranchEnumerator enumerator,
+            ClosestBasisFunction toIntegral, Vector3[] connections, Func<Branch, IEnumerable<Terminal>> enumerator,
             bool tryAddLocal = false)
         {
             var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
-            foreach (var terminal in enumerator.Terminals(root))
+            return OffloadTerminals(root, from, interior, toIntegral, connections, enumerator, tryAddLocal);
+        }
+
+        public static IEnumerable<BranchAction> OffloadTerminals(Branch root, Branch from, 
+            Dictionary<Vector3,ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
+            Func<Branch, IEnumerable<Terminal>> enumerator, bool tryAddLocal = false)
+        {
+            foreach (var terminal in enumerator(root))
             {
                 var index = toIntegral(terminal.Position);
                 var candidates = LatticeActions.GetConnected<List<Terminal>>(interior, connections, index);
@@ -226,6 +247,59 @@ namespace Vascular.Optimization.Topological
                     {
                         yield return new MoveBifurcation(terminal.Upstream, candidate.Upstream);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generate a multiple interior using <paramref name="toIntegral"/> and <paramref name="root"/>,
+        /// then for each terminal collection generate all actions that could be taken with neighbouring
+        /// collections according to <paramref name="connections"/>, possibly internally if <paramref name="tryLocal"/>.
+        /// If <paramref name="expand"/>, each terminal gets a chance to return multiple branches, e.g. iterating
+        /// upstream a given number of times using <see cref="BranchNode.EnumerateUpstream(int)"/>.
+        /// <para/>
+        /// This can return many equivalent and invalid actions, so filter by calling 
+        /// <see cref="Enumerable.Distinct{TSource}(IEnumerable{TSource})"/> and <see cref="TopologyAction.IsPermissible"/>.
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <param name="tryLocal"></param>
+        /// <param name="expand"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> TerminalActions(Branch root,
+            ClosestBasisFunction toIntegral, Vector3[] connections,
+            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
+        {
+            var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
+            return TerminalActions(root, interior, toIntegral, connections, tryLocal, expand);
+        }
+
+        public static IEnumerable<BranchAction> TerminalActions(Branch root,
+            Dictionary<Vector3, ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
+            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
+        {
+            foreach (var (index, terminals) in interior)
+            {
+                var candidateTerminals = LatticeActions.GetConnected<List<Terminal>>(interior, connections, index);
+                if (tryLocal)
+                {
+                    candidateTerminals.AddRange(terminals);
+                }
+
+                var (candidateBranches, branches)
+                    = expand != null
+                    ? (
+                    candidateTerminals.SelectMany(expand).Distinct().ToArray(),
+                    terminals.SelectMany(expand).Distinct().ToArray()
+                    )
+                    : (
+                    candidateTerminals.Select(t => t.Upstream).ToArray(),
+                    terminals.Select(t => t.Upstream).ToArray()
+                    );
+                foreach (var action in Grouping.PairwiseActions(candidateBranches, branches))
+                {
+                    yield return action;
                 }
             }
         }

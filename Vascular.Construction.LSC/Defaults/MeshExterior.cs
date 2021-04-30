@@ -33,6 +33,24 @@ namespace Vascular.Construction.LSC.Defaults
             return (T, t) => surface.RayIntersectionCounts(T.Position, t.Position - T.Position, rayTolerance).outwards == 0;
         }
 
+        public static TerminalPairPredicate BifurcationTriadNotPenetrating(Surface surface, double rayTolerance)
+        {
+            return (T, t) =>
+            {
+                var ok = true;
+                var tst = new TriangleSurfaceTest(
+                    T.Position, t.Position, T.Upstream.Start.Position, rayTolerance);
+                surface.Query(tst.GetAxialBounds(), TST =>
+                {
+                    if (tst.TestTriangleRays(TST, out var a, out var b))
+                    {
+                        ok = false;
+                    }
+                });
+                return ok;
+            };
+        }
+
         /// <summary>
         /// 
         /// </summary>

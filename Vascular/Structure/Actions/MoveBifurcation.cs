@@ -62,7 +62,7 @@ namespace Vascular.Structure.Actions
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return a.GetHashCode() ^ b.GetHashCode();
+            return HashCode.Combine(a, b);
         }
     }
 }

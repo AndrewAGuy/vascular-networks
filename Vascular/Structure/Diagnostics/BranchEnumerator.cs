@@ -30,11 +30,18 @@ namespace Vascular.Structure.Diagnostics
 
         /// <summary>
         /// Same as <see cref="Branch.DownstreamOf"/>, but does not allocate/deallocate a new stack.
+        /// If <paramref name="include"/> is true, returns <paramref name="branch"/> as well.
         /// </summary>
         /// <param name="branch"></param>
+        /// <param name="include"></param>
         /// <returns></returns>
-        public IEnumerable<Branch> Downstream(Branch branch)
+        public IEnumerable<Branch> Downstream(Branch branch, bool include = true)
         {
+            if (include)
+            {
+                yield return branch;
+            }
+
             foreach (var c in branch.Children)
             {
                 stack.Push(c);
@@ -47,6 +54,26 @@ namespace Vascular.Structure.Diagnostics
                 for (var i = 0; i < children.Length; ++i)
                 {
                     stack.Push(children[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns all mobile nodes in branches downstream of and including <paramref name="root"/>.
+        /// </summary>
+        /// <param name="root"></param>
+        /// <returns></returns>
+        public IEnumerable<IMobileNode> MobileNodes(Branch root)
+        {
+            foreach (var branch in Downstream(root, true))
+            {
+                if (root.Start is IMobileNode mobile)
+                {
+                    yield return mobile;
+                }
+                foreach (var transient in branch.Transients)
+                {
+                    yield return transient as IMobileNode;
                 }
             }
         }

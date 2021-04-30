@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -153,6 +154,23 @@ namespace Vascular.Structure
             {
                 action(c);
                 c.End.ForEach(action);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates the first <paramref name="n"/> branches upstream of this node,
+        /// starting from <see cref="Upstream"/>.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public IEnumerable<Branch> EnumerateUpstream(int n)
+        {
+            var b = this.Upstream;
+            while (n > 0 && b != null)
+            {
+                yield return b;
+                b = b.Parent;
+                n--;
             }
         }
     }

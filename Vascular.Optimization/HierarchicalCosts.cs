@@ -43,6 +43,11 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
+        public Network Network => hierarchicalGradients.Source.Network;
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="lengthExponent"></param>
         /// <param name="radiusExponent"></param>
         /// <param name="factor"></param>

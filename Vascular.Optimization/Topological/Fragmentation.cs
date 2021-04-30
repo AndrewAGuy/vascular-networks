@@ -37,7 +37,8 @@ namespace Vascular.Optimization.Topological
         /// <param name="branch"></param>
         /// <param name="predicate"></param>
         /// <param name="newRadius"></param>
-        public static void Defragment(Branch branch, Predicate<Transient> predicate, Func<Transient, double> newRadius)
+        /// <returns></returns>
+        public static bool Defragment(Branch branch, Predicate<Transient> predicate, Func<Transient, double> newRadius)
         {
             var current = branch.Segments[0].End;
             var reinit = false;
@@ -62,6 +63,7 @@ namespace Vascular.Optimization.Topological
             {
                 Reinitialize(branch);
             }
+            return reinit;
         }
 
         /// <summary>

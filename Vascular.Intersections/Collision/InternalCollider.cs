@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure;
+using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Intersections.Collision
@@ -180,7 +181,7 @@ namespace Vascular.Intersections.Collision
                             {
                                 if (d.GlobalBounds.Intersects(bounds))
                                 {
-                                    Network.BranchQuery(bounds, b => TestSegments(A, b.Segments, intersections, 
+                                    Network.BranchQuery(bounds, b => TestSegments(A, b.Segments, intersections,
                                         this.GrayCode, BranchRelationship.Internal), d);
                                 }
                             }
@@ -210,6 +211,58 @@ namespace Vascular.Intersections.Collision
                     return segs;
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates an action that detects redundancy in a network using an <see cref="InternalCollider"/>
+        /// and creates suggestions to fix it topologically. This can be used separately to the regular
+        /// collision resolution scheme, where geometric options are prohibited.
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="immuneSetContraction"></param>
+        /// <param name="immediateCull"></param>
+        /// <param name="branchActionPredicate"></param>
+        /// <returns></returns>
+        public static Func<Network, IEnumerable<BranchAction>> RedundancyRemoval(
+            Func<Branch, double> radius = null, bool immuneSetContraction = true,
+            Func<Terminal, Segment, bool> immediateCull = null,
+            Func<Branch, Branch, bool> branchActionPredicate = null)
+        {
+            IEnumerable<BranchAction> generator(Network network)
+            {
+                var ic = new InternalCollider(network)
+                {
+                    ImmuneSetContraction = immuneSetContraction
+                };
+                var cr = new CollisionRecorder()
+                {
+                    RecordTopology = true,
+                    ImmediateCull = immediateCull,
+                    BranchActionPredicate = branchActionPredicate
+                };
+
+                if (radius == null)
+                {
+                    network.Source.PropagateRadiiDownstream();
+                }
+                else
+                {
+                    network.Source.PropagateRadiiDownstream(radius);
+                }
+
+                cr.Record(ic.Evaluate());
+                cr.Finish();
+                foreach (var c in cr.Culling)
+                {
+                    yield return new RemoveBranch(c.Parent.Branch);
+                }
+                foreach (var a in cr.BranchActions)
+                {
+                    yield return a;
+                }
+            }
+
+            return network => generator(network);
         }
     }
 }

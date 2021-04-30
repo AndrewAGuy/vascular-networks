@@ -278,7 +278,11 @@ namespace Vascular.Intersections.Collision
             var A = i.A.Branch;
             var B = i.B.Branch;
             if (!this.RecordTopology ||
-                A.Network != B.Network ||
+                A.Network != B.Network)
+            {
+                return false;
+            }
+            if (this.BranchActionPredicate != null && 
                 !this.BranchActionPredicate(A, B))
             {
                 return false;

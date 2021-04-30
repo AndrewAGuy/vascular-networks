@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
-using Vascular.Optimization.Geometric;
+using Vascular.Geometry.Bounds;
+using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
 
+
 namespace Vascular.Optimization.Topological
 {
+    using Surface = IAxialBoundsQueryable<TriangleSurfaceTest>;
+
     /// <summary>
     /// Methods related to resolving issues caused by poor topology, leading to groups of bifurcations forming.
     /// </summary>
@@ -224,16 +228,45 @@ namespace Vascular.Optimization.Topological
                 : AllInGrouping(endpoints, parent);
             // For each pair, work out if we can move A -> B, B -> A or swap A <-> B
             // Making an action will invalidate the cost cache for this grouping
-            // So for all valid actions with negative cost impact, pick the smallest
-            static IEnumerable<BranchAction> generator(Branch a, Branch b)
-            {
-                yield return new MoveBifurcation(a, b);
-                yield return new MoveBifurcation(b, a);
-                yield return new SwapEnds(a, b);
-            }
+            // So for all valid actions with negative cost impact, pick the smallest           
             return branches.Pairs()
-                .SelectMany(p => generator(p.a, p.b))
+                .SelectMany(p => BranchPairActions(p.a, p.b))
                 .Where(a => a.IsPermissible());
+        }
+
+        /// <summary>
+        /// Creates the two <see cref="MoveBifurcation"/> actions and a <see cref="SwapEnds"/>, regardless
+        /// of whether any of them are possible. Test using <see cref="TopologyAction.IsPermissible"/>.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> BranchPairActions(Branch a, Branch b)
+        {
+            yield return new MoveBifurcation(a, b);
+            yield return new MoveBifurcation(b, a);
+            yield return new SwapEnds(a, b);
+        }
+
+        /// <summary>
+        /// Returns all <see cref="MoveBifurcation"/> and <see cref="SwapEnds"/> that can be made from
+        /// elements of <paramref name="A"/> and <paramref name="B"/>.
+        /// Actions may not be distinct or valid if there are mutual elements, so filter afterwards.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> PairwiseActions(IEnumerable<Branch> A, IEnumerable<Branch> B)
+        {
+            foreach (var a in A)
+            {
+                foreach (var b in B)
+                {
+                    yield return new MoveBifurcation(a, b);
+                    yield return new MoveBifurcation(b, a);
+                    yield return new SwapEnds(a, b);
+                }
+            }
         }
 
         /// <summary>
@@ -329,6 +362,39 @@ namespace Vascular.Optimization.Topological
                 .Select(b => new PromoteNode(b.End))
                 .Where(p => p.IsPermissible())
                 .Select(p => p.Action);
+        }
+
+        public static bool EnsureNotLeaving(BranchAction action, Surface surface, double rayTolerance)
+        {
+            var ok = true;
+            switch (action)
+            {
+                case MoveBifurcation move:
+                    var tst = new TriangleSurfaceTest(
+                        action.A.End.Position, action.B.Start.Position, action.B.End.Position,
+                        rayTolerance);
+                    surface.Query(tst.GetAxialBounds(), TST =>
+                    {
+                        if (tst.TestTriangleRays(TST, out var a, out var b))
+                        {
+                            ok = false;
+                        }
+                    });
+                    break;
+
+                case SwapEnds swap:
+                    var sa = swap.A.Start.Position;
+                    var sb = swap.B.Start.Position;
+                    var ea = swap.A.End.Position;
+                    var eb = swap.B.End.Position;
+                    if (surface.RayIntersectionCounts(sa, eb - sa, rayTolerance).outwards != 0 ||
+                        surface.RayIntersectionCounts(sb, ea - sb, rayTolerance).outwards != 0)
+                    {
+                        ok = false;
+                    }
+                    break;
+            }
+            return ok;
         }
     }
 }

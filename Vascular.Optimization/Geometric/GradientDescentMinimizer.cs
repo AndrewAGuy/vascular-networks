@@ -36,7 +36,7 @@ namespace Vascular.Optimization.Geometric
         /// 
         /// </summary>
         public bool ThrowIfNotFinite { get; set; } = false;
-       
+
         private void Move(IDictionary<IMobileNode, Vector3> gradient)
         {
             foreach (var kv in gradient)
@@ -109,6 +109,32 @@ namespace Vascular.Optimization.Geometric
         public bool UpdateStrideToTarget { get; set; } = true;
 
         /// <summary>
+        /// 
+        /// </summary>
+        public int BlockLength { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double BlockRatio { get; set; }
+
+        private int iteration = 0;
+
+        private void EndIteration()
+        {
+            if (this.BlockLength <= 0)
+            {
+                return;
+            }
+            iteration++;
+            if (iteration == this.BlockLength)
+            {
+                this.Stride *= this.BlockRatio;
+                iteration = 0;
+            }
+        }
+
+        /// <summary>
         /// Calculates gradients, updates strides if needed, moves and recalculates.
         /// </summary>
         public void Iterate()
@@ -122,6 +148,7 @@ namespace Vascular.Optimization.Geometric
             if (this.Stride == 0)
             {
                 this.Stride = InitialMaxStrideFactor(gradient.Values, this.TargetStep);
+                iteration = 0;
             }
             else if (this.UpdateStrideToTarget)
             {
@@ -131,6 +158,7 @@ namespace Vascular.Optimization.Geometric
             Move(gradient);
             this.Network.Source.CalculatePhysical();
             this.Network.Source.PropagateRadiiDownstream();
+            EndIteration();
         }
 
         private void ClampStride(IEnumerable<Vector3> G)
