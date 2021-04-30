@@ -67,6 +67,17 @@ namespace Vascular.Optimization.Geometric
             return this;
         }
 
+        /// <summary>
+        /// Retains the legacy interface by returning <see cref="double.NaN"/> as the cost, which is ignored.
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <returns></returns>
+        public GradientDescentMinimizer Add(Func<Network, IDictionary<IMobileNode, Vector3>> cost)
+        {
+            costs.Add(n => (double.NaN, cost(n)));
+            return this;
+        }
+
         private readonly List<Func<Network, (double c, IDictionary<IMobileNode, Vector3> g)>> costs = new();
 
         /// <summary>
@@ -93,6 +104,9 @@ namespace Vascular.Optimization.Geometric
             return gradients;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double Cost { get; private set; }
 
         /// <summary>

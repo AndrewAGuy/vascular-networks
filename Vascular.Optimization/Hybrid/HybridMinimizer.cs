@@ -77,6 +77,10 @@ namespace Vascular.Optimization.Hybrid
             {
                 topologyInvalid = true;
                 geometryInvalid = true;
+                if (this.ResetStrideOnTopologyChange)
+                {
+                    this.Minimizer.Stride = 0;
+                }
             }
         }
 
@@ -139,7 +143,7 @@ namespace Vascular.Optimization.Hybrid
                                     dC += estimator(a);
                                 }
                                 return dC;
-                            }, out var optimal, out var dC) && 
+                            }, out var optimal, out var dC) &&
                             dC < this.CostChangeThreshold)
                         {
                             actions.Add(optimal);
@@ -291,7 +295,7 @@ namespace Vascular.Optimization.Hybrid
                 ModifyGeomtry();
                 SetGeometryAndTopology();
                 this.Minimizer.Iterate();
-                this.LogCost?.Invoke(this.Minimizer.Cost);
+                RecordCost();
                 UpdateSoftTopology();
             }
         }
@@ -395,6 +399,19 @@ namespace Vascular.Optimization.Hybrid
         }
 
         public Action<double> LogCost { get; set; }
+
+        private void RecordCost()
+        {
+            if (this.LogCost != null)
+            {
+                var cost = this.Minimizer.Cost;
+                foreach (var extra in costs)
+                {
+                    cost += extra(this.Network);
+                }
+                this.LogCost(cost);
+            }
+        }
 
         private readonly BranchEnumerator enumerator = new();
 
