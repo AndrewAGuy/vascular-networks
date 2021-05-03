@@ -33,8 +33,9 @@ namespace Vascular.Optimization.Hybrid
 
         private readonly HashSet<BranchAction> actions = new();
 
-        public void Iterate(int iterations)
+        public void Iterate(int iterations, bool invalidateInterior = true)
         {
+            interiorInvalid |= invalidateInterior;
             for (var i = 0; i < iterations; ++i)
             {
                 IterateGeometry();
@@ -43,6 +44,8 @@ namespace Vascular.Optimization.Hybrid
             }
             IterateGeometry();
         }
+
+        public bool Recost { get; set; } = false;
 
         private void ActTopology()
         {
@@ -53,26 +56,43 @@ namespace Vascular.Optimization.Hybrid
 
             var executor = new TopologyExecutor()
             {
-                PropagateLogical = false,
-                PropagatePhysical = false,
+                PropagateLogical = this.Recost,
+                PropagatePhysical = this.Recost,
                 TryUpdate = true
             };
 
-            var ranked = actions
-                .Select(a =>
-                {
-                    var dC = 0.0;
-                    foreach (var estimator in topologyEstimators)
-                    {
-                        dC += estimator(a);
-                    }
-                    return (a, dC);
-                })
-                .Where(a => a.dC < this.CostChangeThreshold)
-                .OrderBy(a => a.dC)
-                .Select(a => a.a);
+            var taken = 0;
 
-            var taken = executor.IterateOrdered(ranked);
+            if (this.Recost)
+            {
+                executor.Predicate = ba => EstimateChange(ba) < this.CostChangeThreshold;
+                executor.Cost = ba => EstimateChange(ba);
+                executor.ContinuationPredicate = () =>
+                {
+                    foreach (var prepare in prepareEstimators)
+                    {
+                        prepare();
+                    }
+                    return true;
+                };
+
+                taken = executor.Iterate(actions);
+            }
+            else
+            {
+                var ranked = actions
+                    .Select(a =>
+                    {
+                        var dC = EstimateChange(a);
+                        return (a, dC);
+                    })
+                    .Where(a => a.dC < this.CostChangeThreshold)
+                    .OrderBy(a => a.dC)
+                    .Select(a => a.a);
+
+                taken = executor.IterateOrdered(ranked);
+            }
+
             if (taken != 0)
             {
                 topologyInvalid = true;
@@ -84,6 +104,16 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        private double EstimateChange(BranchAction action)
+        {
+            var dC = 0.0;
+            foreach (var estimator in topologyEstimators)
+            {
+                dC += estimator(action);
+            }
+            return dC;
+        }
+
         private void GetTopology()
         {
             actions.Clear();
@@ -93,6 +123,17 @@ namespace Vascular.Optimization.Hybrid
             GetPromotions();
             GetTerminalActions();
             GetExtraTopology();
+
+            if (this.Placement != null)
+            {
+                foreach (var action in actions)
+                {
+                    if (action is MoveBifurcation move)
+                    {
+                        move.Position ??= this.Placement;
+                    }
+                }
+            }
         }
 
         public ClosestBasisFunction ToIntegral { get; set; }
@@ -111,11 +152,12 @@ namespace Vascular.Optimization.Hybrid
 
         public bool TryRegroup { get; set; }
         public double UnitLength { get; set; }
-        public double MinLengthRatio { get; set; }
-        public double MaxLengthRatio { get; set; }
+        public double MinLengthRatio { get; set; } = 0.1;
+        public double MaxLengthRatio { get; set; } = 2;
         public bool OnlyRegroupEndpoints { get; set; } = false;
         public bool RegroupMultipleCandidates { get; set; } = false;
         public Func<BranchNode, BranchNode, BranchNode, Vector3> EvaluationPlacement { get; set; }
+        public Func<Bifurcation, Vector3> Placement { get; set; }
         public double CostChangeThreshold { get; set; }
 
         private void GetRegrouping()
@@ -135,15 +177,7 @@ namespace Vascular.Optimization.Hybrid
                     }
                     else
                     {
-                        if (permissible.ArgMin(a =>
-                            {
-                                var dC = 0.0;
-                                foreach (var estimator in topologyEstimators)
-                                {
-                                    dC += estimator(a);
-                                }
-                                return dC;
-                            }, out var optimal, out var dC) &&
+                        if (permissible.ArgMin(EstimateChange, out var optimal, out var dC) &&
                             dC < this.CostChangeThreshold)
                         {
                             actions.Add(optimal);
@@ -154,10 +188,11 @@ namespace Vascular.Optimization.Hybrid
         }
 
         public bool TryRebalance { get; set; }
-        public double FlowRatio { get; set; }
-        public double RadiusRatio { get; set; }
+        public double FlowRatio { get; set; } = 2;
+        public double RadiusRatio { get; set; } = 2;
         public bool AllowRebalanceRemoval { get; set; } = false;
         public bool OffloadRemovedTerminals { get; set; } = true;
+        public bool PersistRemoval { get; set; } = false;
 
         public Func<Branch, int> TerminalCountEstimate { get; set; } = b => (int)b.Flow;
 
@@ -203,6 +238,11 @@ namespace Vascular.Optimization.Hybrid
                 {
                     actions.Add(action);
                 }
+
+                if (this.PersistRemoval)
+                {
+                    actions.Add(remove);
+                }
             }
             else
             {
@@ -235,7 +275,7 @@ namespace Vascular.Optimization.Hybrid
         {
             if (this.MinTerminalLength != 0)
             {
-                Balancing.RemoveShortTerminals(this.Network, this.MinTerminalLength, onCull);
+                Balancing.RemoveShortTerminals(this.Network, this.MinTerminalLength, onTrim);
             }
         }
 
@@ -246,7 +286,6 @@ namespace Vascular.Optimization.Hybrid
 
         private void ModifyTransients()
         {
-            this.Network.Source.PropagateRadiiDownstream();
             if (this.RemoveTransients)
             {
                 foreach (var b in this.Branches)
@@ -260,6 +299,7 @@ namespace Vascular.Optimization.Hybrid
             }
             else if (this.TryDefragment)
             {
+                this.Network.Source.PropagateRadiiDownstream();
                 var defrag = Fragmentation.DeviationOrTouching(this.DeviationRatio, this.CaptureFraction);
                 var newRadius = Fragmentation.BranchRadius;
                 foreach (var b in this.Branches)
@@ -300,8 +340,6 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
-        public Func<Branch, Branch, bool> Priority { get; set; }
-
         public Action<Terminal> OnCull
         {
             get => onCull;
@@ -323,6 +361,27 @@ namespace Vascular.Optimization.Hybrid
             }
         }
         private Action<Terminal> onCull;
+        public Action<Terminal> OnTrim
+        {
+            get => onTrim;
+            set
+            {
+                if (value != null)
+                {
+                    var defaultAction = this.DefaultCullAction;
+                    onTrim = t =>
+                    {
+                        value(t);
+                        defaultAction(t);
+                    };
+                }
+                else
+                {
+                    onTrim = this.DefaultCullAction;
+                }
+            }
+        }
+        private Action<Terminal> onTrim;
         private Action<Terminal> DefaultCullAction => t => interiorInvalid = true;
 
         private readonly List<Func<Network, IEnumerable<BranchAction>>> topologySource = new();

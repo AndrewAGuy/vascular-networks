@@ -51,13 +51,25 @@ namespace Vascular.Structure.Actions
         /// </summary>
         public Func<bool> ContinuationPredicate { get; set; } = () => true;
 
+        /// <summary>
+        /// Executed before an action is taken. May be used for rapid updates of cached data if needed.
+        /// </summary>
+        public Action<BranchAction> BeforeExecute { get; set; }
+
+        /// <summary>
+        /// Executed after an action is taken. May be used for rapid updates of cached data if needed.
+        /// </summary>
+        public Action<BranchAction> AfterExecute { get; set; }
+
         private bool Iterate(Func<BranchAction, double> cost, Predicate<BranchAction> predicate)
         {
             if (!actions.MinSuitable(cost, predicate, out var a, out var v))
             {
                 return false;
             }
+            this.BeforeExecute?.Invoke(a);
             a.Execute(this.PropagateLogical, this.PropagatePhysical);
+            this.AfterExecute?.Invoke(a);
             var p = this.TryUpdate
                 ? new Func<BranchAction, bool>(t => !t.Intersects(a) && t.Update())
                 : new Func<BranchAction, bool>(t => !t.Intersects(a) && t.IsValid());
@@ -100,14 +112,18 @@ namespace Vascular.Structure.Actions
             var taken = 0;
             while (true)
             {
-                actions = actions.Where(t => t.IsPermissible());
+                actions = actions
+                    .Where(t => t.IsPermissible())
+                    .ToList(); // This seems to prevent a weird bug where .Any() returns true but .First() throws.
                 if (!actions.Any())
                 {
                     break;
                 }
 
                 var action = actions.First();
+                this.BeforeExecute?.Invoke(action);
                 action.Execute(this.PropagateLogical, this.PropagatePhysical);
+                this.AfterExecute?.Invoke(action);
                 var p = this.TryUpdate
                     ? new Func<BranchAction, bool>(t => !t.Intersects(action) && t.Update())
                     : new Func<BranchAction, bool>(t => !t.Intersects(action) && t.IsValid());

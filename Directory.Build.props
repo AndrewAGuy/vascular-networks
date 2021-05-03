@@ -6,4 +6,8 @@
   <PropertyGroup Condition="'$(BuildDocs)'=='True'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(WError)'=='True'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
 </Project>

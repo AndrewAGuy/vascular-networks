@@ -249,16 +249,21 @@ namespace Vascular.Intersections.Collision
                 {
                     network.Source.PropagateRadiiDownstream(radius);
                 }
+                network.Source.GenerateDownstreamBounds();
 
-                cr.Record(ic.Evaluate());
-                cr.Finish();
-                foreach (var c in cr.Culling)
+                var i = ic.Evaluate();
+                if (i.Count != 0)
                 {
-                    yield return new RemoveBranch(c.Parent.Branch);
-                }
-                foreach (var a in cr.BranchActions)
-                {
-                    yield return a;
+                    cr.Record(i);
+                    cr.Finish();
+                    foreach (var c in cr.Culling)
+                    {
+                        yield return new RemoveBranch(c.Parent.Branch);
+                    }
+                    foreach (var a in cr.BranchActions)
+                    {
+                        yield return a;
+                    }
                 }
             }
 
