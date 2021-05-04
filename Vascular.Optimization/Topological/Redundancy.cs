@@ -37,6 +37,12 @@ namespace Vascular.Optimization.Topological
             return double.PositiveInfinity;
         }
 
+        /// <summary>
+        /// As usual, estimate lengths proportional to Q^1/3 and radius as a fraction of that.
+        /// </summary>
+        /// <param name="L0"></param>
+        /// <param name="fraction"></param>
+        /// <returns></returns>
         public static Func<Branch, double> FlowRadius(double L0, double fraction = 1)
         {
             var r0 = L0 * fraction;

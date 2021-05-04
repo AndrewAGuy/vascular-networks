@@ -33,6 +33,13 @@ namespace Vascular.Construction.LSC.Defaults
             return (T, t) => surface.RayIntersectionCounts(T.Position, t.Position - T.Position, rayTolerance).outwards == 0;
         }
 
+        /// <summary>
+        /// Tests whether the bifurcation triad created by a candidate bifurcation could possibly intersect the surface.
+        /// Assumes that bifurcations will be placed inside the triad, which is common for all typical costs.
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="rayTolerance"></param>
+        /// <returns></returns>
         public static TerminalPairPredicate BifurcationTriadNotPenetrating(Surface surface, double rayTolerance)
         {
             return (T, t) =>

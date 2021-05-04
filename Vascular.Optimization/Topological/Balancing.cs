@@ -224,14 +224,27 @@ namespace Vascular.Optimization.Topological
             bool tryAddLocal = false)
         {
             var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
-            return OffloadTerminals(root, from, interior, toIntegral, connections, enumerator, tryAddLocal);
+            return OffloadTerminals(from, interior, toIntegral, connections, enumerator, tryAddLocal);
         }
 
-        public static IEnumerable<BranchAction> OffloadTerminals(Branch root, Branch from, 
+        /// <summary>
+        /// For a branch to remove terminals from (<paramref name="from"/>), enumerate all terminals downstream
+        /// using <paramref name="enumerator"/> and try to offload terminals into neighbouring candidates which
+        /// are not downstream of <paramref name="from"/>.
+        /// If <paramref name="tryAddLocal"/> specified, considers candidates in the same interior site.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="interior"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="tryAddLocal"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> OffloadTerminals(Branch from, 
             Dictionary<Vector3,ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
             Func<Branch, IEnumerable<Terminal>> enumerator, bool tryAddLocal = false)
         {
-            foreach (var terminal in enumerator(root))
+            foreach (var terminal in enumerator(from))
             {
                 var index = toIntegral(terminal.Position);
                 var candidates = LatticeActions.GetConnected<List<Terminal>>(interior, connections, index);
@@ -272,10 +285,23 @@ namespace Vascular.Optimization.Topological
             bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
         {
             var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
-            return TerminalActions(root, interior, toIntegral, connections, tryLocal, expand);
+            return TerminalActions(interior, toIntegral, connections, tryLocal, expand);
         }
 
-        public static IEnumerable<BranchAction> TerminalActions(Branch root,
+        /// <summary>
+        /// Given an <paramref name="interior"/>, <see cref="ClosestBasisFunction"/> <paramref name="toIntegral"/>
+        /// and connection map <paramref name="connections"/>, get all actions between terminals in connected
+        /// interior sites. If <paramref name="tryLocal"/> is true, terminals within the same interior site
+        /// are acted on. Specifying <paramref name="expand"/> allows branches related to the terminal branches
+        /// to be considered as well.
+        /// </summary>
+        /// <param name="interior"></param>
+        /// <param name="toIntegral"></param>
+        /// <param name="connections"></param>
+        /// <param name="tryLocal"></param>
+        /// <param name="expand"></param>
+        /// <returns></returns>
+        public static IEnumerable<BranchAction> TerminalActions(
             Dictionary<Vector3, ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
             bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
         {

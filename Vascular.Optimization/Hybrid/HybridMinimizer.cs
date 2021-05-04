@@ -20,6 +20,10 @@ namespace Vascular.Optimization.Hybrid
     /// </summary>
     public class HybridMinimizer
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
         public HybridMinimizer(Network network)
         {
             this.Network = network;
@@ -33,8 +37,17 @@ namespace Vascular.Optimization.Hybrid
 
         private readonly HashSet<BranchAction> actions = new();
 
+        /// <summary>
+        /// Executes the specified number of iterations of geometric optimization followed by topological.
+        /// A final set of geometric optimization is performed afterwards. By default, marks everything as
+        /// needing recalculating.
+        /// </summary>
+        /// <param name="iterations"></param>
+        /// <param name="invalidateInterior"></param>
+        /// <param name="invalidateGeometry"></param>
+        /// <param name="invalidateTopology"></param>
         public void Iterate(int iterations, bool invalidateInterior = true,
-            bool invalidateGeometry = true, bool invalidateTopology=true)
+            bool invalidateGeometry = true, bool invalidateTopology = true)
         {
             topologyInvalid |= invalidateTopology;
             geometryInvalid |= invalidateGeometry;
@@ -48,6 +61,14 @@ namespace Vascular.Optimization.Hybrid
             IterateGeometry();
         }
 
+        /// <summary>
+        /// If true, recalculates the cost at each step of topological optimization using 
+        /// <see cref="TopologyExecutor.Iterate(IEnumerable{BranchAction})"/>. For large networks,
+        /// can be very expensive.
+        /// If false, calculates the cost once and relies on most actions being invalidated before
+        /// they get a change to be made, executing using 
+        /// <see cref="TopologyExecutor.IterateOrdered(IEnumerable{BranchAction})"/>.
+        /// </summary>
         public bool Recost { get; set; } = false;
 
         private void ActTopology()
@@ -139,8 +160,17 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Used for <see cref="TryTerminals"/> and <see cref="TryRebalance"/> if <see cref="OffloadRemovedTerminals"/>
+        /// is specified.
+        /// </summary>
         public ClosestBasisFunction ToIntegral { get; set; }
+
+        /// <summary>
+        /// See <see cref="ToIntegral"/>.
+        /// </summary>
         public Vector3[] Connections { get; set; }
+
         private Dictionary<Vector3, ICollection<Terminal>> interior;
         private bool interiorInvalid;
 
@@ -153,14 +183,52 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Whether to use approaches from <see cref="Grouping"/>.
+        /// </summary>
         public bool TryRegroup { get; set; }
+
+        /// <summary>
+        /// The standard length of a unit flow branch.
+        /// </summary>
         public double UnitLength { get; set; }
+
+        /// <summary>
+        /// The length to use for groupings.
+        /// </summary>
         public double MinLengthRatio { get; set; } = 0.1;
+
+        /// <summary>
+        /// The maximum length ratio allowed for rebalancing, if <see cref="AllowRebalanceRemoval"/>
+        /// is specified.
+        /// </summary>
         public double MaxLengthRatio { get; set; } = 2;
+
+        /// <summary>
+        /// If false, allows expanding the bifurcation grouping to all branches involved.
+        /// </summary>
         public bool OnlyRegroupEndpoints { get; set; } = false;
+
+        /// <summary>
+        /// If false, picks only the most suitable candidate from a grouping.
+        /// </summary>
         public bool RegroupMultipleCandidates { get; set; } = false;
+
+        /// <summary>
+        /// The placement function to use for evaluating <see cref="MoveBifurcation"/> actions.
+        /// </summary>
         public Func<BranchNode, BranchNode, BranchNode, Vector3> EvaluationPlacement { get; set; }
+
+        /// <summary>
+        /// The placement function to give to <see cref="MoveBifurcation"/> actions.
+        /// </summary>
         public Func<Bifurcation, Vector3> Placement { get; set; }
+
+        /// <summary>
+        /// Candidate actions are thresholded by this. Set to a small negative number to prevent spurious
+        /// actions from being made, or a small positive number to allow actions that are beneficial but
+        /// not considered so by the estimators to be made.
+        /// </summary>
         public double CostChangeThreshold { get; set; }
 
         private void GetRegrouping()
@@ -190,13 +258,44 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Whether actions should be made using <see cref="Balancing.BifurcationRatio(Branch, double, double)"/>
+        /// and <see cref="Balancing.LengthFlowRatio(Branch, double, double)"/>.
+        /// </summary>
         public bool TryRebalance { get; set; }
+
+        /// <summary>
+        /// The maximum permissible flow ratio for rebalancing, &gt; 1.
+        /// </summary>
         public double FlowRatio { get; set; } = 2;
+
+        /// <summary>
+        /// The maximum permissible radius ratio for rebalancing, &gt; 1. 
+        /// Converted into the ratio of QR*.
+        /// </summary>
         public double RadiusRatio { get; set; } = 2;
+
+        /// <summary>
+        /// Whether to test for branches that are too long.
+        /// </summary>
         public bool AllowRebalanceRemoval { get; set; } = false;
+
+        /// <summary>
+        /// If true, branches marked for rebalance removal are instead processed using 
+        /// <see cref="Balancing.OffloadTerminals(Branch, Dictionary{Vector3, ICollection{Terminal}},
+        /// ClosestBasisFunction, Vector3[], Func{Branch, IEnumerable{Terminal}}, bool)"/>.
+        /// </summary>
         public bool OffloadRemovedTerminals { get; set; } = true;
+
+        /// <summary>
+        /// If true and <see cref="OffloadRemovedTerminals"/> is set, keep the <see cref="RemoveBranch"/>
+        /// action. This may lead to some terminals being offloaded and the remainder culled.
+        /// </summary>
         public bool PersistRemoval { get; set; } = false;
 
+        /// <summary>
+        /// Used for preallocating memory.
+        /// </summary>
         public Func<Branch, int> TerminalCountEstimate { get; set; } = b => (int)b.Flow;
 
         private void GetRebalancing()
@@ -234,7 +333,7 @@ namespace Vascular.Optimization.Hybrid
             if (this.OffloadRemovedTerminals)
             {
                 var offload = Balancing.OffloadTerminals(
-                    this.Network.Root, remove.A, interior, this.ToIntegral, this.Connections,
+                    remove.A, interior, this.ToIntegral, this.Connections,
                     br => Terminal.GetDownstream(br, this.TerminalCountEstimate(br)),
                     this.TryLocalTerminalActions);
                 foreach (var action in offload.Where(o => o.IsPermissible()))
@@ -254,9 +353,31 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Whether to try shifting terminals around - see 
+        /// <see cref="Balancing.TerminalActions(Branch, ClosestBasisFunction, 
+        /// Vector3[], bool, Func{Terminal, IEnumerable{Branch}})"/>.
+        /// </summary>
         public bool TryTerminals { get; set; }
+
+        /// <summary>
+        /// If non-zero, try to trim short terminals using 
+        /// <see cref="Balancing.RemoveShortTerminals(Branch, BranchEnumerator, double, Action{Terminal})"/>.
+        /// When terminals are removed through this, they are processed using <see cref="OnTrim"/>, as this
+        /// is considered a marginal case of topology change - the optimizer has most likely pulled the other
+        /// pathway directly over it and it is almost as though the terminal doesn't need to exist any more,
+        /// in comparison to explicity culled terminals.
+        /// </summary>
         public double MinTerminalLength { get; set; }
+
+        /// <summary>
+        /// Whether to allow actions to be generated within an interior site.
+        /// </summary>
         public bool TryLocalTerminalActions { get; set; } = false;
+
+        /// <summary>
+        /// Consider more than just the terminals themselves.
+        /// </summary>
         public Func<Terminal, IEnumerable<Branch>> TerminalActionExpansion { get; set; }
 
         private void GetTerminalActions()
@@ -265,7 +386,7 @@ namespace Vascular.Optimization.Hybrid
             {
                 SetInterior();
                 var terminalActions = Balancing.TerminalActions(
-                    this.Network.Root, interior, this.ToIntegral, this.Connections,
+                    interior, this.ToIntegral, this.Connections,
                     this.TryLocalTerminalActions, this.TerminalActionExpansion);
                 foreach (var action in terminalActions.Where(a => a.IsPermissible()))
                 {
@@ -282,9 +403,28 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Part of soft topology optimization - whether to remove transients that
+        /// aren't doing much. See <see cref="DeviationRatio"/> and <see cref="CaptureFraction"/>.
+        /// See also <see cref="Fragmentation.Defragment(Branch, Predicate{Transient}, Func{Transient, double})"/>,
+        /// <see cref="Fragmentation.DeviationOrTouching(double, double)"/>.
+        /// </summary>
         public bool TryDefragment { get; set; }
+
+        /// <summary>
+        /// More than just defragmenting - completely wipe all transient nodes. Good for performance
+        /// and early stage optimizations.
+        /// </summary>
         public bool RemoveTransients { get; set; }
+
+        /// <summary>
+        /// Used for defragmentation.
+        /// </summary>
         public double DeviationRatio { get; set; }
+
+        /// <summary>
+        /// Used for defragmentation.
+        /// </summary>
         public double CaptureFraction { get; set; }
 
         private void ModifyTransients()
@@ -312,6 +452,9 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Whether to consider promoting all nodes.
+        /// </summary>
         public bool TryPromote { get; set; }
 
         private void GetPromotions()
@@ -322,8 +465,23 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// The maximum number of geometry iterations that can be made. Can iterate fewer times
+        /// if <see cref="GradientDescentMinimizer.Iterate"/> returns false, see
+        /// <see cref="GradientDescentMinimizer.TerminationPredicate"/> and
+        /// <see cref="GradientDescentMinimizer.UseConvergenceTest(double, int, int)"/>.
+        /// </summary>
         public int GeometryIterations { get; set; }
+
+        /// <summary>
+        /// If a topology change was made, reset the stride. Does not count for trimming,
+        /// see <see cref="MinTerminalLength"/>.
+        /// </summary>
         public bool ResetStrideOnTopologyChange { get; set; } = true;
+
+        /// <summary>
+        /// If true, always reset the stride at the start of the geometry iteration block.
+        /// </summary>
         public bool ResetStrideAlways { get; set; } = false;
 
         private void IterateGeometry()
@@ -341,7 +499,7 @@ namespace Vascular.Optimization.Hybrid
                 SetGeometryAndTopology();
                 UpdateSoftTopology();
                 var done = this.Minimizer.Iterate();
-                RecordCost();
+                TryRecordCost();
                 UpdateSoftTopology();
                 if (done)
                 {
@@ -350,6 +508,11 @@ namespace Vascular.Optimization.Hybrid
             }
         }
 
+        /// <summary>
+        /// Executed whenever a terminal is explicitly culled. For branches removed
+        /// through <see cref="MinTerminalLength"/>, process using <see cref="OnTrim"/>.
+        /// For explicit cull, attempting to rebuild may be reasonable.
+        /// </summary>
         public Action<Terminal> OnCull
         {
             get => onCull;
@@ -370,7 +533,14 @@ namespace Vascular.Optimization.Hybrid
                 }
             }
         }
+
         private Action<Terminal> onCull;
+
+        /// <summary>
+        /// Executed whenever a branch is removed through 
+        /// <see cref="Balancing.RemoveShortTerminals(Branch, BranchEnumerator, double, Action{Terminal})"/>.
+        /// Attempting a rebuild is likely to lead to the same scenario again, hence the different callbacks offered.
+        /// </summary>
         public Action<Terminal> OnTrim
         {
             get => onTrim;
@@ -391,18 +561,29 @@ namespace Vascular.Optimization.Hybrid
                 }
             }
         }
+
         private Action<Terminal> onTrim;
+
         private Action<Terminal> DefaultCullAction => t => interiorInvalid = true;
 
         private readonly List<Func<Network, IEnumerable<BranchAction>>> topologySource = new();
 
         private readonly List<Func<BranchAction, double>> topologyEstimators = new();
 
+        /// <summary>
+        /// Adds an extra source of topology actions. Common sources might come from <see cref="Global"/>,
+        /// or redundancy removal in intersection resolution.
+        /// </summary>
+        /// <param name="source"></param>
         public void AddTopologySource(Func<Network, IEnumerable<BranchAction>> source)
         {
             topologySource.Add(source);
         }
 
+        /// <summary>
+        /// Adds an additional cost change estimator for topology actions.
+        /// </summary>
+        /// <param name="estimator"></param>
         public void AddTopologyEstimator(Func<BranchAction, double> estimator)
         {
             topologyEstimators.Add(estimator);
@@ -421,6 +602,10 @@ namespace Vascular.Optimization.Hybrid
 
         private readonly List<Func<IMobileNode, Vector3>> geometrySource = new();
 
+        /// <summary>
+        /// Adds a source of geometry modification. Common sources might come from <see cref="Perturbation"/>.
+        /// </summary>
+        /// <param name="modifier"></param>
         public void AddGeometryModifier(Func<IMobileNode, Vector3> modifier)
         {
             geometrySource.Add(modifier);
@@ -445,23 +630,45 @@ namespace Vascular.Optimization.Hybrid
             geometryInvalid = true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Network Network { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public GradientDescentMinimizer Minimizer { get; set; }
 
         private readonly List<Action> prepareEstimators = new();
 
         private readonly List<Func<Network, double>> costs = new();
 
+        /// <summary>
+        /// Adds an additional cost that is not considered by <see cref="Minimizer"/>.
+        /// </summary>
+        /// <param name="cost"></param>
         public void AddCost(Func<Network, double> cost)
         {
             costs.Add(cost);
         }
 
+        /// <summary>
+        /// Before estimators are used, these actions are executed to ensure that they will
+        /// work as expected.
+        /// </summary>
+        /// <param name="prepare"></param>
         public void AddEstimatorPrepare(Action prepare)
         {
             prepareEstimators.Add(prepare);
         }
 
+        /// <summary>
+        /// Sets up the minimizer, topology estimator and preparing function for a
+        /// <see cref="HierarchicalCosts"/> instance. Typically all that is required
+        /// for most purposes.
+        /// </summary>
+        /// <param name="costs"></param>
         public void AddHierarchicalCosts(HierarchicalCosts costs)
         {
             this.Minimizer.Add(n => costs.Evaluate());
@@ -469,18 +676,21 @@ namespace Vascular.Optimization.Hybrid
             AddEstimatorPrepare(() => costs.SetCache());
         }
 
-        public Action<double> LogCost { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Action<double> RecordCost { get; set; }
 
-        private void RecordCost()
+        private void TryRecordCost()
         {
-            if (this.LogCost != null)
+            if (this.RecordCost != null)
             {
                 var cost = this.Minimizer.Cost;
                 foreach (var extra in costs)
                 {
                     cost += extra(this.Network);
                 }
-                this.LogCost(cost);
+                this.RecordCost(cost);
             }
         }
 

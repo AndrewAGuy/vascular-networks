@@ -30,16 +30,20 @@ namespace Vascular.Structure.Actions
             var (t, n) = Topology.MoveBifurcation(a, b);
             if (n != null)
             {
-                n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
                 if (propagateLogical)
                 {
                     t.Parent.Branch.PropagateLogicalUpstream();
                     n.UpdateLogicalAndPropagate();
+                    n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
                     if (propagatePhysical)
                     {
                         t.UpdatePhysicalAndPropagate();
                         n.UpdatePhysicalAndPropagate();
                     }
+                }
+                else
+                {
+                    n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
                 }
             }
         }

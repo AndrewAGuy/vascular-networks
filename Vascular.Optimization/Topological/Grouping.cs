@@ -364,6 +364,15 @@ namespace Vascular.Optimization.Topological
                 .Select(p => p.Action);
         }
 
+        /// <summary>
+        /// Ensures that the <see cref="BranchAction"/> <paramref name="action"/> will not create either
+        /// a pair of branches or a bifurcation triad that will penetrate <paramref name="surface"/>,
+        /// subject to a tolerance of <paramref name="rayTolerance"/>.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="surface"></param>
+        /// <param name="rayTolerance"></param>
+        /// <returns></returns>
         public static bool EnsureNotLeaving(BranchAction action, Surface surface, double rayTolerance)
         {
             var ok = true;

@@ -97,6 +97,13 @@ namespace Vascular.Optimization.Geometric
         /// </summary>
         public Func<IMobileNode, Vector3, bool> Predicate { get; set; }
 
+        /// <summary>
+        /// Sets <see cref="Predicate"/> to avoid moving nodes to within <paramref name="lMin"/> of
+        /// terminals if they are connected, to prevent <see cref="double.NaN"/> from propagating up
+        /// the chain. Does not prevent short vessels which may lead to nonfinite gradients.
+        /// </summary>
+        /// <param name="lMin"></param>
+        /// <returns></returns>
         public GradientDescentMinimizer AvoidShortTerminals(double lMin)
         {
             var lMin2 = lMin * lMin;
@@ -171,8 +178,14 @@ namespace Vascular.Optimization.Geometric
         /// </summary>
         public double BlockRatio { get; set; }
 
+        /// <summary>
+        /// The number of iterations at the current step.
+        /// </summary>
         public int Iteration { get; private set; } = 0;
 
+        /// <summary>
+        /// Sets <see cref="Iteration"/> to 0;
+        /// </summary>
         public void ResetIteration()
         {
             this.Iteration = 0;
@@ -192,7 +205,23 @@ namespace Vascular.Optimization.Geometric
             }
         }
 
+        /// <summary>
+        /// Return true to signal optimization is complete.
+        /// </summary>
         public Predicate<double> TerminationPredicate { get; set; } = d => false;
+
+        /// <summary>
+        /// For samples &gt; 2 and order &gt; 1, fits a curve of v = v0 + a k^-<paramref name="order"/>
+        /// using the previous <paramref name="samples"/>, where k is the current value of <see cref="Iteration"/>.
+        /// If v is within <paramref name="fraction"/> tolerance of v0, signals to terminate.
+        /// <para/>
+        /// Otherwise, uses a simple test that tracks the previous value and returns true if the difference between the
+        /// two is within fractional tolerance.
+        /// </summary>
+        /// <param name="fraction"></param>
+        /// <param name="samples"></param>
+        /// <param name="order"></param>
+        /// <returns></returns>
         public GradientDescentMinimizer UseConvergenceTest(double fraction, int samples, int order = 1)
         {
             if (samples < 2 || order < 1)
@@ -280,8 +309,16 @@ namespace Vascular.Optimization.Geometric
             return this.TerminationPredicate(this.Cost);
         }
 
+        /// <summary>
+        /// If the gradient returns no valid components or <see cref="Stride"/> ends up being nonfinite,
+        /// the result to return. In most cases, returning true to signal termination is the best action.
+        /// </summary>
         public bool ResultOnError { get; set; } = true;
 
+        /// <summary>
+        /// Whether to propagate radii downstream after making an action. Defaults to true to preserve
+        /// legacy behaviour.
+        /// </summary>
         public bool PropagateRadii { get; set; } = true;
 
         private void ClampStride(IEnumerable<Vector3> G)

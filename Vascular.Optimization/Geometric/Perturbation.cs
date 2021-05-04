@@ -65,6 +65,17 @@ namespace Vascular.Optimization.Geometric
             return node => generator.NextVector3() * length(node.Parent.Flow);
         }
 
+        /// <summary>
+        /// Makes sure that terminals are not too short. Similar to intersection resolution and minimum node perturbations,
+        /// but generates an arbitrary normal using <paramref name="generator"/> if the length is shorter than <paramref name="t2"/>.
+        /// Ensure that <paramref name="t2"/> is less than <paramref name="minLength"/> for this behaviour to be meaningful.
+        /// Distance is scaled by <paramref name="factor"/>, so that nodes can be pushed further than the testing distance for safety.
+        /// </summary>
+        /// <param name="generator"></param>
+        /// <param name="minLength"></param>
+        /// <param name="t2"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
         public static Func<IMobileNode, Vector3> PerturbTerminals(IVector3Generator generator, double minLength,
             double t2 = 1e-12, double factor = 1.0)
         {
