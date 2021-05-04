@@ -33,8 +33,11 @@ namespace Vascular.Optimization.Hybrid
 
         private readonly HashSet<BranchAction> actions = new();
 
-        public void Iterate(int iterations, bool invalidateInterior = true)
+        public void Iterate(int iterations, bool invalidateInterior = true,
+            bool invalidateGeometry = true, bool invalidateTopology=true)
         {
+            topologyInvalid |= invalidateTopology;
+            geometryInvalid |= invalidateGeometry;
             interiorInvalid |= invalidateInterior;
             for (var i = 0; i < iterations; ++i)
             {
@@ -329,14 +332,21 @@ namespace Vascular.Optimization.Hybrid
             {
                 this.Minimizer.Stride = 0;
             }
+            this.Minimizer.ResetIteration();
+            SetGeometryAndTopology();
             UpdateSoftTopology();
             for (var i = 0; i < this.GeometryIterations; ++i)
             {
                 ModifyGeomtry();
                 SetGeometryAndTopology();
-                this.Minimizer.Iterate();
+                UpdateSoftTopology();
+                var done = this.Minimizer.Iterate();
                 RecordCost();
                 UpdateSoftTopology();
+                if (done)
+                {
+                    break;
+                }
             }
         }
 
@@ -422,6 +432,8 @@ namespace Vascular.Optimization.Hybrid
             {
                 return;
             }
+            //var branches = enumerator.Downstream(this.Network.Root).ToList();
+            //var nodes = enumerator.MobileNodes(this.Network.Root);
             foreach (var node in enumerator.MobileNodes(this.Network.Root)
                 .Where(n => this.Minimizer.MovingPredicate(n)))
             {
@@ -491,6 +503,7 @@ namespace Vascular.Optimization.Hybrid
             {
                 this.Network.Root.SetLogical();
                 topologyInvalid = false;
+                geometryInvalid = true;
             }
             if (geometryInvalid)
             {

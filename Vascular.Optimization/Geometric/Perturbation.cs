@@ -64,5 +64,33 @@ namespace Vascular.Optimization.Geometric
         {
             return node => generator.NextVector3() * length(node.Parent.Flow);
         }
+
+        public static Func<IMobileNode, Vector3> PerturbTerminals(IVector3Generator generator, double minLength,
+            double t2 = 1e-12, double factor = 1.0)
+        {
+            var ml2 = Math.Pow(minLength, 2);
+            return n =>
+            {
+                foreach (var c in n.Children)
+                {
+                    var b = c.Branch;
+                    if (b.IsTerminal)
+                    {
+                        var d = b.End.Position - n.Position;
+                        var d2 = d.LengthSquared;
+                        if (d2 < minLength)
+                        {
+                            if (d2 <= t2)
+                            {
+                                d = generator.NextVector3();
+                                d2 = d.LengthSquared;
+                            }
+                            return d * (minLength * factor / Math.Sqrt(d2));
+                        }
+                    }
+                }
+                return Vector3.ZERO;
+            };
+        }
     }
 }

@@ -172,6 +172,39 @@ namespace Vascular
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static double Dot(this IList<double> a, IList<double> b)
+        {
+            var total = 0.0;
+            for (var i = 0; i < a.Count; ++i)
+            {
+                total += a[i] * b[i];
+            }
+            return total;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="v"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static T[] Repeat<T>(this T v, int n)
+        {
+            var V = new T[n];
+            for (var i = 0; i < n; ++i)
+            {
+                V[i] = v;
+            }
+            return V;
+        }
+
+        /// <summary>
         /// Enumerates <paramref name="source"/>, launching a new task from each with <paramref name="run"/>.
         /// A semaphore is used to limit the number of concurrently running tasks to <paramref name="max"/>.
         /// Whether a task runs then waits for the semaphore, or whether task launching is delayed by the semaphore, is controlled by <paramref name="waitInside"/>.

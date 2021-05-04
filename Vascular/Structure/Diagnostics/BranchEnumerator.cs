@@ -67,7 +67,7 @@ namespace Vascular.Structure.Diagnostics
         {
             foreach (var branch in Downstream(root, true))
             {
-                if (root.Start is IMobileNode mobile)
+                if (branch.Start is IMobileNode mobile)
                 {
                     yield return mobile;
                 }
