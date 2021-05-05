@@ -108,6 +108,13 @@ namespace Vascular.Structure.Nodes
             depth = this.Upstream.Start.Depth + 1;
             pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         }
+
+        /// <inheritdoc/>
+        public override void CalculatePathLengthsAndOrder()
+        {
+            depth = 1;
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
+        }
 #endif
 
         /// <summary>

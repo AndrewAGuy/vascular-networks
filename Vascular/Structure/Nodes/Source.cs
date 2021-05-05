@@ -168,7 +168,15 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         sealed public override void CalculatePathLengthsAndDepths()
         {
+            depth = 0;
             down.End.CalculatePathLengthsAndDepths();
+        }
+
+        /// <inheritdoc/>
+        public sealed override void CalculatePathLengthsAndOrder()
+        {
+            down.End.CalculatePathLengthsAndOrder();
+            depth = down.Depth;
         }
 
         /// <summary>
@@ -177,9 +185,11 @@ namespace Vascular.Structure.Nodes
         sealed public override double PathLength => 0.0;
 
         /// <summary>
-        /// Always 0.
+        /// Always 0 when depth, but non zero for Strahler order.
         /// </summary>
-        sealed public override int Depth => 0;
+        sealed public override int Depth => depth;
+
+        private int depth = 0;
 #endif
 
         /// <inheritdoc/>

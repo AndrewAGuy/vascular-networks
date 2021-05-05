@@ -53,8 +53,8 @@ namespace Vascular.Structure.Nodes
 
 #if !NoEffectiveLength
         /// <inheritdoc/>
-        public override double EffectiveLength => 
-            downstream[0].EffectiveLength * Math.Pow(f0, 2) 
+        public override double EffectiveLength =>
+            downstream[0].EffectiveLength * Math.Pow(f0, 2)
             + downstream[1].EffectiveLength * Math.Pow(f1, 2);
 #endif
 
@@ -62,8 +62,8 @@ namespace Vascular.Structure.Nodes
         public override double Flow => downstream[0].Flow + downstream[1].Flow;
 
         /// <inheritdoc/>
-        public override double ReducedResistance => 1.0 / 
-            (Math.Pow(f0, 4.0) / downstream[0].ReducedResistance 
+        public override double ReducedResistance => 1.0 /
+            (Math.Pow(f0, 4.0) / downstream[0].ReducedResistance
             + Math.Pow(f1, 4.0) / downstream[1].ReducedResistance);
 
         /// <inheritdoc/>
@@ -104,6 +104,19 @@ namespace Vascular.Structure.Nodes
             pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
             downstream[0].End.CalculatePathLengthsAndDepths();
             downstream[1].End.CalculatePathLengthsAndDepths();
+        }
+
+        /// <inheritdoc/>
+        public override void CalculatePathLengthsAndOrder()
+        {
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
+            downstream[0].End.CalculatePathLengthsAndOrder();
+            downstream[1].End.CalculatePathLengthsAndOrder();
+            var d0 = downstream[0].Depth;
+            var d1 = downstream[1].Depth;
+            depth = d0 == d1
+                ? d0 + 1
+                : Math.Max(d0, d1);
         }
 #endif
 

@@ -45,7 +45,7 @@ namespace Vascular.IO.Text
             foreach (var segment in segments)
             {
                 var start = segment.Start.Position;
-                var end = segment.Start.Position;
+                var end = segment.End.Position;
                 var radius = segment.Radius;
                 var line = new StringBuilder()
                     .Append(convert(start.x)).Append(sepChar)

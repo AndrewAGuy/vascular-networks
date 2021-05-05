@@ -45,6 +45,11 @@ namespace Vascular.Structure
         /// Updates in a downwards pass.
         /// </summary>
         public abstract void CalculatePathLengthsAndDepths();
+
+        /// <summary>
+        /// Sets <see cref="Depth"/> to Strahler order.
+        /// </summary>
+        public abstract void CalculatePathLengthsAndOrder();
 #endif
 
         /// <inheritdoc/>
