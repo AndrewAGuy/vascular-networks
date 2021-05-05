@@ -62,11 +62,6 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
-        public Func<IDictionary<IMobileNode, Vector3>> Wrapper => () => Evaluate().gradients;
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <returns></returns>
         public (double cost, IDictionary<IMobileNode, Vector3> gradients) Evaluate()
         {

@@ -76,6 +76,11 @@ namespace Vascular.Optimization.Hybrid
         /// </summary>
         public Func<BranchAction, bool> ActionPredicate { get; set; }
 
+        /// <summary>
+        /// Can attach pre and post action hooks with this, as well as combine or overwrite costs and predicates.
+        /// </summary>
+        public Action<TopologyExecutor> ConfigureExector { get; set; }
+
         private void ActTopology()
         {
             var executor = new TopologyExecutor()
@@ -102,6 +107,7 @@ namespace Vascular.Optimization.Hybrid
                     return true;
                 };
 
+                this.ConfigureExector?.Invoke(executor);
                 taken = executor.Iterate(actions);
             }
             else
@@ -121,6 +127,7 @@ namespace Vascular.Optimization.Hybrid
                     .OrderBy(a => a.dC)
                     .Select(a => a.a);
 
+                this.ConfigureExector?.Invoke(executor);
                 taken = executor.IterateOrdered(ranked);
             }
 
@@ -507,7 +514,7 @@ namespace Vascular.Optimization.Hybrid
         private readonly BranchEnumerator enumerator = new();
 
         /// <summary>
-        /// 
+        /// Uses <see cref="BranchEnumerator.Downstream(Branch, bool)"/> - don't call in nested loops.
         /// </summary>
         public IEnumerable<Branch> Branches => enumerator.Downstream(this.Network.Root, true);
 

@@ -51,7 +51,9 @@ namespace Vascular.Optimization
         {
             var (dr_dR, dr_dQ) = this.EffectiveLengths.Cache.RadiusGradients;
             dC_dLe = Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpR);
-            var c = this.EffectiveLengths.ExpR * Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpDR) * this.EffectiveLengths.Value;
+            var c = this.EffectiveLengths.ExpR 
+                * Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpDR) 
+                * this.EffectiveLengths.Value;
             dC_dRe = c * dr_dR;
             dC_dQe = c * dr_dQ;
         }

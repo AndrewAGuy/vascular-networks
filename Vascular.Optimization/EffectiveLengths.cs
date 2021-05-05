@@ -70,12 +70,12 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
-        public Dictionary<Branch, double> Values { get; } = new Dictionary<Branch, double>();
+        public Dictionary<Branch, double> Values { get; } = new();
 
         /// <summary>
         /// 
         /// </summary>
-        public Dictionary<Branch, RootGradient> Gradients { get; } = new Dictionary<Branch, RootGradient>();
+        public Dictionary<Branch, RootGradient> Gradients { get; } = new();
 
         /// <summary>
         /// 
@@ -167,8 +167,8 @@ namespace Vascular.Optimization
             var g1 = this.Gradients[c1];
             var gd = this.Cache.Local[bf];
             return gp.dLe_dR * gd.dRp_dx
-                + g0.dLe_dR * gd.dR0_dx
-                + g1.dLe_dR * gd.dR1_dx
+                + g0.dLe_dR * gd.dL0_dx
+                + g1.dLe_dR * gd.dL1_dx
                 + gp.dLe_dL * this.ExpL * Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx
                 + g0.dLe_dL * this.ExpL * Math.Pow(gd.L0, this.ExpDL) * gd.dL0_dx
                 + g1.dLe_dL * this.ExpL * Math.Pow(gd.L1, this.ExpDL) * gd.dL1_dx;

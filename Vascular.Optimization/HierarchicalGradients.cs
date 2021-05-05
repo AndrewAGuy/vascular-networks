@@ -94,8 +94,8 @@ namespace Vascular.Optimization
             var g0 = this.Global[c0];
             var g1 = this.Global[c1];
             return gp.dRe_dR * gd.dRp_dx
-                + g0.dRe_dR * gd.dR0_dx
-                + g1.dRe_dR * gd.dR1_dx;
+                + g0.dRe_dR * gd.dL0_dx
+                + g1.dRe_dR * gd.dL1_dx;
         }
 
         /// <summary>

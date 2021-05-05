@@ -12,20 +12,18 @@
         /// <param name="RQ"></param>
         public BranchGradients(double RR, double RQ)
         {
-            this.dRe_dR = RR;
-            this.dRe_dQ = RQ;
+            dRe_dR = RR;
+            dRe_dQ = RQ;
         }
 
-#pragma warning disable IDE1006 // Naming Styles
         /// <summary>
         /// 
         /// </summary>
-        public double dRe_dR { get; }
+        public readonly double dRe_dR;
 
         /// <summary>
         /// 
         /// </summary>
-        public double dRe_dQ { get; }
-#pragma warning restore IDE1006 // Naming Styles
+        public readonly double dRe_dQ;
     }
 }

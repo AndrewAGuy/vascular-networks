@@ -152,10 +152,9 @@ namespace Vascular.Optimization.Hybrid
         }
 
         /// <summary>
-        /// Uses <see cref="Balancing.TerminalActions(Dictionary
-        /// {Geometry.Vector3, ICollection{Terminal}}, Geometry.Lattices.Manipulation.ClosestBasisFunction, 
-        /// Geometry.Vector3[], bool, Func{Terminal, IEnumerable{Branch}})"/> to generate all possible
-        /// terminals actions.
+        /// Uses <see cref="Balancing.TerminalActions(Dictionary{Geometry.Vector3, ICollection{Terminal}},
+        /// Geometry.Lattices.Manipulation.ClosestBasisFunction, Geometry.Vector3[], bool, 
+        /// Func{Terminal, IEnumerable{Branch}})"/> to generate all possible terminals actions.
         /// </summary>
         /// <param name="hm"></param>
         /// <param name="tryLocalTerminals"></param>
