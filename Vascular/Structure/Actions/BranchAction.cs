@@ -1,4 +1,6 @@
-﻿namespace Vascular.Structure.Actions
+﻿using System;
+
+namespace Vascular.Structure.Actions
 {
     /// <summary>
     /// Base type for topology actions that impact multiple branches.
@@ -44,8 +46,8 @@
         {
             a = a.CurrentTopologicallyValid;
             b = b.CurrentTopologicallyValid;
-            return !ReferenceEquals(a, b) 
-                && a != null 
+            return !ReferenceEquals(a, b)
+                && a != null
                 && b != null; // In case anything has been completely removed
         }
 
@@ -70,6 +72,16 @@
                 || ReferenceEquals(b, other.b)
                 || ReferenceEquals(a, other.b)
                 || ReferenceEquals(b, other.a);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pred"></param>
+        /// <returns></returns>
+        public static Func<BranchAction, bool> Wrap(Func<Branch, Branch, bool> pred)
+        {
+            return action => pred(action.A, action.B);
         }
     }
 }

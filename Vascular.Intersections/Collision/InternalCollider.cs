@@ -223,12 +223,12 @@ namespace Vascular.Intersections.Collision
         /// <param name="immediateCull"></param>
         /// <param name="branchActionPredicate"></param>
         /// <returns></returns>
-        public static Func<Network, IEnumerable<BranchAction>> RedundancyRemoval(
-            Func<Branch, double> radius = null, bool immuneSetContraction = true,
+        public static Func<IEnumerable<BranchAction>> RedundancyRemoval(
+            Network network, Func<Branch, double> radius = null, bool immuneSetContraction = true,
             Func<Terminal, Segment, bool> immediateCull = null,
             Func<Branch, Branch, bool> branchActionPredicate = null)
         {
-            IEnumerable<BranchAction> generator(Network network)
+            IEnumerable<BranchAction> generator()
             {
                 var ic = new InternalCollider(network)
                 {
@@ -267,7 +267,7 @@ namespace Vascular.Intersections.Collision
                 }
             }
 
-            return network => generator(network);
+            return generator;
         }
     }
 }
