@@ -90,7 +90,7 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         /// 
         /// </summary>
-        public Predicate<IMobileNode> MovingPredicate { get; set; } = n => true;
+        public Func<IMobileNode, bool> MovingPredicate { get; set; } = n => true;
 
         /// <summary>
         /// If set, overrides <see cref="MovingPredicate"/> and also considers the direction of movement.
@@ -208,7 +208,7 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         /// Return true to signal optimization is complete.
         /// </summary>
-        public Predicate<double> TerminationPredicate { get; set; } = d => false;
+        public Func<double, bool> TerminationPredicate { get; set; } = d => false;
 
         /// <summary>
         /// For samples &gt; 2 and order &gt; 1, fits a curve of v = v0 + a k^-<paramref name="order"/>

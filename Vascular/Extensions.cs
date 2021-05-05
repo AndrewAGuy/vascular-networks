@@ -463,7 +463,7 @@ namespace Vascular
         /// <param name="m"></param>
         /// <param name="v"></param>
         /// <returns><c>True</c> if a suitable element was found.</returns>
-        public static bool MinSuitable<T>(this IEnumerable<T> ts, Func<T, double> f, Predicate<T> p, out T m, out double v)
+        public static bool MinSuitable<T>(this IEnumerable<T> ts, Func<T, double> f, Func<T, bool> p, out T m, out double v)
         {
             m = default;
             v = double.PositiveInfinity;

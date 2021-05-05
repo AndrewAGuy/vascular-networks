@@ -24,7 +24,7 @@ namespace Vascular.Geometry.Generators
         /// <param name="r"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public static Predicate<T> Bernoulli<T>(this Random r, double p)
+        public static Func<T, bool> Bernoulli<T>(this Random r, double p)
         {
             return t => r.NextDouble() < p;
         }
@@ -36,7 +36,7 @@ namespace Vascular.Geometry.Generators
         /// <param name="r"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public static Predicate<T> Bernoulli<T>(this Random r, Func<T, double> p)
+        public static Func<T, bool> Bernoulli<T>(this Random r, Func<T, double> p)
         {
             return t => r.NextDouble() < p(t);
         }

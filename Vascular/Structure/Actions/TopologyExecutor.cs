@@ -29,7 +29,7 @@ namespace Vascular.Structure.Actions
         /// <summary>
         /// If present, overrides <see cref="Permissible"/>.
         /// </summary>
-        public Predicate<BranchAction> Predicate { get; set; }
+        public Func<BranchAction, bool> Predicate { get; set; }
 
         /// <summary>
         /// Propagate topological derived properties upstream on making changes.
@@ -61,7 +61,7 @@ namespace Vascular.Structure.Actions
         /// </summary>
         public Action<BranchAction> AfterExecute { get; set; }
 
-        private bool Iterate(Func<BranchAction, double> cost, Predicate<BranchAction> predicate)
+        private bool Iterate(Func<BranchAction, double> cost, Func<BranchAction, bool> predicate)
         {
             if (!actions.MinSuitable(cost, predicate, out var a, out var v))
             {
@@ -88,7 +88,7 @@ namespace Vascular.Structure.Actions
             var taken = 0;
             var cost = this.Cost ?? (t => -this.Priority(t.A, t.B));
             var predicate = this.Predicate != null
-                ? new Predicate<BranchAction>(t => t.IsPermissible() && this.Predicate(t))
+                ? new Func<BranchAction, bool>(t => t.IsPermissible() && this.Predicate(t))
                 : t => t.IsPermissible() && this.Permissible(t.A, t.B);
             while (Iterate(cost, predicate))
             {

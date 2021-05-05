@@ -187,7 +187,7 @@ namespace Vascular.Optimization.Hybrid
         /// 
         /// </summary>
         public Dictionary<Vector3, ICollection<Terminal>> Interior { get; private set; }
-        
+
         private bool interiorInvalid = true;
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Vascular.Optimization.Hybrid
                 this.Interior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ToIntegral);
                 interiorInvalid = false;
             }
-        }    
+        }
 
         /// <summary>
         /// The placement function to use for evaluating <see cref="MoveBifurcation"/> actions.
@@ -240,7 +240,7 @@ namespace Vascular.Optimization.Hybrid
             {
                 Balancing.RemoveShortTerminals(this.Network, this.MinTerminalLength, onTrim);
             }
-        }       
+        }
 
         /// <summary>
         /// More than just defragmenting - completely wipe all transient nodes. Good for performance
@@ -251,7 +251,7 @@ namespace Vascular.Optimization.Hybrid
         /// <summary>
         /// 
         /// </summary>
-        public Predicate<Transient> DefragmentationPredicate { get; set; }
+        public Func<Transient, bool> DefragmentationPredicate { get; set; }
 
         /// <summary>
         /// 
@@ -277,11 +277,11 @@ namespace Vascular.Optimization.Hybrid
                 foreach (var b in this.Branches)
                 {
                     geometryInvalid |= Fragmentation.Defragment(b,
-                        this.DefragmentationPredicate, 
+                        this.DefragmentationPredicate,
                         this.DefragmentationRadius ?? Fragmentation.MeanRadius);
                 }
             }
-        }      
+        }
 
         /// <summary>
         /// The maximum number of geometry iterations that can be made. Can iterate fewer times
@@ -484,7 +484,7 @@ namespace Vascular.Optimization.Hybrid
         {
             prepareEstimators.Add(prepare);
             return this;
-        }       
+        }
 
         /// <summary>
         /// 

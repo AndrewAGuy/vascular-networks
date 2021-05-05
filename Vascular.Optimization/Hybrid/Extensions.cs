@@ -49,7 +49,7 @@ namespace Vascular.Optimization.Hybrid
                         if (hm.ActionPredicate != null)
                         {
                             if (permissible.MinSuitable(
-                                    hm.EstimateChange, a => hm.ActionPredicate(a),
+                                    hm.EstimateChange, hm.ActionPredicate,
                                     out var optimal, out var dC) &&
                                 dC < hm.CostChangeThreshold)
                             {

@@ -13,13 +13,13 @@ namespace Vascular.Optimization.Topological
         /// </summary>
         /// <param name="i"></param>
         /// <param name="p"></param>
-        public PredicatedBranchAction(BranchAction i, Predicate<BranchAction> p) : base(i.A, i.B)
+        public PredicatedBranchAction(BranchAction i, Func<BranchAction, bool> p) : base(i.A, i.B)
         {
             inner = i;
             predicate = p;
         }
         private readonly BranchAction inner;
-        private readonly Predicate<BranchAction> predicate;
+        private readonly Func<BranchAction, bool> predicate;
 
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)

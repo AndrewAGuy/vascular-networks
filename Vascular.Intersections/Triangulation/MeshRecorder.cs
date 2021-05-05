@@ -26,7 +26,7 @@ namespace Vascular.Intersections.Triangulation
         /// Some use cases require branches to cross from outside to inside a mesh.
         /// In this case, we might want to ignore an intersection in the root branches and focus only on the extremities.
         /// </summary>
-        public Predicate<Branch> Ignore { get; set; } = b => false;
+        public Func<Branch, bool> Ignore { get; set; } = b => false;
 
         /// <summary>
         /// 

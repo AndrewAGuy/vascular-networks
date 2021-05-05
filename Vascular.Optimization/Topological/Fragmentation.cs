@@ -38,7 +38,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="predicate"></param>
         /// <param name="newRadius"></param>
         /// <returns></returns>
-        public static bool Defragment(Branch branch, Predicate<Transient> predicate, Func<Transient, double> newRadius)
+        public static bool Defragment(Branch branch, Func<Transient, bool> predicate, Func<Transient, double> newRadius)
         {
             var current = branch.Segments[0].End;
             var reinit = false;
@@ -77,7 +77,7 @@ namespace Vascular.Optimization.Topological
         /// </summary>
         /// <returns></returns>
         public static Func<Transient, double> BranchRadius => t => t.Child.Branch.Radius;
-        
+
 
         /// <summary>
         /// Removes transients which don't do much in terms of excursions.
@@ -85,7 +85,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="deviationRatio"></param>
         /// <param name="captureFactor"></param>
         /// <returns></returns>
-        public static Predicate<Transient> DeviationOrTouching(double deviationRatio, double captureFactor)
+        public static Func<Transient, bool> DeviationOrTouching(double deviationRatio, double captureFactor)
         {
             return t =>
             {
@@ -112,7 +112,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="random"></param>
         /// <param name="probability"></param>
         /// <returns></returns>
-        public static Predicate<Transient> RandomDrop(Random random, double probability)
+        public static Func<Transient, bool> RandomDrop(Random random, double probability)
         {
             return t => random.NextDouble() < probability;
         }
@@ -123,7 +123,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="random"></param>
         /// <param name="probability"></param>
         /// <returns></returns>
-        public static Predicate<Transient> RandomDrop(Random random, Func<Transient, double> probability)
+        public static Func<Transient, bool> RandomDrop(Random random, Func<Transient, double> probability)
         {
             return t => random.NextDouble() < probability(t);
         }

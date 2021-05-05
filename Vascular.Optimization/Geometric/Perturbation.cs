@@ -17,7 +17,7 @@ namespace Vascular.Optimization.Geometric
         /// <param name="net"></param>
         /// <param name="perturb"></param>
         /// <param name="filter"></param>
-        public static void Perturb(Network net, Func<IMobileNode, Vector3> perturb, Predicate<IMobileNode> filter)
+        public static void Perturb(Network net, Func<IMobileNode, Vector3> perturb, Func<IMobileNode, bool> filter)
         {
             foreach (var node in net.MobileNodes)
             {

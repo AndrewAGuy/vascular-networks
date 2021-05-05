@@ -215,7 +215,7 @@ namespace Vascular.Construction.ACCO
         /// Adds all culled terminals satisfying <paramref name="predicate"/> to <see cref="Waiting"/>.
         /// </summary>
         /// <param name="predicate"></param>
-        public void RestoreCulled(Predicate<Terminal> predicate)
+        public void RestoreCulled(Func<Terminal, bool> predicate)
         {
             var cull = new List<Terminal>(culled.Count);
             for (var i = culled.Count - 1; i >= 0; --i)
@@ -376,9 +376,9 @@ namespace Vascular.Construction.ACCO
         /// Filters the waiting list by removing those which satisfy the given <paramref name="predicate"/>.
         /// </summary>
         /// <param name="predicate"></param>
-        public void RemoveWaiting(Predicate<Terminal> predicate)
+        public void RemoveWaiting(Func<Terminal, bool> predicate)
         {
-            waiting.RemoveAll(predicate);
+            waiting.RemoveAll(new(predicate));
         }
 
         /// <summary>
