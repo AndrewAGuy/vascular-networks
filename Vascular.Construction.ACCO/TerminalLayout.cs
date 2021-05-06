@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vascular.Geometry;
+using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Generators;
+using Vascular.Geometry.Lattices;
+using Vascular.Geometry.Surfaces;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.ACCO
@@ -240,7 +244,7 @@ namespace Vascular.Construction.ACCO
         /// <param name="offset">Offset applied to each terminal.</param>
         /// <param name="seed">Random seed. If <see cref="int.MinValue"/>, uses default constructor.</param>
         /// <returns></returns>
-        public static Terminal[] SolidAngleShell(double radius, double flow, int count, Vector3 direction, 
+        public static Terminal[] SolidAngleShell(double radius, double flow, int count, Vector3 direction,
             double angle, Vector3 offset, int seed = int.MinValue)
         {
             // Define angle from directional axis as (a), and angle around axis as (b)
@@ -331,6 +335,54 @@ namespace Vascular.Construction.ACCO
                 }
             }
             return l.ToArray();
+        }
+
+        /// <summary>
+        /// Generates terminals for all lattice sites that are considered inside <paramref name="surface"/>,
+        /// using <see cref="SurfaceExtensions.IsPointInside(IAxialBoundsQueryable{TriangleSurfaceTest}, Vector3, Vector3[], int)"/>.
+        /// The test directions are generated from <paramref name="lattice"/> using <see cref="VoronoiCell.Connections"/>, and the
+        /// minimum hit count is generated from <paramref name="maxMiss"/> and the number of connection directions tested.
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="lattice"></param>
+        /// <param name="flow"></param>
+        /// <param name="maxMiss"></param>
+        /// <returns></returns>
+        public static Terminal[] LatticeInSurface(IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Lattice lattice, double flow, int maxMiss = 1)
+        {
+            static IEnumerable<Vector3> getPoints(TriangleSurfaceTest tst)
+            {
+                yield return tst.A;
+                yield return tst.B;
+                yield return tst.C;
+            }
+            var basisBounds = surface
+                .SelectMany(getPoints)
+                .Select(lattice.ToBasis)
+                .GetTotalBounds();
+            var (iMin, jMin, kMin) = basisBounds.Lower.Floor;
+            var (iMax, jMax, kMax) = basisBounds.Upper.Ceiling;
+            var T = new List<Terminal>((int)Math.Ceiling(surface.Volume() / lattice.Determinant));
+            var R = surface.GetAxialBounds().Range.Max * Math.Sqrt(3);
+            var D = lattice.VoronoiCell.Connections
+                .Select(v => v.Normalize() * R)
+                .ToArray();
+            for (var i = iMin; i <= iMax; ++i)
+            {
+                for (var j = jMin; j <= jMax; ++j)
+                {
+                    for (var k = kMin; k <= kMax; ++k)
+                    {
+                        var x = lattice.ToSpace(new Vector3(i, j, k));
+                        if (surface.IsPointInside(x, D, D.Length - maxMiss))
+                        {
+                            T.Add(new Terminal(x, flow));
+                        }
+                    }
+                }
+            }
+            return T.ToArray();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
 
@@ -15,22 +16,60 @@ namespace Vascular.Optimization.Topological
         /// 
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="weighting"></param>
-        /// <param name="degree"></param>
         /// <returns></returns>
-        public static double EstimateChange(BranchAction action, Func<Branch, double> weighting, double degree)
+        public static double EstimateChange(BranchAction action,
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
         {
-            // TODO - implement something along the lines of degree ^ -depth(greatest ancestor)
-            // Somehow incoroprate weighting, maybe also consider distance between nodes as well.
-            switch (action)
+            // Use ratio of expected separation to actual separation as a proxy for redundancy
+            // So high expected, low actual and vice versa indicate that redundant pathways are present
+            // Make symmetric by taking abs(log(ratio))
+            return action switch
             {
-                case MoveBifurcation:
-                    throw new NotImplementedException();
+                MoveBifurcation move => EstimateChange(move, sFactor, d2Factor),
+                SwapEnds swap => EstimateChange(swap, sFactor, d2Factor),
+                _ => double.NegativeInfinity
+            };
+        }
 
-                case SwapEnds:
-                    throw new NotImplementedException();
-            }
-            return double.PositiveInfinity;
+        public static double EstimateChange(MoveBifurcation move,
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
+        {
+            // Do not need to consider (target, sibling) pair, as same in both.
+            var moving = move.A.End;
+            var target = move.B.End;
+            var sibling = move.A.FirstSibling.End;
+            var gca = Branch.CommonAncestor(moving.Upstream, target.Upstream);
+            var d2MT = d2Factor * Math.Log(Vector3.DistanceSquared(moving.Position, target.Position));
+            var d2MS = d2Factor * Math.Log(Vector3.DistanceSquared(moving.Position, sibling.Position));
+            var sMS = sFactor * Math.Log(moving.Flow + sibling.Flow);
+            var sGCA = sFactor * Math.Log(gca.Flow);
+            var sMT = sFactor * Math.Log(moving.Flow + target.Flow);
+            var dR = Math.Abs(d2MT - sMT) + Math.Abs(d2MS - sGCA)
+                - Math.Abs(d2MS - sMS) - Math.Abs(d2MT - sGCA);
+            return dR;
+        }
+
+        public static double EstimateChange(SwapEnds swap,
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
+        {
+            // Do not need to consider (a, d) and (b, c).
+            var a = swap.A.FirstSibling.End;
+            var b = swap.A.End;
+            var c = swap.B.End;
+            var d = swap.B.FirstSibling.End;
+            var gca = Branch.CommonAncestor(b.Upstream, c.Upstream);
+            var d2AB = d2Factor * Math.Log(Vector3.DistanceSquared(a.Position, b.Position));
+            var d2AC = d2Factor * Math.Log(Vector3.DistanceSquared(a.Position, c.Position));
+            var d2BD = d2Factor * Math.Log(Vector3.DistanceSquared(b.Position, d.Position));
+            var d2CD = d2Factor * Math.Log(Vector3.DistanceSquared(c.Position, d.Position));
+            var sAB = sFactor * Math.Log(a.Flow + b.Flow);
+            var sCD = sFactor * Math.Log(c.Flow + d.Flow);
+            var sGCA = sFactor * Math.Log(gca.Flow);
+            var sAC= sFactor* Math.Log(a.Flow + c.Flow);
+            var sBD = sFactor * Math.Log(b.Flow + d.Flow);
+            var gain = Math.Abs(d2AB - sGCA) + Math.Abs(d2AC - sAC) + Math.Abs(d2BD - sBD) + Math.Abs(d2CD - sGCA);
+            var loss = Math.Abs(d2AB - sAB) + Math.Abs(d2AC - sGCA) + Math.Abs(d2BD - sGCA) + Math.Abs(d2CD - sCD);
+            return gain - loss;
         }
 
         /// <summary>
@@ -59,7 +98,7 @@ namespace Vascular.Optimization.Topological
                 var (QL, QH) = a.Flow < b.Flow
                     ? (a.Flow, b.Flow)
                     : (b.Flow, a.Flow);
-                return QH < passAllBelow 
+                return QH < passAllBelow
                     || QL * ratio >= QH;
             };
         }

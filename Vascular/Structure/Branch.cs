@@ -725,5 +725,23 @@ namespace Vascular.Structure
                 }
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Branch FirstSibling
+        {
+            get
+            {
+                foreach (var s in this.Start.Downstream)
+                {
+                    if (s != this)
+                    {
+                        return s;
+                    }
+                }
+                return null;
+            }
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
+using System.Collections.Generic;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Diagnostics
@@ -13,31 +12,35 @@ namespace Vascular.Structure.Diagnostics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="b"></param>
+        /// <param name="current"></param>
+        /// <param name="relativeTo"></param>
         /// <returns></returns>
-        public static string GetAddress(this Branch b)
+        public static List<int> GetAddress(this Branch current, Branch relativeTo = null)
         {
-            var s = new StringBuilder();
-            while (b.Start is Bifurcation bf)
+            var addr = new List<int>();
+            while (current.Start is not Source
+                && current != relativeTo)
             {
-                var i = bf.IndexOf(b);
-                s.Append((char)(i + '0'));
-                b = bf.Upstream;
+                var s = current.Start;
+                var i = Array.IndexOf(s.Downstream, current);
+                addr.Add(i);
+                current = s.Upstream;
             }
-            return s.ToString().Reverse().ToString();
+            addr.Reverse();
+            return addr;
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="root"></param>
-        /// <param name="str"></param>
+        /// <param name="address"></param>
         /// <returns></returns>
-        public static Branch Navigate(Branch root, string str)
+        public static Branch Navigate(Branch root, List<int> address)
         {
-            for (var i = 0; i < str.Length; i++)
+            for (var i = 0; i < address.Count; i++)
             {
-                root = root.Children[str[i] - '0'];
+                root = root.Children[address[i]];
             }
             return root;
         }
