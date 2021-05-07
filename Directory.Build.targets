@@ -1,0 +1,43 @@
+<Project>
+  <Target Name="CopyRelease"
+          AfterTargets="Build"
+          Condition="'$(Configuration)'=='Release'">
+    <ItemGroup>
+      <OutputFiles Include="$(TargetDir)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(OutputFiles)"
+          DestinationFolder="$(ProjectDir)../$(Configuration)/lib/$(TargetFramework)/"
+          Condition="'@(OutputFiles)'!=''"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true"/>
+  </Target>
+
+  <Target Name="CopyDebug"
+          AfterTargets="Build"
+          Condition="'$(Configuration)'=='Debug'">
+    <ItemGroup>
+      <OutputFiles Include="$(TargetDir)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(OutputFiles)"
+          DestinationFolder="$(ProjectDir)../$(Configuration)/$(TargetFramework)/"
+          Condition="'@(OutputFiles)'!=''"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true"/>
+  </Target>
+  
+  <Target Name="CopyContent"
+          AfterTargets="Build"
+          Condition="'$(Configuration)'=='Release' And Exists('$(ProjectDir)content')">
+    <ItemGroup>
+      <ContentFiles Include="$(ProjectDir)content/**/*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(ContentFiles)"
+          DestinationFiles="@(ContentFiles->'$(ProjectDir)../$(Configuration)/contentFiles/any/any/$(TargetName)/%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="true" 
+          SkipUnchangedFiles="true"/>
+    <Copy SourceFiles="@(ContentFiles)"
+          DestinationFiles="@(ContentFiles->'$(ProjectDir)../$(Configuration)/content/$(TargetName)/%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="true"
+          SkipUnchangedFiles="true"/>
+  </Target>
+</Project>
