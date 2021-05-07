@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Vascular.Networks</id>
-    <version>1.0.0-a.23</version>
+    <version>0.0.0</version>
     <authors>AGuy</authors>
     <description>Procedural Plumbing for Bioengineering</description>
     <releaseNotes></releaseNotes>
