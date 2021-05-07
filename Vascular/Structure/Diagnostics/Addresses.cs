@@ -21,7 +21,7 @@ namespace Vascular.Structure.Diagnostics
         /// <returns></returns>
         public static List<int> Get(Branch current, Branch upstream = null)
         {
-            var addr = new List<int>(Math.Max(current.Depth, 0));
+            var addr = new List<int>();
             while (current.Start is not Source
                 && current != upstream)
             {

@@ -42,6 +42,11 @@ namespace Vascular.Structure.Nodes
 #if !NoPressure
         /// <inheritdoc/>
         sealed public override double Pressure => pressure;
+#else
+        /// <summary>
+        /// The source node pressure.
+        /// </summary>
+        public double Pressure => pressure;
 #endif
 
         /// <inheritdoc/>

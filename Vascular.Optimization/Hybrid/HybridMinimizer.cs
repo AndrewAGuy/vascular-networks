@@ -306,7 +306,7 @@ namespace Vascular.Optimization.Hybrid
         /// The maximum number of geometry iterations that can be made. Can iterate fewer times
         /// if <see cref="GradientDescentMinimizer.Iterate"/> returns false, see
         /// <see cref="GradientDescentMinimizer.TerminationPredicate"/> and
-        /// <see cref="GradientDescentMinimizer.UseConvergenceTest(double, int, int)"/>.
+        /// <see cref="Geometric.Extensions.UseConvergenceTest(GradientDescentMinimizer, double, int, int)"/>.
         /// </summary>
         public int GeometryIterations { get; set; }
 
