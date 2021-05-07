@@ -13,12 +13,25 @@ namespace Vascular.Optimization.Topological
     public static class Redundancy
     {
         /// <summary>
-        /// 
+        /// Estimates change using <see cref="EstimateChange(MoveBifurcation, double, double, double)"/>
+        /// and <see cref="EstimateChange(SwapEnds, double, double, double)"/>. Uses a measure of redundancy
+        /// as the ratio of distance between two nodes compared to the expected crown length scale
+        /// of their greatest common ancestor.
+        /// <para/>
+        /// Implemented as pairwise terms of 
+        /// <c>abs(offset + sFactor * log(flow(GCA)) - d2Factor * log(dist2(a, b)))</c>.
+        /// Appropriate scaling factors and offset will yield zero redundancy for a pair of terminals 
+        /// joined by a bifurcation.
+        /// Higher values indicate more redundancy, so for cost purposes this should be negated and
+        /// scaled to an appropriate level to have an effect as a topological estimator.
         /// </summary>
         /// <param name="action"></param>
+        /// <param name="sFactor"></param>
+        /// <param name="d2Factor"></param>
+        /// <param name="offset"></param>
         /// <returns></returns>
         public static double EstimateChange(BranchAction action,
-            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5, double offset = 0.0)
         {
             // Use ratio of expected separation to actual separation as a proxy for redundancy
             // So high expected, low actual and vice versa indicate that redundant pathways are present
@@ -31,8 +44,16 @@ namespace Vascular.Optimization.Topological
             };
         }
 
+        /// <summary>
+        /// See <see cref="EstimateChange(BranchAction, double, double, double)"/>.
+        /// </summary>
+        /// <param name="move"></param>
+        /// <param name="sFactor"></param>
+        /// <param name="d2Factor"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static double EstimateChange(MoveBifurcation move,
-            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5, double offset = 0.0)
         {
             // Do not need to consider (target, sibling) pair, as same in both.
             var moving = move.A.End;
@@ -44,13 +65,21 @@ namespace Vascular.Optimization.Topological
             var sMS = sFactor * Math.Log(moving.Flow + sibling.Flow);
             var sGCA = sFactor * Math.Log(gca.Flow);
             var sMT = sFactor * Math.Log(moving.Flow + target.Flow);
-            var dR = Math.Abs(d2MT - sMT) + Math.Abs(d2MS - sGCA)
-                - Math.Abs(d2MS - sMS) - Math.Abs(d2MT - sGCA);
+            var dR = Math.Abs(offset + d2MT - sMT) + Math.Abs(offset + d2MS - sGCA)
+                - Math.Abs(offset + d2MS - sMS) - Math.Abs(offset + d2MT - sGCA);
             return dR;
         }
 
+        /// <summary>
+        /// See <see cref="EstimateChange(BranchAction, double, double, double)"/>.
+        /// </summary>
+        /// <param name="swap"></param>
+        /// <param name="sFactor"></param>
+        /// <param name="d2Factor"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static double EstimateChange(SwapEnds swap,
-            double sFactor = 1.0 / 3.0, double d2Factor = 0.5)
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5, double offset = 0.0)
         {
             // Do not need to consider (a, d) and (b, c).
             var a = swap.A.FirstSibling.End;
@@ -65,10 +94,12 @@ namespace Vascular.Optimization.Topological
             var sAB = sFactor * Math.Log(a.Flow + b.Flow);
             var sCD = sFactor * Math.Log(c.Flow + d.Flow);
             var sGCA = sFactor * Math.Log(gca.Flow);
-            var sAC= sFactor* Math.Log(a.Flow + c.Flow);
+            var sAC = sFactor * Math.Log(a.Flow + c.Flow);
             var sBD = sFactor * Math.Log(b.Flow + d.Flow);
-            var gain = Math.Abs(d2AB - sGCA) + Math.Abs(d2AC - sAC) + Math.Abs(d2BD - sBD) + Math.Abs(d2CD - sGCA);
-            var loss = Math.Abs(d2AB - sAB) + Math.Abs(d2AC - sGCA) + Math.Abs(d2BD - sGCA) + Math.Abs(d2CD - sCD);
+            var gain = Math.Abs(offset + d2AB - sGCA) + Math.Abs(offset + d2AC - sAC) 
+                + Math.Abs(offset + d2BD - sBD) + Math.Abs(offset + d2CD - sGCA);
+            var loss = Math.Abs(offset + d2AB - sAB) + Math.Abs(offset + d2AC - sGCA) 
+                + Math.Abs(offset + d2BD - sGCA) + Math.Abs(offset + d2CD - sCD);
             return gain - loss;
         }
 

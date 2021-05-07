@@ -218,6 +218,7 @@ namespace Vascular.Intersections.Collision
         /// and creates suggestions to fix it topologically. This can be used separately to the regular
         /// collision resolution scheme, where geometric options are prohibited.
         /// </summary>
+        /// <param name="network"></param>
         /// <param name="radius"></param>
         /// <param name="immuneSetContraction"></param>
         /// <param name="immediateCull"></param>

@@ -443,21 +443,21 @@ namespace Vascular.Construction.ACCO
             {
                 foreach (var p in t.Partners)
                 {
-                    var trans = Topology.CullTerminal(p);
-                    if (trans != null)
+                    var tr = Topology.CullTerminal(p);
+                    if (tr != null)
                     {
-                        trans.Parent.Branch.PropagateLogicalUpstream();
-                        trans.UpdatePhysicalAndPropagate();
+                        tr.Parent.Branch.PropagateLogicalUpstream();
+                        tr.UpdatePhysicalAndPropagate();
                     }
                 }
             }
             else
             {
-                var trans = Topology.CullTerminal(t);
-                if (trans != null)
+                var tr = Topology.CullTerminal(t);
+                if (tr != null)
                 {
-                    trans.Parent.Branch.PropagateLogicalUpstream();
-                    trans.UpdatePhysicalAndPropagate();
+                    tr.Parent.Branch.PropagateLogicalUpstream();
+                    tr.UpdatePhysicalAndPropagate();
                 }
             }
         }

@@ -16,18 +16,18 @@ namespace Vascular.Structure.Actions
         {
             var end = seg.End;
             var child = new Segment();
-            var tran = new Transient();
+            var tr = new Transient();
             // Child relationships first, to prevent wipe of segment end.
-            child.Start = tran;
+            child.Start = tr;
             child.End = end;
-            tran.Child = child;
+            tr.Child = child;
             end.Parent = child;
             // Parent relationships
-            seg.End = tran;
-            tran.Parent = seg;
+            seg.End = tr;
+            tr.Parent = seg;
             // Update branch
             seg.Branch.Reinitialize();
-            return tran;
+            return tr;
         }
 
         /// <summary>
@@ -69,14 +69,14 @@ namespace Vascular.Structure.Actions
             // Rewire sibling and parent into single branch, this turns 3 branches into 1.
             var parent = bifurc.Parent;
             var other = bifurc.Downstream[0] == branch ? bifurc.Children[1] : bifurc.Children[0];
-            var tran = new Transient()
+            var tr = new Transient()
             {
                 Position = bifurc.Position,
                 Child = other,
                 Parent = parent
             };
-            other.Start = tran;
-            parent.End = tran;
+            other.Start = tr;
+            parent.End = tr;
             parent.Branch.End = other.Branch.End;
             parent.Branch.Reinitialize();
             // Set as culled, cast branch into the void
@@ -85,7 +85,7 @@ namespace Vascular.Structure.Actions
                 term.Parent = null;
             }
             term.Culled = true;
-            return tran;
+            return tr;
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace Vascular.Structure.Actions
         /// <returns></returns>
         public static Transient CullTerminalAndPropagate(Terminal term, bool nullParent = true)
         {
-            var tran = CullTerminal(term, nullParent);
-            if (tran != null)
+            var tr = CullTerminal(term, nullParent);
+            if (tr != null)
             {
-                tran.Parent.Branch.PropagateLogicalUpstream();
-                tran.UpdatePhysicalAndPropagate();
+                tr.Parent.Branch.PropagateLogicalUpstream();
+                tr.UpdatePhysicalAndPropagate();
             }
-            return tran;
+            return tr;
         }
 
         /// <summary>
@@ -179,16 +179,16 @@ namespace Vascular.Structure.Actions
         {
             var lostChild = keptChild == 0 ? 1 : 0;
             // Rewire bifurcation into transient, same as in culling
-            var tran = new Transient()
+            var tr = new Transient()
             {
                 Position = bifurc.Position,
                 Child = bifurc.Children[keptChild],
                 Parent = bifurc.Parent
             };
-            tran.Parent.End = tran;
-            tran.Child.Start = tran;
-            tran.Parent.Branch.End = tran.Child.Branch.End;
-            tran.Parent.Branch.Reinitialize();
+            tr.Parent.End = tr;
+            tr.Child.Start = tr;
+            tr.Parent.Branch.End = tr.Child.Branch.End;
+            tr.Parent.Branch.Reinitialize();
             // Now find all downstream terminals on the lost side, remove them
             if (markDownstream)
             {
@@ -206,7 +206,7 @@ namespace Vascular.Structure.Actions
                 bifurc.Parent = null;
                 bifurc.Downstream[lostChild].End.Parent = null;
             }
-            return tran;
+            return tr;
         }
 
         /// <summary>
@@ -298,20 +298,20 @@ namespace Vascular.Structure.Actions
             {
                 // Remove bifurcation, rewire parent and sibling into single branch
                 var keptChild = 1 - bifurc.IndexOf(moving);
-                var tran = new Transient()
+                var tr = new Transient()
                 {
                     Position = bifurc.Position,
                     Child = bifurc.Children[keptChild],
                     Parent = bifurc.Parent
                 };
-                tran.Parent.End = tran;
-                tran.Child.Start = tran;
-                tran.Parent.Branch.End = tran.Child.Branch.End;
-                tran.Parent.Branch.Reinitialize();
+                tr.Parent.End = tr;
+                tr.Child.Start = tr;
+                tr.Parent.Branch.End = tr.Child.Branch.End;
+                tr.Parent.Branch.Reinitialize();
                 // Create new bifurcation, reset branches to do this
                 moving.Reset();
                 from.Reset();
-                return (tran, CreateBifurcation(from.Segments[0], moving.End));
+                return (tr, CreateBifurcation(from.Segments[0], moving.End));
             }
             return (null, null);
         }

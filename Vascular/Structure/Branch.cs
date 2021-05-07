@@ -689,6 +689,8 @@ namespace Vascular.Structure
         /// <summary>
         /// Enumerates all branches between this and <paramref name="target"/>, exclusive of the endpoints.
         /// If <paramref name="target"/> is not upstream of this, will enumerate all upstream to root, inclusive of the root.
+        /// Note: If <paramref name="target"/> equals the calling instance, the termination condition will not be met -
+        /// if this should behave as an empty sequence then it is important to test for equality beforehand.
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>

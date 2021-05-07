@@ -74,12 +74,17 @@ namespace Vascular.Optimization.Hybrid
         /// <summary>
         /// 
         /// </summary>
-        public Func<BranchAction, bool> ActionPredicate { get; set; }
+        public Func<BranchAction, bool> ActionPredicate { get; set; } = ba => ba.IsPermissible();
 
         /// <summary>
         /// Can attach pre and post action hooks with this, as well as combine or overwrite costs and predicates.
         /// </summary>
         public Action<TopologyExecutor> ConfigureExector { get; set; }
+
+        /// <summary>
+        /// Executed when valid actions have been ranked.
+        /// </summary>
+        public Action<IEnumerable<(BranchAction a, double dC)>> OnRank { get; set; }
 
         private void ActTopology()
         {
@@ -112,23 +117,30 @@ namespace Vascular.Optimization.Hybrid
             }
             else
             {
-                var ranked = (IEnumerable<BranchAction>)actions;
-                if (this.ActionPredicate != null)
-                {
-                    ranked = ranked.Where(this.ActionPredicate);
-                }
-                ranked = ranked
+                var filtered = this.ActionPredicate != null
+                    ? actions.Where(this.ActionPredicate)
+                    : actions;
+                var ranked = filtered
                     .Select(a =>
                     {
                         var dC = EstimateChange(a);
                         return (a, dC);
                     })
                     .Where(a => a.dC < this.CostChangeThreshold)
-                    .OrderBy(a => a.dC)
-                    .Select(a => a.a);
+                    .OrderBy(a => a.dC);
+                if (this.OnRank != null)
+                {
+                    var rankedList = ranked.ToList();
+                    this.OnRank(rankedList);
+                    filtered = rankedList.Select(a => a.a);
+                }
+                else
+                {
+                    filtered = ranked.Select(a => a.a);
+                }
 
                 this.ConfigureExector?.Invoke(executor);
-                taken = executor.IterateOrdered(ranked);
+                taken = executor.IterateOrdered(filtered);
             }
 
             if (taken != 0)
@@ -180,8 +192,8 @@ namespace Vascular.Optimization.Hybrid
         }
 
         /// <summary>
-        /// Used for <see cref="TryTerminals"/> and <see cref="TryRebalance"/> if <see cref="OffloadRemovedTerminals"/>
-        /// is specified.
+        /// Used alongside <see cref="Connections"/>, <see cref="Interior"/> for terminal actions. 
+        /// See <see cref="Extensions.AddTerminalActions(HybridMinimizer, bool, Func{Terminal, IEnumerable{Branch}})"/>.
         /// </summary>
         public ClosestBasisFunction ToIntegral { get; set; }
 

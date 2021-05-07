@@ -161,7 +161,7 @@ namespace Vascular.Optimization.Hybrid
         /// <param name="expansion"></param>
         /// <returns></returns>
         public static HybridMinimizer AddTerminalActions(this HybridMinimizer hm,
-            bool tryLocalTerminals, Func<Terminal,IEnumerable<Branch>> expansion)
+            bool tryLocalTerminals, Func<Terminal, IEnumerable<Branch>> expansion)
         {
             IEnumerable<BranchAction> generator()
             {
@@ -210,6 +210,28 @@ namespace Vascular.Optimization.Hybrid
             hm.Minimizer.Add(n => costs.Evaluate());
             hm.AddTopologyEstimator(t => Grouping.EstimateCostChange(t, costs, hm.EvaluationPlacement));
             hm.AddEstimatorPrepare(() => costs.SetCache());
+            return hm;
+        }
+
+        /// <summary>
+        /// A positive weighted estimate using <see cref="Redundancy.EstimateChange(BranchAction, double, double, double)"/>
+        /// which is negated to work with cost minimization.
+        /// </summary>
+        /// <param name="hm"></param>
+        /// <param name="weight"></param>
+        /// <param name="sFactor"></param>
+        /// <param name="d2Factor"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public static HybridMinimizer AddRedundancyEstimator(this HybridMinimizer hm, double weight,
+            double sFactor = 1.0 / 3.0, double d2Factor = 0.5, double offset = 0.0)
+        {
+            weight = -weight;
+
+            double estimator(BranchAction action)
+                => weight * Redundancy.EstimateChange(action, sFactor, d2Factor, offset);
+
+            hm.AddTopologyEstimator(estimator);
             return hm;
         }
     }

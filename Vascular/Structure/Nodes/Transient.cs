@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
@@ -44,6 +45,39 @@ namespace Vascular.Structure.Nodes
             child.UpdateLength();
             child.Branch.UpdatePhysicalLocal();
             child.Branch.PropagatePhysicalUpstream();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double MinInnerLength()
+        {
+            return Math.Sqrt(Math.Min(
+                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Child.End.Position)
+                ));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double MaxInnerLength()
+        {
+            return Math.Sqrt(Math.Max(
+                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Child.End.Position)
+                ));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double OuterLength()
+        {
+            return Vector3.Distance(this.Parent.Start.Position, this.Child.End.Position);
         }
     }
 }

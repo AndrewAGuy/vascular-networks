@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Geometric
 {
@@ -85,7 +86,22 @@ namespace Vascular.Optimization.Geometric
             return this;
         }
 
+        /// <summary>
+        /// Removes all costs and allows new ones to be attached.
+        /// </summary>
+        /// <returns></returns>
+        public GradientDescentMinimizer Clear()
+        {
+            costs.Clear();
+            return this;
+        }
+
         private readonly List<Func<Network, (double c, IDictionary<IMobileNode, Vector3> g)>> costs = new();
+
+        /// <summary>
+        /// Allows modifying or recording gradient entries.
+        /// </summary>
+        public Action<IDictionary<IMobileNode, Vector3>> OnGradientComputed { get; set; }
 
         /// <summary>
         /// 
@@ -121,6 +137,70 @@ namespace Vascular.Optimization.Geometric
                 }
                 return true;
             };
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scale"></param>
+        /// <returns></returns>
+        public GradientDescentMinimizer NormalizeGradients(Func<IMobileNode, double> scale = null)
+        {
+            this.OnGradientComputed = scale == null
+                ? G =>
+                {
+                    foreach (var (n, g) in G)
+                    {
+                        g.Copy(g.NormalizeSafe() ?? Vector3.ZERO);
+                    }
+                }
+                : G =>
+                {
+                    foreach (var (n, g) in G)
+                    {
+                        g.Copy((g.NormalizeSafe() ?? Vector3.ZERO) * scale(n));
+                    }
+                };
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scale"></param>
+        /// <returns></returns>
+        public static Func<IMobileNode, double> ScaleByInnerLength(double scale)
+        {
+            return n => n switch
+                {
+                    Bifurcation bf => bf.MinInnerLength() * scale,
+                    Transient tr => tr.MinInnerLength() * scale,
+                    _ => 1,
+                };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="isFraction"></param>
+        /// <returns></returns>
+        public GradientDescentMinimizer AvoidShortVessels(double value, bool isFraction = true)
+        {
+            this.MovingPredicate = isFraction
+                ? n => n switch
+                    {
+                        Bifurcation bf => bf.MinOuterLength() * value < bf.MinInnerLength(),
+                        Transient tr => tr.OuterLength() * value < tr.MinInnerLength(),
+                        _ => true,
+                    }
+                : n => n switch
+                    {
+                        Bifurcation bf => value < bf.MinInnerLength(),
+                        Transient tr => value < tr.MinInnerLength(),
+                        _ => true,
+                    };
             return this;
         }
 
@@ -253,15 +333,15 @@ namespace Vascular.Optimization.Geometric
                     var a00 = (double)samples;      // unit * unit
                     var a01 = power.Sum();          // unit * power
                     var a11 = power.Dot(power);
-                        var a0y = buffer.Sum();         // unit * values
+                    var a0y = buffer.Sum();         // unit * values
                     var a1y = power.Dot(buffer);
                     // Solve (A^t A)^-1 A^t y for what we are interested in
                     var det = a00 * a11 - a01 * a01;
-                        if (det == 0)
-                        {
-                            return false;
-                        }
-                        var v0 = (a11 * a0y - a01 * a1y) / det;
+                    if (det == 0)
+                    {
+                        return false;
+                    }
+                    var v0 = (a11 * a0y - a01 * a1y) / det;
                     // Could solve for decay term as well, but we only care whether we're within fractional
                     // tolerance of the end result. (Hence not solving for A11)
                     return Math.Abs(v - v0) / Math.Abs(v0) <= fraction;
@@ -278,6 +358,7 @@ namespace Vascular.Optimization.Geometric
         public bool Iterate()
         {
             var gradient = CalculateGradient();
+            this.OnGradientComputed?.Invoke(gradient);
             if (gradient.Count == 0)
             {
                 return this.ResultOnError;

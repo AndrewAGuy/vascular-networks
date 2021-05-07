@@ -27,22 +27,22 @@ namespace Vascular.Geometry
         /// <summary>
         /// A static all-zero vector. Please do not modify.
         /// </summary>
-        public static readonly Vector3 ZERO = new Vector3();
+        public static readonly Vector3 ZERO = new();
 
         /// <summary>
         /// A static unit vector. Please do not modify.
         /// </summary>
-        public static readonly Vector3 UNIT_X = new Vector3(1, 0, 0);
+        public static readonly Vector3 UNIT_X = new(1, 0, 0);
 
         /// <summary>
         /// A static unit vector. Please do not modify.
         /// </summary>
-        public static readonly Vector3 UNIT_Y = new Vector3(0, 1, 0);
+        public static readonly Vector3 UNIT_Y = new(0, 1, 0);
 
         /// <summary>
         /// A static unit vector. Please do not modify.
         /// </summary>
-        public static readonly Vector3 UNIT_Z = new Vector3(0, 0, 1);
+        public static readonly Vector3 UNIT_Z = new(0, 0, 1);
 
         /// <summary>
         /// 
@@ -80,7 +80,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator -(Vector3 v)
         {
-            return new Vector3(-v.x, -v.y, -v.z);
+            return new(-v.x, -v.y, -v.z);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator +(Vector3 l, Vector3 r)
         {
-            return new Vector3(l.x + r.x, l.y + r.y, l.z + r.z);
+            return new(l.x + r.x, l.y + r.y, l.z + r.z);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator -(Vector3 l, Vector3 r)
         {
-            return new Vector3(l.x - r.x, l.y - r.y, l.z - r.z);
+            return new(l.x - r.x, l.y - r.y, l.z - r.z);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator *(Vector3 l, double r)
         {
-            return new Vector3(l.x * r, l.y * r, l.z * r);
+            return new(l.x * r, l.y * r, l.z * r);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator *(double l, Vector3 r)
         {
-            return new Vector3(r.x * l, r.y * l, r.z * l);
+            return new(r.x * l, r.y * l, r.z * l);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator /(Vector3 l, double r)
         {
-            return new Vector3(l.x / r, l.y / r, l.z / r);
+            return new(l.x / r, l.y / r, l.z / r);
         }
 
         /// <summary>
@@ -157,11 +157,10 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public static Vector3 operator ^(Vector3 l, Vector3 r)
         {
-            return new Vector3(
-                l.y * r.z - l.z * r.y,
-                l.z * r.x - l.x * r.z,
-                l.x * r.y - l.y * r.x
-                );
+            return new(
+                l.y * r.z - l.z * r.y, 
+                l.z * r.x - l.x * r.z, 
+                l.x * r.y - l.y * r.x);
         }
 
         /// <summary>
@@ -303,7 +302,7 @@ namespace Vascular.Geometry
             var Y = y - f >= 0.5 ? f + 1.0 : f;
             f = Math.Floor(z);
             var Z = z - f >= 0.5 ? f + 1.0 : f;
-            return new Vector3(X, Y, Z);
+            return new(X, Y, Z);
         }
 
         /// <summary>
@@ -314,7 +313,7 @@ namespace Vascular.Geometry
         /// <returns></returns>
         public Vector3 Round(int decimals = 0, MidpointRounding midpointRounding = MidpointRounding.ToPositiveInfinity)
         {
-            return new Vector3(Math.Round(x, decimals, midpointRounding), Math.Round(y, decimals, midpointRounding), Math.Round(z, decimals, midpointRounding));
+            return new(Math.Round(x, decimals, midpointRounding), Math.Round(y, decimals, midpointRounding), Math.Round(z, decimals, midpointRounding));
         }
 
         /// <summary>
@@ -330,7 +329,7 @@ namespace Vascular.Geometry
         /// <summary>
         /// The vector of element-wise absolutes.
         /// </summary>
-        public Vector3 Abs => new Vector3(Math.Abs(x), Math.Abs(y), Math.Abs(z));
+        public Vector3 Abs => new(Math.Abs(x), Math.Abs(y), Math.Abs(z));
 
         /// <summary>
         /// Sum of elements.
@@ -425,5 +424,24 @@ namespace Vascular.Geometry
         /// or <see cref="double.NegativeInfinity"/>.
         /// </summary>
         public bool IsFinite => double.IsFinite(x) && double.IsFinite(y) && double.IsFinite(z);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3 Copy()
+        {
+            return new(this);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        public void Copy(Vector3 other)
+        {
+            x = other.x;
+            y = other.y;
+            z = other.z;
+        }
     }
 }
