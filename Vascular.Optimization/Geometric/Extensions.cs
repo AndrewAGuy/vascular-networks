@@ -154,5 +154,27 @@ namespace Vascular.Optimization.Geometric
 
             return gd;
         }
+
+        /// <summary>
+        /// Recreates the legacy behaviour from the original ACCO implementation.
+        /// </summary>
+        /// <param name="gd"></param>
+        /// <param name="fStep"></param>
+        /// <param name="fTerm"></param>
+        /// <param name="stride"></param>
+        /// <param name="fBlock"></param>
+        /// <param name="nBlock"></param>
+        /// <returns></returns>
+        public static GradientDescentMinimizer UseLegacyBehaviourACCO(this GradientDescentMinimizer gd,
+            double fStep, double fTerm, double stride, double fBlock, int nBlock)
+        {
+            gd.AvoidShortVessels(fTerm);
+            gd.NormalizeGradients(GradientDescentMinimizer.ScaleByInnerLength(fStep));
+            gd.UpdateStrideToTarget = false;
+            gd.Stride = stride;
+            gd.BlockLength = nBlock;
+            gd.BlockRatio = fBlock;
+            return gd;
+        }
     }
 }

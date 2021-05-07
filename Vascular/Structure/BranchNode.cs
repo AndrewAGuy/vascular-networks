@@ -100,7 +100,7 @@ namespace Vascular.Structure
         public abstract void PropagateLogicalUpstream();
 
         /// <summary>
-        /// Updates <see cref="Branch.ReducedResistance"/>, <see cref="Branch.EffectiveLength"/>.
+        /// Updates reduced resistance and effective length.
         /// </summary>
         public abstract void PropagatePhysicalUpstream();
 
