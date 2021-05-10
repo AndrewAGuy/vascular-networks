@@ -58,7 +58,7 @@ namespace Vascular
         /// <summary>
         /// 
         /// </summary>
-        public bool IsReadOnly => false;       
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Overwrites the element at the current offset and advances the offset.
@@ -124,34 +124,30 @@ namespace Vascular
             public Enumerator(CircularBuffer<T> buffer)
             {
                 this.buffer = buffer;
-                position = buffer.offset;
+                Reset();
             }
 
             private readonly CircularBuffer<T> buffer;
-            private int position = 0;
+            private int position;
 
-            public T Current => buffer.data[position];
+            public T Current => buffer[position];
 
-            object IEnumerator.Current => buffer.data[position];
+            object IEnumerator.Current => buffer[position];
 
             public bool MoveNext()
             {
                 position++;
-                if (position == buffer.data.Length)
-                {
-                    position = 0;
-                }
-                return position != buffer.offset;
+                return position < buffer.data.Length;
             }
 
             public void Reset()
             {
-                position = buffer.offset;
+                position = -1;
             }
 
             public void Dispose()
             {
-                
+
             }
         }
 

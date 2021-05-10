@@ -86,6 +86,11 @@ namespace Vascular.Optimization.Hybrid
         /// </summary>
         public Action<IEnumerable<(BranchAction a, double dC)>> OnRank { get; set; }
 
+        /// <summary>
+        /// Allows custom reordering and filtering after ranking. Can be used to return a single random action for testing.
+        /// </summary>
+        public Func<IEnumerable<(BranchAction a, double dC)>, IEnumerable<BranchAction>> ModifyRanked { get; set; }
+
         private void ActTopology()
         {
             var executor = new TopologyExecutor()
@@ -128,7 +133,11 @@ namespace Vascular.Optimization.Hybrid
                     })
                     .Where(a => a.dC < this.CostChangeThreshold)
                     .OrderBy(a => a.dC);
-                if (this.OnRank != null)
+                if (this.ModifyRanked != null)
+                {
+                    filtered = this.ModifyRanked(ranked);
+                }
+                else if (this.OnRank != null)
                 {
                     var rankedList = ranked.ToList();
                     this.OnRank(rankedList);
