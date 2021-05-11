@@ -27,6 +27,7 @@ namespace Vascular.Structure.Actions
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical, bool propagatePhysical)
         {
+            GetReverseData();
             var (t, n) = Topology.MoveBifurcation(a, b);
             if (n != null)
             {
@@ -67,6 +68,69 @@ namespace Vascular.Structure.Actions
         public override int GetHashCode()
         {
             return HashCode.Combine(a, b);
+        }
+
+        private Branch sibling;
+        private int index;
+        private Vector3 position;
+
+        private void GetReverseData()
+        {
+            sibling = a.FirstSibling;
+            index = a.IndexInParent;
+            position = a.Start.Position;
+        }
+
+        /// <inheritdoc/>
+        public override void Reverse(bool propagateLogical = true, bool propagatePhysical = false)
+        {
+            // Need to reconstruct exactly as it was. We have created 2 new branches and lost 2 old.
+
+            // Start by removing the bifurcation: moved branch points to same end node, but is not actually valid.
+            var tr = Topology.RemoveBranch(a.CurrentTopologicallyValid, true, false, false, false);
+            tr.Parent.Branch.Reset();
+
+            var bf = new Bifurcation()
+            {
+                Position = position,
+                Network = a.End.Network
+            };
+
+            // Sibling was consumed by parent, rewire to end at bifurcation and reset
+            var p = sibling.CurrentTopologicallyValid;
+            p.End = bf;
+            p.Reset();
+
+            // Ensure that errors aren't introduced by segments shared between branches
+            var ss = sibling.Segments[0];
+            ss.End = sibling.End;
+            ss.Start = bf;
+            bf.Children[1 - index] = ss;
+            sibling.End.Parent = ss;
+            sibling.Start = bf;
+            sibling.Initialize(ss);
+
+            var sm = a.Segments[0];
+            sm.End = a.End;
+            sm.Start = bf;
+            bf.Children[index] = sm;
+            a.End.Parent = sm;
+            a.Start = bf;
+            a.Initialize(sm);
+
+            bf.UpdateDownstream();
+
+            // Finish with data propagation
+            if (propagateLogical)
+            {
+                tr.Parent.Branch.PropagateLogicalUpstream();
+                bf.UpdateLogicalAndPropagate();
+                if (propagatePhysical)
+                {
+                    tr.UpdatePhysicalAndPropagate();
+                    bf.UpdatePhysicalAndPropagate();
+                }
+            }
         }
     }
 }

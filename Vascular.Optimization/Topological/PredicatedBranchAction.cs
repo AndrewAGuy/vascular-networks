@@ -50,5 +50,11 @@ namespace Vascular.Optimization.Topological
         {
             return inner.Update() && predicate(inner);
         }
+
+        /// <inheritdoc/>
+        public override void Reverse(bool propagateLogical = true, bool propagatePhysical = false)
+        {
+            inner.Reverse(propagateLogical, propagatePhysical);
+        }
     }
 }

@@ -234,5 +234,29 @@ namespace Vascular.Optimization.Hybrid
             hm.AddTopologyEstimator(estimator);
             return hm;
         }
+
+        /// <summary>
+        /// Sets up the <see cref="TopologyExecutor"/> to make an action, minimize, then reverse if
+        /// the cost increased. Ensure that no <see cref="RemoveBranch"/> actions are generated.
+        /// </summary>
+        /// <param name="hm"></param>
+        /// <returns></returns>
+        public static HybridMinimizer UseIncrementalChanges(this HybridMinimizer hm)
+        {
+            var cost = double.PositiveInfinity;
+            var oldCost = double.PositiveInfinity;
+            hm.ConfigureExector = ex =>
+            {
+                ex.IsAcceptable = () =>
+                {
+                    hm.Minimizer.Stride = 0;
+                    hm.Iterate(0, false);
+                    return cost < oldCost;
+                };
+                ex.BeforeExecute = ba => oldCost = cost;
+            };
+            hm.RecordCost += v => cost = v;
+            return hm;
+        }
     }
 }

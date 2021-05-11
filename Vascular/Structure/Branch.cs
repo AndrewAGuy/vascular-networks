@@ -745,5 +745,10 @@ namespace Vascular.Structure
                 return null;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int IndexInParent => Array.IndexOf(this.Start.Downstream, this);
     }
 }

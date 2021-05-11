@@ -75,6 +75,14 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
+        /// Undoes the action - requires actions to maintain a reference to the exact branches, otherwise all
+        /// actions would need to be updated.
+        /// </summary>
+        /// <param name="propagateLogical"></param>
+        /// <param name="propagatePhysical"></param>
+        public abstract void Reverse(bool propagateLogical = true, bool propagatePhysical = false);
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="pred"></param>
