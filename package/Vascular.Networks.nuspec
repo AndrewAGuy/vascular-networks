@@ -2,12 +2,13 @@
 <package>
   <metadata>
     <id>Vascular.Networks</id>
-    <version>0.0.0</version>
+    <version>0.0.1</version>
     <authors>AGuy</authors>
     <description>Procedural Plumbing for Bioengineering</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright (C) 2021 Andrew Guy</copyright>
     <projectUrl>https://github.com/AndrewAGuy/vascular-networks</projectUrl>
+    <repository type="git" url="https://github.com/AndrewAGuy/vascular-networks.git"/>
     <license type="expression">AGPL-3.0-only</license>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <tags>Vascular Networks Bioengineering</tags>
