@@ -177,7 +177,7 @@ namespace Vascular.Structure.Actions
         public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild,
             bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
-            var lostChild = keptChild == 0 ? 1 : 0;
+            var lostChild = 1 - keptChild;
             // Rewire bifurcation into transient, same as in culling
             var tr = new Transient()
             {
@@ -224,7 +224,7 @@ namespace Vascular.Structure.Actions
             switch (branch.Start)
             {
                 case Bifurcation bifurc:
-                    return RemoveBifurcation(bifurc, bifurc.IndexOf(branch), markDownstream, nullDownstream, nullLost);
+                    return RemoveBifurcation(bifurc, 1 - bifurc.IndexOf(branch), markDownstream, nullDownstream, nullLost);
                 case Source source:
                     if (throwIfRoot)
                     {
