@@ -337,6 +337,11 @@ namespace Vascular.Geometry
         public double Sum => x + y + z;
 
         /// <summary>
+        /// Product of elements.
+        /// </summary>
+        public double Product => x * y * z;
+
+        /// <summary>
         /// L2 norm.
         /// </summary>
         public double LengthSquared => this * this;

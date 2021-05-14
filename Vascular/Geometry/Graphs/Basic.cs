@@ -1,4 +1,6 @@
-﻿namespace Vascular.Geometry.Graphs
+﻿using System.Collections.Generic;
+
+namespace Vascular.Geometry.Graphs
 {
     /// <summary>
     /// 
@@ -205,6 +207,24 @@
     /// </summary>
     public class Graph : Graph<Vertex, Edge>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public Graph()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nv"></param>
+        /// <param name="ne"></param>
+        /// <param name="eq"></param>
+        public Graph(int nv, int ne, IEqualityComparer<Edge> eq = null) : base(nv, ne, eq)
+        {
+        }
+
         /// <summary>
         /// 
         /// </summary>
