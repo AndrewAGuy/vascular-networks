@@ -17,6 +17,9 @@ namespace Vascular.Geometry.Surfaces
         private readonly Vector3 multiplier;
         private readonly AxialBounds bounds;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Segment Segment { get; }
 
         /// <summary>
@@ -78,7 +81,6 @@ namespace Vascular.Geometry.Surfaces
         /// <param name="d"></param>
         /// <param name="r"></param>
         /// <param name="s2"></param>
-        /// <param name="t2"></param>
         /// <returns></returns>
         public double Overlap(Vector3 x0, Vector3 x1, Vector3 d, double r, double s2)
         {
@@ -121,21 +123,21 @@ namespace Vascular.Geometry.Surfaces
                 // As in intersection testing, if one segment factor is outside of the range (0, 1), clamp and project onto other.
                 if (sol.x > 1)
                 {
-                    (f0, f1) = (0, sol.y > 1 ? 1 : sol.y < 0 ? 0 : LinearAlgebra.LineFactor(x0, d, end).Clamp(0, 1));
+                    (f0, f1) = (1, sol.y > 1 ? 1 : sol.y < 0 ? 0 : LinearAlgebra.LineFactor(x0, d, end).Clamp(0, 1));
                 }
                 else if (sol.x < 0)
                 {
-                    (f0, f1) = (1, sol.y > 1 ? 1 : sol.y < 0 ? 0 : LinearAlgebra.LineFactor(x0, d, start).Clamp(0, 1));
+                    (f0, f1) = (0, sol.y > 1 ? 1 : sol.y < 0 ? 0 : LinearAlgebra.LineFactor(x0, d, start).Clamp(0, 1));
                 }
                 else
                 {
                     if (sol.y > 1)
                     {
-                        (f0, f1) = (LinearAlgebra.LineFactor(start, direction, x1).Clamp(0, 1), 0);
+                        (f0, f1) = (LinearAlgebra.LineFactor(start, direction, x1).Clamp(0, 1), 1);
                     }
                     else if (sol.y < 0)
                     {
-                        (f0, f1) = (LinearAlgebra.LineFactor(start, direction, x0).Clamp(0, 1), 1);
+                        (f0, f1) = (LinearAlgebra.LineFactor(start, direction, x0).Clamp(0, 1), 0);
                     }
                     else
                     {
@@ -147,6 +149,17 @@ namespace Vascular.Geometry.Surfaces
                 var sep = Vector3.Distance(C, c);
                 return r + radius - sep;
             }
+        }
+
+        /// <summary>
+        /// See <see cref="Overlap(Vector3, Vector3, Vector3, double, double)"/>.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="s2"></param>
+        /// <returns></returns>
+        public double Overlap(SegmentSurfaceTest other, double s2)
+        {
+            return Overlap(other.start, other.end, other.direction, other.radius, s2);
         }
     }
 }

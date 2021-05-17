@@ -158,8 +158,8 @@ namespace Vascular.Geometry
         public static Vector3 operator ^(Vector3 l, Vector3 r)
         {
             return new(
-                l.y * r.z - l.z * r.y, 
-                l.z * r.x - l.x * r.z, 
+                l.y * r.z - l.z * r.y,
+                l.z * r.x - l.x * r.z,
                 l.x * r.y - l.y * r.x);
         }
 
@@ -447,6 +447,19 @@ namespace Vascular.Geometry
             x = other.x;
             y = other.y;
             z = other.z;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="tol"></param>
+        /// <returns></returns>
+        public bool Equals(Vector3 other, double tol)
+        {
+            return Math.Abs(x - other.x) <= tol
+                && Math.Abs(y - other.y) <= tol
+                && Math.Abs(z - other.z) <= tol;
         }
     }
 }
