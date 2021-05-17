@@ -18,7 +18,11 @@ namespace Vascular.Functionality.Capillary
 
         public Network[] Networks { get; set; }
 
-        public Func<Segment, bool> PermittedIntersection { get; set; }
+        public Func<Segment, bool> PermittedIntersection { get; set; } = s => true;
+
+        public Func<Vector3, bool> PermittedVertex { get; set; } = x => true;
+
+        public Func<Vector3, Vector3, bool> PermittedEdge { get; set; } = (x, y) => true;
 
         public double MinOverlap { get; set; }
 
@@ -72,7 +76,8 @@ namespace Vascular.Functionality.Capillary
                     {
                         var z0 = new Vector3(i, j, k);
                         var x0 = this.Lattice.ToSpace(z0);
-                        if (!bounds.Intersects(x0))
+                        if (!bounds.Intersects(x0) ||
+                            !this.PermittedVertex(x0))
                         {
                             continue;
                         }
@@ -80,7 +85,8 @@ namespace Vascular.Functionality.Capillary
                         {
                             var z = z0 + c;
                             var x = this.Lattice.ToSpace(z);
-                            if (bounds.Intersects(x))
+                            if (bounds.Intersects(x) &&
+                                this.PermittedEdge(x0, x))
                             {
                                 var v0 = g.AddVertex(x0);
                                 var v = g.AddVertex(x);

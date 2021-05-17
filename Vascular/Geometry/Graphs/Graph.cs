@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Vascular.Geometry.Graphs
 {
@@ -106,7 +107,7 @@ namespace Vascular.Geometry.Graphs
         public void RemoveVertex(TVertex v)
         {
             V.Remove(v.P);
-            foreach (var e in v.E)
+            foreach (var e in v.E.ToArray())
             {
                 RemoveEdge(e);
             }

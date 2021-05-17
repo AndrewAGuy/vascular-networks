@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Graphs;
 using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Functionality
 {
@@ -26,6 +25,16 @@ namespace Vascular.Functionality
         public abstract double GetRadius(TE e);
 
         public abstract bool IsIntersectionPermitted(Segment segment, double overlap);
+
+        public Segment Convert(TE e)
+        {
+            return new Segment()
+            {
+                Start = new Dummy() { Position = e.S.P },
+                End = new Dummy() { Position = e.E.P },
+                Radius = GetRadius(e)
+            };
+        }
 
         //public IEnumerable<Segment> Generate(AxialBounds totalBounds)
         //{
@@ -50,15 +59,24 @@ namespace Vascular.Functionality
             {
                 var start = edge.S.P;
                 var end = edge.E.P;
-                var dir = start - end;
+                var dir = end - start;
                 var rad = continuous.GetRadius(edge);
                 var queryBounds = new AxialBounds(start, end, rad);
                 var rem = false;
 
                 vessels.Query(queryBounds, test =>
                 {
+                    //var isect = new SegmentIntersection(continuous.Convert(edge), test.Segment, new Geometry.Generators.CubeGrayCode());
+                    //if (isect.Intersecting)
+                    //{
+                    //    rem = true;
+                    //}
                     var overlap = test.Overlap(start, end, dir, rad, 1e-8);
-                    if (overlap > 0)
+                    //if (isect.Intersecting && !overlap.Equals(isect.Overlap, 1.0e-6))
+                    //{
+                    //    throw new Exception();
+                    //}
+                    if (overlap >= 0)
                     {
                         if (!continuous.IsIntersectionPermitted(test.Segment, overlap))
                         {
