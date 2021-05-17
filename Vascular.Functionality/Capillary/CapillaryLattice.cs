@@ -10,46 +10,15 @@ using Vascular.Structure;
 
 namespace Vascular.Functionality.Capillary
 {
-    public class CapillaryLattice : Continuous<Vertex, Edge>
+    public class CapillaryLattice : CapillaryBase
     {
         public Lattice Lattice { get; set; }
-
-        public double Radius { get; set; }
-
-        public Network[] Networks { get; set; }
-
-        public Func<Segment, bool> PermittedIntersection { get; set; } = s => true;
 
         public Func<Vector3, bool> PermittedVertex { get; set; } = x => true;
 
         public Func<Vector3, Vector3, bool> PermittedEdge { get; set; } = (x, y) => true;
 
-        public double MinOverlap { get; set; }
-
-        public override double GetRadius(Edge e)
-        {
-            return this.Radius;
-            //return new Segment()
-            //{
-            //    Start = new Dummy()
-            //    {
-            //        Position = e.S.P
-            //    },
-            //    End = new Dummy()
-            //    {
-            //        Position = e.E.P
-            //    },
-            //    Radius = this.Radius
-            //};
-        }
-
-        public override bool IsIntersectionPermitted(Segment segment, double overlap)
-        {
-            return this.PermittedIntersection(segment)
-                && overlap >= this.MinOverlap;
-        }
-
-        public override Graph<Vertex, Edge> GenerateChunk(AxialBounds bounds)
+        public override (Graph<Vertex, Edge>, HashSet<Vector3>) GenerateChunk(AxialBounds bounds)
         {
             // Call with the bounds splitting halfway along the edges
             // Estimate number of points from volume and connectivity
@@ -66,6 +35,13 @@ namespace Vascular.Functionality.Capillary
                 .GetTotalBounds();
             var (iMin, jMin, kMin) = bv.Lower.Floor;
             var (iMax, jMax, kMax) = bv.Upper.Ceiling;
+
+            // Prepare to extract vertices that touch the face - estimate as though it's a cube
+            var faceVertices = 2 * (
+                (iMax - iMin) * (jMax - jMin) + 
+                (jMax - jMin) * (kMax - kMin) + 
+                (kMax - kMin) * (iMax - iMin));
+            var chunkExterior = new HashSet<Vector3>(faceVertices);
 
             // Loop and create edges
             for (var i = iMin; i <= iMax; ++i)
@@ -85,20 +61,26 @@ namespace Vascular.Functionality.Capillary
                         {
                             var z = z0 + c;
                             var x = this.Lattice.ToSpace(z);
-                            if (bounds.Intersects(x) &&
-                                this.PermittedEdge(x0, x))
+                            if (bounds.Intersects(x))
                             {
-                                var v0 = g.AddVertex(x0);
-                                var v = g.AddVertex(x);
-                                var e = new Edge(v0, v);
-                                g.AddEdge(e);
+                                if (this.PermittedEdge(x0, x))
+                                {
+                                    var v0 = g.AddVertex(x0);
+                                    var v = g.AddVertex(x);
+                                    var e = new Edge(v0, v);
+                                    g.AddEdge(e);
+                                }
+                            }
+                            else
+                            {
+                                chunkExterior.Add(x0);
                             }
                         }
                     }
                 }
             }
 
-            // Identify edges that intersect major vessels, or intersect minor vessels by an insufficient amount.
+            // Identify edges that intersect major vessels, or intersect minor vessels by an insufficient amount
             var segments = new List<Segment>();
             foreach (var n in this.Networks)
             {
@@ -107,12 +89,25 @@ namespace Vascular.Functionality.Capillary
             var segTree = AxialBoundsBinaryTree.Create(segments.Select(seg => new SegmentSurfaceTest(seg)));
             Continuous.RemoveIllegalIntersections(g, segTree, this);
 
-            return g;
+            // Remove leaf branches, except for those that are at the chunk boundary
+            g.RemoveLeafBranches(v => chunkExterior.Contains(v.P));
+
+            return (g, chunkExterior);
         }
 
-        protected override void StitchChunks(Graph<Vertex, Edge> existing, Graph<Vertex, Edge> adding)
+        protected override void StitchChunks(Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
+            Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary)
         {
-            throw new NotImplementedException();
+            // Find vertices that are on the boundary faces and merge them
+            foreach (var ab in addingBoundary)
+            {
+                // Possible that vertex exists in both, as bounds checking uses weak comparison
+                if (existing.V.TryGetValue(ab, out var ev))
+                {
+                    
+                }
+                
+            }
         }
     }
 }

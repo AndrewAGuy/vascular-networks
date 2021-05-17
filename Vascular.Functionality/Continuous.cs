@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Graphs;
 using Vascular.Geometry.Surfaces;
@@ -16,9 +17,10 @@ namespace Vascular.Functionality
         where TV : Vertex<TV, TE>, new()
         where TE : Edge<TV, TE>, new()
     {
-        public abstract Graph<TV, TE> GenerateChunk(AxialBounds bounds);
+        public abstract (Graph<TV, TE> graph, HashSet<Vector3> boundary) GenerateChunk(AxialBounds bounds);
 
-        protected abstract void StitchChunks(Graph<TV, TE> existing, Graph<TV, TE> adding);
+        protected abstract void StitchChunks(Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
+            Graph<TV, TE> adding, HashSet<Vector3> addingBoundary);
 
         public Func<AxialBounds, IEnumerable<AxialBounds>> ChunkGenerator { get; set; }
 
