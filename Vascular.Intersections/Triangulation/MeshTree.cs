@@ -43,6 +43,15 @@ namespace Vascular.Intersections.Triangulation
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="mesh"></param>
+        public MeshTree(IEnumerable<TriangleSurfaceTest> mesh)
+        {
+            this.Tree = AxialBoundsBinaryTree.Create(mesh);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
         public IEnumerable<TriangleIntersection> Evaluate(Network network)

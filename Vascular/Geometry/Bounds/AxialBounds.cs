@@ -162,6 +162,23 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
+        /// Strict inequality at the upper end, allows tiling by bounds that assigns each point
+        /// to only one set.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public bool IntersectsOpenUpper(Vector3 v)
+        {
+            return
+               v.x < this.Upper.x &&
+               v.y < this.Upper.y &&
+               v.z < this.Upper.z &&
+               v.x >= this.Lower.x &&
+               v.y >= this.Lower.y &&
+               v.z >= this.Lower.z;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="b"></param>
