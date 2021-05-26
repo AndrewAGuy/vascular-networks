@@ -167,7 +167,9 @@ namespace Vascular.Structure.Actions
                     var p = this.TryUpdate
                         ? new Func<BranchAction, bool>(t => !t.Intersects(action) && t.Update())
                         : new Func<BranchAction, bool>(t => !t.Intersects(action) && t.IsValid());
-                    return (actions.Skip(failed).Where(p), taken + 1);
+                    // Calling ToList fixes error due to t.Update() mutating state and then dereferencing null
+                    // when iterating for a second time with actions.Any().
+                    return (actions.Skip(failed).Where(p).ToList(), taken + 1);
                 }
             }
             return (Enumerable.Empty<BranchAction>(), taken);
