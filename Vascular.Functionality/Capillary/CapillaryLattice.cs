@@ -38,8 +38,8 @@ namespace Vascular.Functionality.Capillary
 
             // Prepare to extract vertices that touch the face - estimate as though it's a cube
             var faceVertices = 2 * (
-                (iMax - iMin) * (jMax - jMin) + 
-                (jMax - jMin) * (kMax - kMin) + 
+                (iMax - iMin) * (jMax - jMin) +
+                (jMax - jMin) * (kMax - kMin) +
                 (kMax - kMin) * (iMax - iMin));
             var chunkExterior = new HashSet<Vector3>(faceVertices);
 
@@ -52,7 +52,7 @@ namespace Vascular.Functionality.Capillary
                     {
                         var z0 = new Vector3(i, j, k);
                         var x0 = this.Lattice.ToSpace(z0);
-                        if (!bounds.Intersects(x0) ||
+                        if (!bounds.IntersectsOpenUpper(x0) ||
                             !this.PermittedVertex(x0))
                         {
                             continue;
@@ -61,7 +61,7 @@ namespace Vascular.Functionality.Capillary
                         {
                             var z = z0 + c;
                             var x = this.Lattice.ToSpace(z);
-                            if (bounds.Intersects(x))
+                            if (bounds.IntersectsOpenUpper(x))
                             {
                                 if (this.PermittedEdge(x0, x))
                                 {
@@ -101,12 +101,70 @@ namespace Vascular.Functionality.Capillary
             // Find vertices that are on the boundary faces and merge them
             foreach (var ab in addingBoundary)
             {
-                // Possible that vertex exists in both, as bounds checking uses weak comparison
-                if (existing.V.TryGetValue(ab, out var ev))
+                // Should not be possible to have vertices present in both boundaries, as we use strict inequality
+                // at the upper boundary and all vertex positions have followed the same transform from integral
+                // coordinates, so will have been generated at the exact same values.
+
+            }
+        }
+
+        public static IEnumerable<Segment> ConvertMerging(Graph<Vertex, Edge> graph, Lattice lattice, Func<Edge, Segment> convert)
+        {
+            var visited = new HashSet<Edge>(graph.E.Count);
+            var C = lattice.VoronoiCell.Connections;
+
+            Vertex walkDirection(Vector3 startIndex, Vector3 directionIndex)
+            {
+                var xStart = lattice.ToSpace(startIndex);
+                if (!graph.V.TryGetValue(xStart, out var vStart))
                 {
-                    
+                    return null;
                 }
-                
+
+                var index = startIndex;
+                while (true)
+                {
+                    // Firstly, does the next vertex in this direction exist?
+                    index += directionIndex;
+                    var xEnd = lattice.ToSpace(index);
+                    if (!graph.V.TryGetValue(xEnd, out var vEnd))
+                    {
+                        return vStart;
+                    }
+                    // Does the edge exist?
+                    var edgeTest = new Edge(vStart, vEnd);
+                    if (!graph.E.TryGetValue(edgeTest, out var edge))
+                    {
+                        return vStart;
+                    }
+                    // Has it been visited already?
+                    if (visited.Contains(edge))
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        // Update and progress to next vertex
+                        visited.Add(edge);
+                        vStart = vEnd;
+                    }
+                }
+            }
+
+            foreach (var v in graph.V.Values)
+            {
+                var index = lattice.ClosestVectorBasis(v.P);
+                // Rather inefficiently, test each direction both forwards and back.
+                // TODO: perhaps force lattice directions to be such that the second half is the first in reverse?
+                foreach (var c in C)
+                {
+                    var vP = walkDirection(index, c);
+                    var vN = walkDirection(index, -c);
+                    if (vP != null && vN != null && vP != vN)
+                    {
+                        yield return convert(new Edge(vN, vP));
+                    }
+                }
             }
         }
     }

@@ -50,8 +50,71 @@ namespace Vascular.Functionality
         //}
     }
 
+    /// <summary>
+    /// Helper functions for continuous functional units
+    /// </summary>
     public static class Continuous
     {
+        public enum FaceViolation : int
+        {
+            LowerX = 0,
+            LowerY = 1,
+            LowerZ = 2,
+            UpperX = 3,
+            UpperY = 4,
+            UpperZ = 5
+        }
+
+        public static bool AddViolations(AxialBounds bounds, Vector3 point, Vector3 other, ICollection<Vector3>[] faces)
+        {
+            var u = bounds.Upper;
+            var l = bounds.Lower;
+
+            var inside = true;
+            if (other.x > u.x)
+            {
+                faces[(int)FaceViolation.UpperX].Add(point);
+                inside = false;
+            }
+            else if (other.x < l.x)
+            {
+                faces[(int)FaceViolation.LowerX].Add(point);
+                inside = false;
+            }
+
+            if (other.y > u.y)
+            {
+                faces[(int)FaceViolation.UpperY].Add(point);
+                inside = false;
+            }
+            else if (other.y < l.y)
+            {
+                faces[(int)FaceViolation.LowerY].Add(point);
+                inside = false;
+            }
+
+            if (other.z > u.z)
+            {
+                faces[(int)FaceViolation.UpperZ].Add(point);
+                inside = false;
+            }
+            else if (other.z < l.z)
+            {
+                faces[(int)FaceViolation.LowerZ].Add(point);
+                inside = false;
+            }
+
+            return inside;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="vessels"></param>
+        /// <param name="continuous"></param>
         public static void RemoveIllegalIntersections<TV, TE>(Graph<TV, TE> graph,
             IAxialBoundsQueryable<SegmentSurfaceTest> vessels, Continuous<TV, TE> continuous)
             where TV : Vertex<TV, TE>, new()
@@ -68,16 +131,7 @@ namespace Vascular.Functionality
 
                 vessels.Query(queryBounds, test =>
                 {
-                    //var isect = new SegmentIntersection(continuous.Convert(edge), test.Segment, new Geometry.Generators.CubeGrayCode());
-                    //if (isect.Intersecting)
-                    //{
-                    //    rem = true;
-                    //}
                     var overlap = test.Overlap(start, end, dir, rad, 1e-8);
-                    //if (isect.Intersecting && !overlap.Equals(isect.Overlap, 1.0e-6))
-                    //{
-                    //    throw new Exception();
-                    //}
                     if (overlap >= 0)
                     {
                         if (!continuous.IsIntersectionPermitted(test.Segment, overlap))

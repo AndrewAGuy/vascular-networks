@@ -13,7 +13,6 @@
     <Folder Include="Artificial\Mixer\" />
     <Folder Include="Lung\" />
     <Folder Include="Kidney\" />
-    <Folder Include="Liver\" />
   </ItemGroup>
 
 </Project>
