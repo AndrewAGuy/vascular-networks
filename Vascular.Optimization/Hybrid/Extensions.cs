@@ -245,7 +245,7 @@ namespace Vascular.Optimization.Hybrid
         {
             var cost = double.PositiveInfinity;
             var oldCost = double.PositiveInfinity;
-            hm.ConfigureExector = ex =>
+            hm.ConfigureExecutor = ex =>
             {
                 ex.IsAcceptable = () =>
                 {

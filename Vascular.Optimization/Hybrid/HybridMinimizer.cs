@@ -79,7 +79,7 @@ namespace Vascular.Optimization.Hybrid
         /// <summary>
         /// Can attach pre and post action hooks with this, as well as combine or overwrite costs and predicates.
         /// </summary>
-        public Action<TopologyExecutor> ConfigureExector { get; set; }
+        public Action<TopologyExecutor> ConfigureExecutor { get; set; }
 
         /// <summary>
         /// Executed when valid actions have been ranked.
@@ -117,7 +117,7 @@ namespace Vascular.Optimization.Hybrid
                     return true;
                 };
 
-                this.ConfigureExector?.Invoke(executor);
+                this.ConfigureExecutor?.Invoke(executor);
                 taken = executor.Iterate(actions);
             }
             else
@@ -148,7 +148,7 @@ namespace Vascular.Optimization.Hybrid
                     filtered = ranked.Select(a => a.a);
                 }
 
-                this.ConfigureExector?.Invoke(executor);
+                this.ConfigureExecutor?.Invoke(executor);
                 taken = executor.IterateOrdered(filtered);
             }
 
