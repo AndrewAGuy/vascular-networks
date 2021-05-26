@@ -94,7 +94,7 @@ namespace Vascular.Optimization.Topological
                 var d = c - p;
                 var l2 = d.LengthSquared;
                 var rT2 = Math.Pow((t.Parent.Radius + t.Child.Radius) * captureFactor, 2);
-                if (l2 < rT2)
+                if (l2 <= rT2)
                 {
                     return true;
                 }
@@ -102,7 +102,7 @@ namespace Vascular.Optimization.Topological
                 var lf = LinearAlgebra.LineFactor(c, d, t.Position);
                 var lx = c + lf * d;
                 var p2 = Vector3.DistanceSquared(t.Position, lx);
-                return p2 > deviationRatio * l2;
+                return p2 <= deviationRatio * l2;
             };
         }
 

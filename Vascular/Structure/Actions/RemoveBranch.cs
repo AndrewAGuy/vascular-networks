@@ -64,5 +64,27 @@ namespace Vascular.Structure.Actions
         {
             return a.IsRooted;
         }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return a.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return obj is RemoveBranch r && a == r.a;
+        }
+
+        /// <summary>
+        /// For now, this is treated as irreversible due to the lack of control over the <see cref="OnCull"/> action.
+        /// </summary>
+        /// <param name="propagateLogical"></param>
+        /// <param name="propagatePhysical"></param>
+        public override void Reverse(bool propagateLogical = true, bool propagatePhysical = false)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -62,5 +62,11 @@
         {
             return a.GetHashCode() ^ b.GetHashCode();
         }
+
+        /// <inheritdoc/>
+        public override void Reverse(bool propagateLogical = true, bool propagatePhysical = false)
+        {
+            Execute(propagateLogical, propagatePhysical);
+        }
     }
 }
