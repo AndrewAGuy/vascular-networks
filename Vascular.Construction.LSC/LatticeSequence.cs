@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Vascular.Construction.LSC
@@ -55,6 +56,11 @@ namespace Vascular.Construction.LSC
         private int maxGenerations;
 
         /// <summary>
+        /// Instead of registering at the <see cref="LatticeState"/> level, can register callbacks here.
+        /// </summary>
+        public Action AfterIteration { get; set; }
+
+        /// <summary>
         /// The network already contains some branches.
         /// </summary>
         public void Initialize()
@@ -62,6 +68,7 @@ namespace Vascular.Construction.LSC
             state.Initialize();
             generations = 0;
             maxGenerations = state.GenerationsDown;
+            state.OnEntry?.Invoke();
         }
 
         /// <summary>
@@ -89,16 +96,18 @@ namespace Vascular.Construction.LSC
             state.Spread();
             ++generations;
 
+            var result = true;
             if (state.Exterior.Count == 0)
             {
-                return Refine();
+                result = Refine();
             }
-
-            if (maxGenerations > 0 && generations == maxGenerations)
+            else if (maxGenerations > 0 && generations == maxGenerations)
             {
                 Coarsen();
             }
-            return true;
+
+            this.AfterIteration?.Invoke();
+            return result;
         }
 
         /// <summary>
@@ -110,27 +119,28 @@ namespace Vascular.Construction.LSC
             {
 
             }
+            state.OnExit?.Invoke();
         }
 
         private bool Refine()
         {
-            if (this.Current.Next is not LinkedListNode<LatticeState> next)
+            if (currentNode.Next is not LinkedListNode<LatticeState> next)
             {
                 return false;
             }
 
             if (next.Value.SingleInterior != null || next.Value.MultipleInterior != null)
             {
-                this.Current.Value.OnExit?.Invoke();
-                this.Current.Value.BeforeReRefineAction?.Invoke();
+                state.OnExit?.Invoke();
+                state.BeforeReRefineAction?.Invoke();
                 next.Value.Refine(next.Value.ReintroduceDown);
                 next.Value.OnEntry?.Invoke();
                 next.Value.AfterReRefineAction?.Invoke();
             }
             else
             {
-                this.Current.Value.OnExit?.Invoke();
-                this.Current.Value.BeforeRefineAction?.Invoke();
+                state.OnExit?.Invoke();
+                state.BeforeRefineAction?.Invoke();
                 next.Value.Initialize();
                 next.Value.OnEntry?.Invoke();
                 next.Value.AfterRefineAction?.Invoke();
@@ -138,7 +148,7 @@ namespace Vascular.Construction.LSC
 
             this.Current = next;
             generations = 0;
-            maxGenerations = this.Current.Value.GenerationsDown;
+            maxGenerations = state.GenerationsDown;
             return true;
         }
 
@@ -150,20 +160,20 @@ namespace Vascular.Construction.LSC
         private void Coarsen()
         {
             if (!this.CanCoarsen ||
-                this.Current.Previous is not LinkedListNode<LatticeState> previous)
+                currentNode.Previous is not LinkedListNode<LatticeState> previous)
             {
                 return;
             }
 
-            this.Current.Value.OnExit?.Invoke();
-            this.Current.Value.BeforeCoarsenAction?.Invoke();
-            previous.Value.Coarsen(this.Current.Value, previous.Value.ReintroduceUp);
+            state.OnExit?.Invoke();
+            state.BeforeCoarsenAction?.Invoke();
+            previous.Value.Coarsen(state, previous.Value.ReintroduceUp);
             previous.Value.OnEntry?.Invoke();
             previous.Value.AfterCoarsenAction?.Invoke();
 
             this.Current = previous;
             generations = 0;
-            maxGenerations = this.Current.Value.GenerationsUp;
+            maxGenerations = state.GenerationsUp;
         }
     }
 }
