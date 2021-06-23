@@ -5,7 +5,9 @@ namespace Vascular.Geometry.Graphs
     /// <summary>
     /// 
     /// </summary>
-    public class Vertex
+    public class Vertex<TVertex, TEdge>
+        where TVertex : Vertex<TVertex, TEdge>
+        where TEdge : Edge<TVertex, TEdge>
     {
         /// <summary>
         /// 
@@ -19,11 +21,19 @@ namespace Vascular.Geometry.Graphs
         /// <summary>
         /// 
         /// </summary>
+        public Vertex()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 P;
 
         /// <summary>
         /// 
         /// </summary>
-        public LinkedList<Edge> E = new LinkedList<Edge>();
+        public LinkedList<TEdge> E = new();
     }
 }

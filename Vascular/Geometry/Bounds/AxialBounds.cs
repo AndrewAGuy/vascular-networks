@@ -94,7 +94,7 @@ namespace Vascular.Geometry.Bounds
         /// <summary>
         /// 
         /// </summary>
-        public static AxialBounds Infinite => new AxialBounds(new Vector3(double.NegativeInfinity), new Vector3(double.PositiveInfinity));
+        public static AxialBounds Infinite => new(new Vector3(double.NegativeInfinity), new Vector3(double.PositiveInfinity));
 
         /// <summary>
         /// 

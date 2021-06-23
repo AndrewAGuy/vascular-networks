@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Construction.Fract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.Analysis", "Vascular.Analysis\Vascular.Analysis.csproj", "{144CC4F4-38BC-4B8F-9D6D-6681A4B09545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.IO.Text", "Vascular.IO.Text\Vascular.IO.Text.csproj", "{C399238B-7580-4BEF-8510-54FAACF95E04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vascular.IO.Text", "Vascular.IO.Text\Vascular.IO.Text.csproj", "{C399238B-7580-4BEF-8510-54FAACF95E04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vascular.Functionality", "Vascular.Functionality\Vascular.Functionality.csproj", "{404A713B-A029-44B5-ABDD-639D99074AB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{C399238B-7580-4BEF-8510-54FAACF95E04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C399238B-7580-4BEF-8510-54FAACF95E04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C399238B-7580-4BEF-8510-54FAACF95E04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{404A713B-A029-44B5-ABDD-639D99074AB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{404A713B-A029-44B5-ABDD-639D99074AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{404A713B-A029-44B5-ABDD-639D99074AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{404A713B-A029-44B5-ABDD-639D99074AB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

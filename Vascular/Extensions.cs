@@ -105,6 +105,19 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Compares with tolerance. Will behave weird with <see cref="double.NaN"/>, <see cref="double.PositiveInfinity"/>
+        /// and <see cref="double.NegativeInfinity"/>.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static bool Equals(this double a, double b, double t)
+        {
+            return Math.Abs(a - b) <= t;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="val"></param>

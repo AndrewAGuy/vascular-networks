@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vascular\Vascular.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Artificial\Exchanger\" />
+    <Folder Include="Artificial\Mixer\" />
+    <Folder Include="Lung\" />
+    <Folder Include="Kidney\" />
+  </ItemGroup>
+
+</Project>
