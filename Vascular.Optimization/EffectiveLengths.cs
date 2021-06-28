@@ -160,18 +160,30 @@ namespace Vascular.Optimization
         public Vector3 PositionGradient(Bifurcation bf)
         {
             var p = bf.Upstream;
-            var c0 = bf.Downstream[0];
-            var c1 = bf.Downstream[1];
+            //var c0 = bf.Downstream[0];
+            //var c1 = bf.Downstream[1];
             var gp = this.Gradients[p];
-            var g0 = this.Gradients[c0];
-            var g1 = this.Gradients[c1];
+            //var g0 = this.Gradients[c0];
+            //var g1 = this.Gradients[c1];
             var gd = this.Cache.Local[bf];
+            var (f0, f1) = bf.Fractions;
+            var ls0 = this.Values[bf.Downstream[0]];
+            var ls1 = this.Values[bf.Downstream[1]];
+
+            var dLp_dx = this.ExpL * (
+                Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx +
+                Math.Pow(gd.L0, this.ExpDL) * Math.Pow(f0, this.ExpR) * gd.dL0_dx +
+                Math.Pow(gd.L1, this.ExpDL) * Math.Pow(f1, this.ExpR) * gd.dL1_dx)
+                + ls0 * this.ExpR * Math.Pow(f0, this.ExpDR) * gd.df0_dx
+                + ls1 * this.ExpR * Math.Pow(f1, this.ExpDR) * gd.df1_dx;
+
             return gp.dLe_dR * gd.dRp_dx
-                + g0.dLe_dR * gd.dL0_dx
-                + g1.dLe_dR * gd.dL1_dx
-                + gp.dLe_dL * this.ExpL * Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx
-                + g0.dLe_dL * this.ExpL * Math.Pow(gd.L0, this.ExpDL) * gd.dL0_dx
-                + g1.dLe_dL * this.ExpL * Math.Pow(gd.L1, this.ExpDL) * gd.dL1_dx;
+                + gp.dLe_dL * dLp_dx;
+            //+ g0.dLe_dR * gd.dL0_dx
+            //+ g1.dLe_dR * gd.dL1_dx
+            //+ gp.dLe_dL * this.ExpL * Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx
+            //+ g0.dLe_dL * this.ExpL * Math.Pow(gd.L0, this.ExpDL) * gd.dL0_dx
+            //+ g1.dLe_dL * this.ExpL * Math.Pow(gd.L1, this.ExpDL) * gd.dL1_dx;
         }
 
         /// <summary>
@@ -192,6 +204,47 @@ namespace Vascular.Optimization
             var dL_dx = dp / lp - dc / lc;
             return gb.dLe_dR * dL_dx
                 + gb.dLe_dL * this.ExpL * Math.Pow(bl, this.ExpDL) * dL_dx;
+        }
+
+        public void Propagate(IMobileNode n)
+        {
+            switch (n)
+            {
+                case Transient tr:
+                    Propagate(tr.Parent.Branch);
+                    break;
+                case Bifurcation bf:
+                    Update(bf.Downstream[0]);
+                    Update(bf.Downstream[1]);
+                    Propagate(bf.Upstream);
+                    break;
+            }
+        }
+
+        public double Update(Branch b)
+        {
+            var e = Math.Pow(b.Length, this.ExpL);
+            if (b.End is Bifurcation bf)
+            {
+                var (f0, f1) = bf.Fractions;
+                e += Math.Pow(f0, this.ExpR) * this.Values[bf.Downstream[0]];
+                e += Math.Pow(f1, this.ExpR) * this.Values[bf.Downstream[1]];
+            }
+            this.Values[b] = e;
+            return e;
+        }
+
+        public void Propagate(Branch b)
+        {
+            if (b.Parent is Branch p)
+            {
+                Update(b);
+                Propagate(p);
+            }
+            else
+            {
+                this.Value = Update(b);
+            }
         }
     }
 }

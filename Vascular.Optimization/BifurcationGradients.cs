@@ -42,20 +42,20 @@ namespace Vascular.Optimization
             var u1 = Math.Pow(f1, 4) / rs1;
             var u = u0 + u1;
             var dRp_du = -Math.Pow(u, -2);
-            var du_df1 = 4 * u0 / f0;
-            var du_df2 = 4 * u1 / f1;
+            var du_df0 = 4 * u0 / f0;
+            var du_df1 = 4 * u1 / f1;
 
-            var du_dR1 = -u0 / rs0 + du_df1 * df0_dR0 + du_df2 * df1_dR0;
-            var du_dR2 = -u1 / rs1 + du_df1 * df0_dR1 + du_df2 * df1_dR1;
-            dRp_dR0 = dRp_du * du_dR1;
-            dRp_dR1 = dRp_du * du_dR2;
+            var du_dR0 = -u0 / rs0 + du_df0 * df0_dR0 + du_df1 * df1_dR0;
+            var du_dR1 = -u1 / rs1 + du_df0 * df0_dR1 + du_df1 * df1_dR1;
+            dRp_dR0 = dRp_du * du_dR0;
+            dRp_dR1 = dRp_du * du_dR1;
 
             (df0_dQ0, df1_dQ0) = sr.FlowGradient(rs0, Q0, rs1, Q1);
             (df1_dQ1, df0_dQ1) = sr.FlowGradient(rs1, Q1, rs0, Q0);
-            var du_dQ1 = du_df1 * df0_dQ0 + du_df2 * df1_dQ0;
-            var du_dQ2 = du_df1 * df0_dQ1 + du_df2 * df1_dQ1;
-            dRp_dQ0 = dRp_du * du_dQ1;
-            dRp_dQ1 = dRp_du * du_dQ2;
+            var du_dQ0 = du_df0 * df0_dQ0 + du_df1 * df1_dQ0;
+            var du_dQ1 = du_df0 * df0_dQ1 + du_df1 * df1_dQ1;
+            dRp_dQ0 = dRp_du * du_dQ0;
+            dRp_dQ1 = dRp_du * du_dQ1;
 
             dRp_dx = dLp_dx + dRp_dR0 * dL0_dx + dRp_dR1 * dL1_dx;
             df0_dx = df0_dR0 * dL0_dx + df0_dR1 * dL1_dx;
