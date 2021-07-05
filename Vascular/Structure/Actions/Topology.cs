@@ -1,4 +1,7 @@
-﻿using Vascular.Structure.Nodes;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions
 {
@@ -314,6 +317,81 @@ namespace Vascular.Structure.Actions
                 return (tr, CreateBifurcation(from.Segments[0], moving.End));
             }
             return (null, null);
+        }
+
+        /// <summary>
+        /// Given a comparer and a starting branch, canonicalize the network. This places children in order according
+        /// to their 'minimal' terminal downstream. Terminals must never compare equal for this to work.
+        /// </summary>
+        /// <param name="from"></param>
+        public static void Canonicalize(Branch from, IComparer<Terminal> comparer)
+        {
+            _ = Canonicalize(from.End, comparer);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bf"></param>
+        public static void SwapBifurcationOrder(Bifurcation bf)
+        {
+            bf.Children.Swap(0, 1);
+            bf.UpdateDownstream();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        /// <param name="keySelector"></param>
+        /// <param name="comparer"></param>
+        /// <returns></returns>
+        public static T OrderDownstream<T>(BranchNode node, Func<Branch, T> keySelector, IComparer<T> comparer)
+        {
+            var pairs = node.Downstream.
+                Select(branch =>
+                {
+                    var key = keySelector(branch);
+                    return (branch, key);
+                })
+                .OrderBy(pair => pair.key, comparer)
+                .ToArray();
+            for (var i = 0; i < pairs.Length; ++i)
+            {
+                node.Downstream[i] = pairs[i].branch;
+                node.Children[i] = node.Downstream[i].Segments[0];
+            }
+            return pairs[0].key;
+        }
+
+        private static Terminal Canonicalize(BranchNode node, IComparer<Terminal> comparer)
+        {
+            if (node is Terminal terminal)
+            {
+                return terminal;
+            }
+            else if (node is Bifurcation bifurcation)
+            {
+                var t0 = Canonicalize(bifurcation.Downstream[0].End, comparer);
+                var t1 = Canonicalize(bifurcation.Downstream[1].End, comparer);
+                switch (comparer.Compare(t0, t1))
+                {
+                    case > 0:
+                        SwapBifurcationOrder(bifurcation);
+                        return t1;
+
+                    case < 0:
+                        return t0;
+
+                    case 0:
+                        throw new TopologyException("Terminals have compared equal in canonicalization, possible ambiguity");
+                }
+            }
+            else
+            {
+                return OrderDownstream(node, branch => Canonicalize(branch.End, comparer), comparer);
+            }
         }
     }
 }

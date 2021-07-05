@@ -218,6 +218,54 @@ namespace Vascular
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="comparer"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static T Lesser<T>(this IComparer<T> comparer, T a, T b)
+        {
+            return comparer.Compare(a, b) switch
+            {
+                <= 0 => a,
+                > 0 => b
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="comparer"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static T Greater<T>(this IComparer<T> comparer, T a, T b)
+        {
+            return comparer.Compare(a, b) switch
+            {
+                >= 0 => a,
+                < 0 => b
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public static void Swap<T>(this IList<T> list, int a, int b)
+        {
+            var temp = list[a];
+            list[a] = list[b];
+            list[b] = temp;
+        }
+
+        /// <summary>
         /// Enumerates <paramref name="source"/>, launching a new task from each with <paramref name="run"/>.
         /// A semaphore is used to limit the number of concurrently running tasks to <paramref name="max"/>.
         /// Whether a task runs then waits for the semaphore, or whether task launching is delayed by the semaphore, is controlled by <paramref name="waitInside"/>.
