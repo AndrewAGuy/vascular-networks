@@ -39,25 +39,55 @@ namespace Vascular.Structure.Diagnostics
             }
             else if (node is Bifurcation bifurcation)
             {
-                return GetHashCode(bifurcation.Downstream[0].End) 
-                    ^ GetHashCode(bifurcation.Downstream[1].End);
+                return HashCode.Combine(
+                    GetHashCode(bifurcation.Downstream[0].End),
+                    GetHashCode(bifurcation.Downstream[1].End));
             }
             else
             {
-                var hashCode = GetHashCode(node.Downstream[0].End);
-                for (var i = 1; i < node.Downstream.Length; ++i)
+                var hashCode = new HashCode();
+                for (var i = 0; i < node.Downstream.Length; ++i)
                 {
-                    hashCode ^= GetHashCode(node.Downstream[i].End);
+                    hashCode.Add(GetHashCode(node.Downstream[i].End));
                 }
-                return hashCode;
+                return hashCode.ToHashCode();
             }
         }
 
         private bool CompareCanonicalized(Network x, Network y)
         {
-            var Tx = enumeratorX.Terminals(x.Root);
-            var Ty = enumeratorY.Terminals(y.Root);
-            return Tx.SequenceEqual(Ty, this.TerminalEqualityComparer);
+            var Bx = enumeratorX.Downstream(x.Root).GetEnumerator();
+            var By = enumeratorY.Downstream(y.Root).GetEnumerator();
+            while (true)
+            {
+                var mx = Bx.MoveNext();
+                var my = By.MoveNext();
+                switch (mx, my)
+                {
+                    case (false, false):
+                        return true;
+
+                    case (false, true):
+                    case (true, false):
+                        return false;
+
+                    case (true, true):
+                        break;
+                }
+                var nx = Bx.Current.End;
+                var ny = By.Current.End;
+                if (nx.GetType() != ny.GetType())
+                {
+                    return false;
+                }
+                if (nx is Terminal tx && ny is Terminal ty)
+                {
+                    if (!this.TerminalEqualityComparer.Equals(tx, ty))
+                    {
+                        return false;
+                    }
+                }
+            }
         }
 
         private readonly BranchEnumerator enumeratorX = new(), enumeratorY = new();

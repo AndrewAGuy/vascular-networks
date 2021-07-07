@@ -87,15 +87,9 @@ namespace Vascular.Optimization
         public Vector3 PositionGradient(Bifurcation bf)
         {
             var p = bf.Upstream;
-            //var c0 = bf.Downstream[0];
-            //var c1 = bf.Downstream[1];
             var gd = this.Local[bf];
             var gp = this.Global[p];
-            //var g0 = this.Global[c0];
-            //var g1 = this.Global[c1];
             return gp.dRe_dR * gd.dRp_dx;
-               // + g0.dRe_dR * gd.dL0_dx
-               // + g1.dRe_dR * gd.dL1_dx;
         }
 
         /// <summary>

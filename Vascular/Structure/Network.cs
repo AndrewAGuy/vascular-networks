@@ -132,7 +132,7 @@ namespace Vascular.Structure
             var T = new List<Transient>(b.Segments.Count);
             foreach (var t in b.Transients)
             {
-                T.Add(new Transient() { Position = t.Position });
+                T.Add(new Transient() { Position = t.Position.Copy() });
             }
             var f = new Segment();
             var l = f;
@@ -148,7 +148,7 @@ namespace Vascular.Structure
             switch (b.End)
             {
                 case Terminal t:
-                    c.End = new Terminal(t.Position, t.Flow)
+                    c.End = new Terminal(t.Position.Copy(), t.Flow)
                     {
                         Parent = l,
                         Network = n
@@ -159,7 +159,7 @@ namespace Vascular.Structure
                     c.End = new Bifurcation()
                     {
                         Parent = l,
-                        Position = s.Position,
+                        Position = s.Position.Copy(),
                         Network = n
                     };
                     l.End = c.End;

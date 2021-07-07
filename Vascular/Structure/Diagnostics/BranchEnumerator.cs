@@ -37,6 +37,7 @@ namespace Vascular.Structure.Diagnostics
         /// <returns></returns>
         public IEnumerable<Branch> Downstream(Branch branch, bool include = true)
         {
+            stack.Clear();
             if (include)
             {
                 yield return branch;
@@ -85,6 +86,7 @@ namespace Vascular.Structure.Diagnostics
         /// <returns></returns>
         public IEnumerable<Terminal> Terminals(Branch branch)
         {
+            stack.Clear();
             stack.Push(branch);
             while (stack.Count > 0)
             {

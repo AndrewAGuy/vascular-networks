@@ -160,11 +160,7 @@ namespace Vascular.Optimization
         public Vector3 PositionGradient(Bifurcation bf)
         {
             var p = bf.Upstream;
-            //var c0 = bf.Downstream[0];
-            //var c1 = bf.Downstream[1];
             var gp = this.Gradients[p];
-            //var g0 = this.Gradients[c0];
-            //var g1 = this.Gradients[c1];
             var gd = this.Cache.Local[bf];
             var (f0, f1) = bf.Fractions;
             var ls0 = this.Values[bf.Downstream[0]];
@@ -179,11 +175,6 @@ namespace Vascular.Optimization
 
             return gp.dLe_dR * gd.dRp_dx
                 + gp.dLe_dL * dLp_dx;
-            //+ g0.dLe_dR * gd.dL0_dx
-            //+ g1.dLe_dR * gd.dL1_dx
-            //+ gp.dLe_dL * this.ExpL * Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx
-            //+ g0.dLe_dL * this.ExpL * Math.Pow(gd.L0, this.ExpDL) * gd.dL0_dx
-            //+ g1.dLe_dL * this.ExpL * Math.Pow(gd.L1, this.ExpDL) * gd.dL1_dx;
         }
 
         /// <summary>
@@ -206,6 +197,10 @@ namespace Vascular.Optimization
                 + gb.dLe_dL * this.ExpL * Math.Pow(bl, this.ExpDL) * dL_dx;
         }
 
+        /// <summary>
+        /// Updates all affected branches and propagates
+        /// </summary>
+        /// <param name="n"></param>
         public void Propagate(IMobileNode n)
         {
             switch (n)
@@ -221,6 +216,11 @@ namespace Vascular.Optimization
             }
         }
 
+        /// <summary>
+        /// Updates a branch by recalculating its length and pulling in the downstream values
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public double Update(Branch b)
         {
             var e = Math.Pow(b.Length, this.ExpL);
@@ -234,6 +234,10 @@ namespace Vascular.Optimization
             return e;
         }
 
+        /// <summary>
+        /// Propagates a change upstream from this branch
+        /// </summary>
+        /// <param name="b"></param>
         public void Propagate(Branch b)
         {
             if (b.Parent is Branch p)
