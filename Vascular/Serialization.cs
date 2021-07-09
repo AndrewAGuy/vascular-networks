@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Vascular
@@ -32,6 +33,28 @@ namespace Vascular
             {
                 types.Add(type);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static double ParseDouble(string text)
+        {
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                ? number : double.NaN;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static string WriteDouble(double number)
+        {
+            return number.ToString("G17", CultureInfo.InvariantCulture);
         }
     }
 }

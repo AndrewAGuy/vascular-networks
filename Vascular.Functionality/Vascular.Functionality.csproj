@@ -11,8 +11,8 @@
   <ItemGroup>
     <Folder Include="Artificial\Exchanger\" />
     <Folder Include="Artificial\Mixer\" />
-    <Folder Include="Lung\" />
     <Folder Include="Kidney\" />
+    <Folder Include="Lung\" />
   </ItemGroup>
 
 </Project>

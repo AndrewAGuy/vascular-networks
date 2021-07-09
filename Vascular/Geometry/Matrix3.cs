@@ -13,9 +13,9 @@ namespace Vascular.Geometry
         /// 
         /// </summary>
         [DataMember]
-        public double 
+        public double
             m11 = 1.0, m12 = 0.0, m13 = 0.0,
-            m21 = 0.0, m22 = 1.0, m23 = 0.0, 
+            m21 = 0.0, m22 = 1.0, m23 = 0.0,
             m31 = 0.0, m32 = 0.0, m33 = 1.0;
 
         /// <summary>
@@ -211,6 +211,35 @@ namespace Vascular.Geometry
                 c, -s, 0,
                 s, c, 0,
                 0, 0, 1);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        public static Matrix3 AxisAngleRotation(Vector3 axis, double angle)
+        {
+            var c = Math.Cos(angle);
+            var C = 1.0 - c;
+            var s = Math.Sin(angle);
+            var x = axis.x;
+            var y = axis.y;
+            var z = axis.z;
+            var x2 = x * x * C;
+            var y2 = y * y * C;
+            var z2 = z * z * C;
+            var xy = x * y * C;
+            var yz = y * z * C;
+            var zx = z * x * C;
+            var sx = s * x;
+            var sy = s * y;
+            var sz = s * z;
+            return new(
+                c + x2, xy - sz, zx + sy,
+                xy + sz, c + y2, yz - sx,
+                zx - sy, yz + sx, c + z2);
         }
 
         /// <summary>

@@ -41,7 +41,7 @@ namespace Vascular.IO.Text
         public static void Write(TextWriter writer, IEnumerable<Segment> segments,
             char sepChar = ',', Func<double, string> convert = null)
         {
-            convert ??= d => d.ToString();
+            convert ??= Serialization.WriteDouble;
             foreach (var segment in segments)
             {
                 var start = segment.Start.Position;
@@ -60,17 +60,20 @@ namespace Vascular.IO.Text
         }
 
         /// <summary>
-        /// Reads a sequeuence of segments using the specified separator.
+        /// Reads a sequeuence of segments using the specified separator and conversion function.
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="sepChar"></param>
+        /// <param name="convert"></param>
         /// <returns></returns>
-        public static IEnumerable<Segment> Read(TextReader reader, char sepChar = ',')
+        public static IEnumerable<Segment> Read(TextReader reader, char sepChar = ',',
+            Func<string, double> convert = null)
         {
+            convert ??= Serialization.ParseDouble;
             for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
             {
                 var values = line.Split(sepChar)
-                    .Select(t => double.TryParse(t, out var d) ? d : double.NaN)
+                    .Select(convert)
                     .Where(d => !double.IsNaN(d)).ToList();
                 if (values.Count == 7)
                 {
