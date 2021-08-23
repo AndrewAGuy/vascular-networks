@@ -466,8 +466,7 @@ namespace Vascular.Optimization.Hybrid
             {
                 return;
             }
-            //var branches = enumerator.Downstream(this.Network.Root).ToList();
-            //var nodes = enumerator.MobileNodes(this.Network.Root);
+            
             foreach (var node in enumerator.MobileNodes(this.Network.Root)
                 .Where(n => this.Minimizer.MovingPredicate(n)))
             {

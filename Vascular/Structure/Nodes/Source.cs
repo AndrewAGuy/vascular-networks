@@ -227,5 +227,11 @@ namespace Vascular.Structure.Nodes
         /// <param name="target"></param>
         /// <param name="current"></param>
         public abstract void SetTargetRadius(double target, double current);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public abstract Source Clone();
     }
 }

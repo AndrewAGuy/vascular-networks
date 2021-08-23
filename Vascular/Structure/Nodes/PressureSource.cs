@@ -80,5 +80,11 @@ namespace Vascular.Structure.Nodes
             var ratio = target / current;
             SetPressure(pressure / Math.Pow(ratio, 4));
         }
+
+        /// <inheritdoc/>
+        public override Source Clone()
+        {
+            return new PressureSource(this.Position.Copy(), pressure);
+        }
     }
 }

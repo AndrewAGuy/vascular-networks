@@ -74,5 +74,11 @@ namespace Vascular.Structure.Nodes
             var ratio = target / current;
             SetRadius(radius * ratio);
         }
+
+        /// <inheritdoc/>
+        public override Source Clone()
+        {
+            return new RadiusSource(this.Position.Copy(), radius);
+        }
     }
 }

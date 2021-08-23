@@ -393,8 +393,25 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public double EstimatedChange(Branch a, Branch b)
         {
-            return EstimatedChange(a, b.End) 
+            return EstimatedChange(a, b.End)
                 + EstimatedChange(b, a.End);
+        }
+
+        public static Func<Network, Func<Network, (double, IDictionary<IMobileNode, Vector3>)>>
+            Generator(double workFactor, (double l, double r, double a)[] schreiner)
+        {
+            return network =>
+            {
+                var hc = new HierarchicalCosts(network)
+                {
+                    WorkFactor = workFactor
+                };
+                foreach (var (l, r, a) in schreiner)
+                {
+                    hc.AddSchreinerCost(l, r, a);
+                }
+                return n => hc.Evaluate();
+            };
         }
     }
 }
