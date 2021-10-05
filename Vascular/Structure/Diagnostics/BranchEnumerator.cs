@@ -105,5 +105,63 @@ namespace Vascular.Structure.Diagnostics
                 }
             }
         }
+
+        public IEnumerable<INode> Nodes(Branch branch)
+        {
+            yield return branch.Start;
+            stack.Clear();
+
+            foreach (var t in branch.Transients)
+            {
+                yield return t;
+            }
+            yield return branch.End;
+
+            foreach (var c in branch.Children)
+            {
+                stack.Push(c);
+            }
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+
+                foreach (var t in current.Transients)
+                {
+                    yield return t;
+                }
+                yield return current.End;
+
+                var children = current.Children;
+                for (var i = 0; i < children.Length; ++i)
+                {
+                    stack.Push(children[i]);
+                }
+            }
+        }
+
+        public int CountNodes(Branch branch)
+        {
+            var total = 1 + branch.Segments.Count;
+            stack.Clear();
+
+            foreach (var c in branch.Children)
+            {
+                stack.Push(c);
+            }
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+
+                total += current.Segments.Count;
+
+                var children = current.Children;
+                for (var i = 0; i < children.Length; ++i)
+                {
+                    stack.Push(children[i]);
+                }
+            }
+
+            return total;
+        }
     }
 }
