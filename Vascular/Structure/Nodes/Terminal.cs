@@ -25,10 +25,17 @@ namespace Vascular.Structure.Nodes
             SetFlow(Q);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
-        private Vector3 position = null;
+        protected Vector3 position = null;
+
+        /// <summary>
+        /// 
+        /// </summary>
         [DataMember]
-        private double flow;
+        protected double flow;
 
         private static readonly Segment[] CHILDREN = Array.Empty<Segment>();
         private static readonly Branch[] DOWNSTREAM = Array.Empty<Branch>();

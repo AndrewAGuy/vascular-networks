@@ -15,6 +15,10 @@ namespace Vascular.Optimization
         private readonly HierarchicalGradients hierarchicalGradients;
         private readonly FluidMechanicalWork fluidMechanicalWork;
 
+        public HierarchicalGradients Gradients => hierarchicalGradients;
+
+        public FluidMechanicalWork Work => fluidMechanicalWork;
+
         /// <summary>
         /// Multiplier for work under HP flow assumption.
         /// </summary>
