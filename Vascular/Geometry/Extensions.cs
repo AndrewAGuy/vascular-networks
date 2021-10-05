@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vascular.Geometry.Generators;
 
 namespace Vascular.Geometry
 {
@@ -43,6 +44,35 @@ namespace Vascular.Geometry
             return d2 <= r * r
                 ? x
                 : x0 + d * (r / Math.Sqrt(d2));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="x0"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
+        /// <param name="generator"></param>
+        /// <returns></returns>
+        public static Vector3 ClampOutsideBall(this Vector3 x, Vector3 x0, double r, 
+            double t2 = 1e-12, IVector3Generator generator = null)
+        {
+            var d = x - x0;
+            var d2 = d.LengthSquared;
+            if (d2 >= r * r)
+            {
+                return x;
+            }
+            else if (d2 <= t2)
+            {
+                var v = generator?.NextVector3().NormalizeSafe(t2) ?? Vector3.UNIT_Z;
+                return x0 + v * r;
+            }
+            else
+            {
+                return x0 + d * (r / Math.Sqrt(d2));
+            }
         }
     }
 }

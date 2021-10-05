@@ -117,5 +117,24 @@ namespace Vascular.Intersections.Implicit
             await this.Functions.SelectMany(f => networks, (f, n) => (f, n))
                 .RunAsync(async o => await Evaluate(o.f, o.n));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="dx"></param>
+        /// <returns></returns>
+        public static ImplicitFunction ForwardDifference(Func<Vector3, double> func, double dx)
+        {
+            return x =>
+            {
+                var f = func(x);
+                var fx = func(x + new Vector3(dx, 0, 0));
+                var fy = func(x + new Vector3(0, dx, 0));
+                var fz = func(x + new Vector3(0, 0, dx));
+                var d = 1.0 / dx;
+                return (f, new(fx * d, fy * d, fz * d));
+            };
+        }
     }
 }
