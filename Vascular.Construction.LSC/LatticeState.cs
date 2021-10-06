@@ -96,6 +96,11 @@ namespace Vascular.Construction.LSC
         /// <summary>
         /// 
         /// </summary>
+        public TerminalConstructor TerminalConstructor { get; set; } = (x, Q) => new Terminal(x, Q);
+
+        /// <summary>
+        /// 
+        /// </summary>
         public TerminalPairPredicate TerminalPairPredicate { get; set; }
 
         /// <summary>
@@ -200,7 +205,9 @@ namespace Vascular.Construction.LSC
                 if (order(E).MinSuitable(f, p, out var zT, out var V))
                 {
                     var xT = L.ToSpace(zT);
-                    var t = new Terminal(xT, TF(zT, xT)) { Network = N };
+                    var Q = TF(zT, xT);
+                    var t = this.TerminalConstructor(xT, Q);
+                    t.Network = N;
                     Topology.MakeFirst(N.Source, t);
                     return true;
                 }
@@ -397,10 +404,9 @@ namespace Vascular.Construction.LSC
                 {
                     continue;
                 }
-                var t = new Terminal(x, this.TerminalFlowFunction(z, x))
-                {
-                    Network = this.Network
-                };
+                var Q = this.TerminalFlowFunction(z, x);
+                var t = this.TerminalConstructor(x, Q);
+                t.Network = this.Network;
 
                 bool p(Terminal T) => this.TerminalPairPredicate(T, t);
                 double f(Terminal T) => this.TerminalPairCostFunction(T, t);

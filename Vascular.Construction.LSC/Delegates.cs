@@ -31,6 +31,14 @@ namespace Vascular.Construction.LSC
     public delegate double TerminalFlowFunction(Vector3 z, Vector3 x);
 
     /// <summary>
+    /// Allows different types of terminals to be constructed into the network.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="Q"></param>
+    /// <returns></returns>
+    public delegate Terminal TerminalConstructor(Vector3 x, double Q);
+
+    /// <summary>
     /// Whether a candidate pair is permissible.
     /// </summary>
     /// <param name="T"></param>

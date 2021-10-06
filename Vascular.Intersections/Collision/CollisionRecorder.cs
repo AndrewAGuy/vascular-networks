@@ -242,6 +242,11 @@ namespace Vascular.Intersections.Collision
                 {
                     nodes.Add(m, new SingleEntry(v));
                 }
+
+                if (n is Terminal or Source)
+                {
+                    intersecting.Add(n);
+                }
             }
             else
             {
