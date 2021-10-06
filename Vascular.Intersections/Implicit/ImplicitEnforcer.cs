@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Intersections.Enforcement;
@@ -67,6 +66,12 @@ namespace Vascular.Intersections.Implicit
         private Func<double, bool> predicate = f => f >= 0;
 
         /// <summary>
+        /// Allows a threshold per-node, in case radius needs to be taken into account.
+        /// Should return negative values to cause movement when node position permissible.
+        /// </summary>
+        public Func<INode, double> Threshold { get; set; } = n => 0;
+
+        /// <summary>
         /// If set to true, does not class f(x) = 0 as being a violation.
         /// </summary>
         public bool AllowMarginal
@@ -86,7 +91,8 @@ namespace Vascular.Intersections.Implicit
             foreach (var node in enumerator.Nodes(network.Root))
             {
                 var (f, g) = function(node.Position);
-                if (predicate(f))
+                var t = this.Threshold(node);
+                if (predicate(f - t))
                 {
                     violations.Add(new()
                     {
@@ -100,7 +106,7 @@ namespace Vascular.Intersections.Implicit
             await recorderSemaphore.WaitAsync();
             try
             {
-                this.Recorder.Record(violations);
+                this.Recorder.Record(violations, function);
             }
             finally
             {

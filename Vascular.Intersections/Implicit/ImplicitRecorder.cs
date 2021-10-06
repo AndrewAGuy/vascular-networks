@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Generators;
 using Vascular.Intersections.Enforcement;
@@ -11,14 +9,42 @@ using Vascular.Structure.Actions;
 
 namespace Vascular.Intersections.Implicit
 {
+    using ImplicitFunction = Func<Vector3, (double f, Vector3 g)>;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class ImplicitRecorder : Recorder<ImplicitViolation, INode>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public override int Count => intersecting.Count;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<INode, double> MinimumPerturbation { get; set; } = null;
 
+        /// <summary>
+        /// For clamping to minimum perturbations.
+        /// </summary>
         public IVector3Generator Generator { get; set; } = new CubeGrayCode();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="violations"></param>
+        /// <param name="function"></param>
+        public void Record(IEnumerable<ImplicitViolation> violations, ImplicitFunction function)
+        {
+            this.function = function;
+            base.Record(violations);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Finish()
         {
             var actions = this.MinimumPerturbation != null
@@ -30,8 +56,13 @@ namespace Vascular.Intersections.Implicit
                     return new PerturbNode(node, dx);
                 })
                 : nodes.Select(kv => new PerturbNode(kv.Key, kv.Value.Mean));
+            this.GeometryActions = actions;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="violation"></param>
         protected override void RecordSingle(ImplicitViolation violation)
         {
             if (TryTopology(violation))
@@ -42,20 +73,37 @@ namespace Vascular.Intersections.Implicit
             RecordGeometry(violation);
         }
 
-        public Func<INode, bool> ImmunityPredicate { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<ImplicitViolation, bool> ImmunityPredicate { get; set; } = v => false;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double ImmediateCull { get; set; } = double.PositiveInfinity;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool CullIfSurrounded { get; set; } = true;
 
-        public Func<ImplicitViolation, Vector3> Perturbation { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<ImplicitViolation, ImplicitFunction, Vector3> Perturbation { get; set; } = (iv, f) => -iv.Gradient;
+
+        private ImplicitFunction function;
 
         private void RecordGeometry(ImplicitViolation violation)
         {
-            var pert = this.Perturbation(violation);
+            var pert = this.Perturbation(violation, function);
             Request(violation.Node, pert);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Reset()
         {
             base.Reset();
@@ -93,7 +141,7 @@ namespace Vascular.Intersections.Implicit
 
         private bool TryTopology(ImplicitViolation violation)
         {
-            if (this.ImmunityPredicate != null && this.ImmunityPredicate(violation.Node))
+            if (this.ImmunityPredicate(violation))
             {
                 return true;
             }
