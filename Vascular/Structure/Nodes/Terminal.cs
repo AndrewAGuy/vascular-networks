@@ -253,5 +253,40 @@ namespace Vascular.Structure.Nodes
             ForDownstream(branch, t => ++count);
             return count;
         }
+
+        /// <summary>
+        /// Swaps out this terminal for <paramref name="other"/> in the containing network.
+        /// </summary>
+        /// <param name="other"></param>
+        public void ReplaceWith(Terminal other)
+        {
+            other.Parent = this.Parent;
+            other.Parent.End = other;
+            other.Parent.Branch.End = other;
+            other.Network = this.Network;
+            other.Culled = this.Culled;
+            other.Partners = this.Partners;
+            if (other.Partners != null)
+            {
+                for (var i = 0; i < other.Partners.Length; ++i)
+                {
+                    if (other.Partners[i] == this)
+                    {
+                        other.Partners[i] = other;
+                    }
+                }
+            }
+            other.depth = depth;
+            other.pathLength = pathLength;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual Terminal Clone()
+        {
+            return new Terminal(position.Copy(), flow);
+        }
     }
 }

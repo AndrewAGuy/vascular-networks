@@ -106,6 +106,11 @@ namespace Vascular.Structure.Diagnostics
             }
         }
 
+        /// <summary>
+        /// Enumerates all nodes in given branch and downstream.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <returns></returns>
         public IEnumerable<INode> Nodes(Branch branch)
         {
             yield return branch.Start;
@@ -139,6 +144,11 @@ namespace Vascular.Structure.Diagnostics
             }
         }
 
+        /// <summary>
+        /// Get the total number of nodes in this branch and all downstream.
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <returns></returns>
         public int CountNodes(Branch branch)
         {
             var total = 1 + branch.Segments.Count;

@@ -52,5 +52,14 @@ namespace Vascular.Structure.Nodes.Pinned
             this.Upstream.UpdatePhysicalLocal();
             this.Upstream.PropagatePhysicalUpstream();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override Terminal Clone()
+        {
+            return new MobileTerminal(position.Copy(), flow, pinningRadius);
+        }
     }
 }

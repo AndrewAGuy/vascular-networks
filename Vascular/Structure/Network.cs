@@ -148,11 +148,9 @@ namespace Vascular.Structure
             switch (b.End)
             {
                 case Terminal t:
-                    c.End = new Terminal(t.Position.Copy(), t.Flow)
-                    {
-                        Parent = l,
-                        Network = n
-                    };
+                    c.End = t.Clone();
+                    c.End.Parent = l;
+                    c.End.Network = n;
                     l.End = c.End;
                     break;
                 case Bifurcation s:
