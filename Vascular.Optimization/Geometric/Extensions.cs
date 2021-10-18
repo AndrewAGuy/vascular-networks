@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
+using Vascular.Geometry.Generators;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
@@ -48,7 +50,7 @@ namespace Vascular.Optimization.Geometric
         public static GradientDescentMinimizer NormalizeGradients(this GradientDescentMinimizer gd,
             Func<IMobileNode, double> scale = null)
         {
-            gd.OnGradientComputed = scale == null
+            gd.OnGradientComputed += scale == null
                 ? G =>
                 {
                     foreach (var (n, g) in G)
@@ -174,6 +176,32 @@ namespace Vascular.Optimization.Geometric
             gd.Stride = stride;
             gd.BlockLength = nBlock;
             gd.BlockRatio = fBlock;
+            return gd;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gd"></param>
+        /// <param name="generator"></param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
+        public static GradientDescentMinimizer RandomIfNonFinite(this GradientDescentMinimizer gd,
+            IVector3Generator generator, Func<IMobileNode, double> scale = null)
+        {
+            scale ??= n => 1;
+            void filter(IDictionary<IMobileNode, Vector3> G)
+            {
+                foreach (var kv in G)
+                {
+                    var v = kv.Value;
+                    if (!v.IsFinite)
+                    {
+                        v.Copy(scale(kv.Key) * generator.NextVector3());
+                    }
+                }
+            }
+            gd.OnGradientComputed += filter;
             return gd;
         }
     }

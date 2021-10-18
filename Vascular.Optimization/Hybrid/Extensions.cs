@@ -4,6 +4,7 @@ using System.Linq;
 using Vascular.Optimization.Topological;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
+using Vascular.Structure.Diagnostics;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Hybrid
@@ -257,6 +258,59 @@ namespace Vascular.Optimization.Hybrid
             };
             hm.RecordCost += v => cost = v;
             return hm;
+        }
+
+        /// <summary>
+        /// Generates a single random promotion per call
+        /// </summary>
+        /// <param name="hm"></param>
+        /// <param name="random"></param>
+        /// <param name="weighting"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static HybridMinimizer AddRandomPromtion(this HybridMinimizer hm, Random random,
+            Func<Branch, double> weighting = null, Func<Branch, bool> predicate = null)
+        {
+            weighting ??= b => b.Flow;
+            predicate ??= b => true;
+
+            IEnumerable<BranchAction> generator()
+            {
+                var sample = hm.Network.Root.SampleDownstream(random, weighting, predicate);
+                var promote = new PromoteNode(sample.End);
+                if (promote.IsPermissible())
+                {
+                    yield return promote.Action;
+                }
+            }
+
+            return hm.AddTopologySource(generator);
+        }
+
+        /// <summary>
+        /// Generates a single random bifurcation move per call
+        /// </summary>
+        /// <param name="hm"></param>
+        /// <param name="random"></param>
+        /// <param name="weighting"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static HybridMinimizer AddRandomMove(this HybridMinimizer hm, Random random,
+            Func<Branch, double> weighting = null, Func<Branch, bool> predicate = null)
+        {
+            weighting ??= b => b.Flow;
+            predicate ??= b => true;
+
+            IEnumerable<BranchAction> generator()
+            {
+                var sampleA = hm.Network.Root.SampleDownstream(random, weighting, predicate);
+                var sampleB = hm.Network.Root.SampleDownstream(random, weighting, predicate);
+                yield return sampleA.IsAncestorOf(sampleB) 
+                    ? new MoveBifurcation(sampleB, sampleA) 
+                    : new MoveBifurcation(sampleA, sampleB);
+            }
+
+            return hm.AddTopologySource(generator);
         }
     }
 }

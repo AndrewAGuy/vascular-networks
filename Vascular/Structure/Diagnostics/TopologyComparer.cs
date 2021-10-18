@@ -95,6 +95,6 @@ namespace Vascular.Structure.Diagnostics
         /// <summary>
         /// 
         /// </summary>
-        public IEqualityComparer<Terminal> TerminalEqualityComparer { get; set; } = new TerminalPositionComparer();
+        public IEqualityComparer<Terminal> TerminalEqualityComparer { get; set; } = new TerminalCanonicalPositionComparer();
     }
 }

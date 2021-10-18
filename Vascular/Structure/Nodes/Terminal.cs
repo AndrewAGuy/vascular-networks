@@ -288,5 +288,10 @@ namespace Vascular.Structure.Nodes
         {
             return new Terminal(position.Copy(), flow);
         }
+
+        /// <summary>
+        /// For the case where mobile terminals move the terminal from its original position.
+        /// </summary>
+        public Vector3 CanonicalPosition => position;
     }
 }

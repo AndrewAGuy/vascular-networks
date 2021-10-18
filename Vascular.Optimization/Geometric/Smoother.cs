@@ -82,16 +82,25 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="t2"></param>
         /// <returns></returns>
-        public static Func<Terminal, Vector3> GroupTerminalDirection()
+        public static Func<Terminal, Vector3> GroupTerminalDirection(double t2 = 1e-12)
         {
             return t =>
             {
                 if (t.Partners is not null && t.Partners.Length > 1)
                 {
-                    var gn = t.Partners.Select(T => T.Upstream.NormalizedDirection).Sum().Normalize();
-                    var ip = LinearAlgebra.RemoveComponent(t.Upstream.Direction, gn);
-                    return ip.NormalizeSafe();
+                    var gn = t.Partners
+                        .Select(T => T.Upstream.Direction.NormalizeSafe(t2) ?? Vector3.ZERO)
+                        .Sum()
+                        .NormalizeSafe(t2);
+                    var ud = t.Upstream.Direction.NormalizeSafe(t2);
+                    if (gn == null || ud == null)
+                    {
+                        return null;
+                    }
+                    var ip = LinearAlgebra.RemoveComponent(ud, gn);
+                    return ip.NormalizeSafe(t2);
                 }
                 return null;
             };
@@ -260,12 +269,17 @@ namespace Vascular.Optimization.Geometric
             TryAddForce(forces, segment.End, -force);
         }
 
-        private static void TryAddForce(IDictionary<IMobileNode, Vector3> forces, INode node, Vector3 force)
+        private void TryAddForce(IDictionary<IMobileNode, Vector3> forces, INode node, Vector3 force)
         {
-            if (node is IMobileNode mobile)
+            if (node is IMobileNode mobile && this.RecordPredicate(mobile))
             {
                 forces[mobile] = forces.TryGetValue(mobile, out var value) ? value + force : force;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<IMobileNode, bool> RecordPredicate { get; set; } = n => true;
     }
 }
