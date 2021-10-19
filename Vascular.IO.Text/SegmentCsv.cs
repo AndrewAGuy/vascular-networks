@@ -88,5 +88,43 @@ namespace Vascular.IO.Text
                 }
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="segments"></param>
+        /// <param name="props"></param>
+        /// <param name="sepChar"></param>
+        public static void Write(TextWriter writer, IEnumerable<Segment> segments,
+            IEnumerable<Func<Segment, string>> props, char sepChar = ',')
+        {
+            foreach (var segment in segments)
+            {
+                var line = string.Join(sepChar, props.Select(p => p(segment)));
+                writer.WriteLine(line);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="props"></param>
+        /// <returns></returns>
+        public static List<Func<Segment, string>> DefaultProperties(List<Func<Segment, string>> props = null)
+        {
+            props ??= new();
+            props.AddRange(new Func<Segment, string>[]
+            {
+                s => Serialization.WriteDouble(s.Start.Position.x),
+                s => Serialization.WriteDouble(s.Start.Position.y),
+                s => Serialization.WriteDouble(s.Start.Position.z),
+                s => Serialization.WriteDouble(s.End.Position.x),
+                s => Serialization.WriteDouble(s.End.Position.y),
+                s => Serialization.WriteDouble(s.End.Position.z),
+                s => Serialization.WriteDouble(s.Radius)
+            });
+            return props;
+        }
     }
 }

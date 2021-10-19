@@ -1,40 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Structure;
 
 namespace Vascular.Optimization.Hybrid
 {
+    /// <summary>
+    /// Implementation of simulated annealing with restarts. 
+    /// </summary>
     public class SimulatedAnnealingMinimizer
     {
-        public Func<double, int, double> Temperature { get; set; } = (t0, k) => t0 / Math.Log(k + 1);
+        /// <summary>
+        /// Given initial temperature and iteration (0-indexed), returns the block temperature.
+        /// </summary>
+        public Func<double, int, double> Temperature { get; set; } = 
+            (t0, k) => t0 * Math.Min(1.0, 1.0 / Math.Log(k + 1));
 
-        public int Iterations { get; set; } = 1000;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int IterationsPerBlock { get; set; } = 1000;
 
-        public int Reset { get; set; } = 100;
+        /// <summary>
+        /// If no improvement is made in this many iterations, return to the best found so far.
+        /// </summary>
+        public int IterationsUntilReset { get; set; } = 100;
 
+        /// <summary>
+        /// Determines whether positive changes should be accepted given cost change and current temperature.
+        /// </summary>
         public Func<double, double, Random, bool> Accept { get; set; } =
             (dC, T, r) => r.NextDouble() < Math.Exp(-dC / T);
 
+        /// <summary>
+        /// Acts on a clone of the current network, 
+        /// </summary>
         public Action<Network> Perturb { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Network, bool> Admissible { get; set; } = n => true;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Random Random { get; set; } = new();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Func<Network, double> Cost { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double InitialTemperature { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="p0"></param>
+        /// <param name="maxIterations"></param>
+        /// <returns></returns>
         public Network SetInitialTemperatureFromMean(Network network, double p0, int maxIterations = -1)
         {
             var (bestNetwork, bestCost) = (network, this.Cost(network));
             var (currentNetwork, currentCost) = (bestNetwork.Clone(), bestCost);
             var initialCost = currentCost;
-            var increases = new List<double>(this.Iterations);
-            maxIterations = Math.Max(maxIterations, this.Iterations);
+            var increases = new List<double>(this.IterationsPerBlock);
+            maxIterations = Math.Max(maxIterations, this.IterationsPerBlock);
             for (var i = 0; i < maxIterations; ++i)
             {
                 this.Perturb(currentNetwork);
@@ -47,7 +83,7 @@ namespace Vascular.Optimization.Hybrid
                 else if (cost > currentCost)
                 {
                     increases.Add(cost - currentCost);
-                    if (increases.Count == this.Iterations)
+                    if (increases.Count == this.IterationsPerBlock)
                     {
                         break;
                     }
@@ -65,6 +101,12 @@ namespace Vascular.Optimization.Hybrid
             return bestNetwork;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="initial"></param>
+        /// <param name="blocks"></param>
+        /// <returns></returns>
         public Network Optimize(Network initial, int blocks)
         {
             var bestNetwork = initial;
@@ -76,7 +118,7 @@ namespace Vascular.Optimization.Hybrid
             for (var i = 0; i < blocks; ++i)
             {
                 var temperature = this.Temperature(this.InitialTemperature, i);
-                for (var j = 0; j < this.Iterations; ++j)
+                for (var j = 0; j < this.IterationsPerBlock; ++j)
                 {
                     var clone = currentNetwork.Clone();
                     this.Perturb(clone);
@@ -97,7 +139,7 @@ namespace Vascular.Optimization.Hybrid
                         }
                     }
                     iterationsSinceImprovement++;
-                    if (iterationsSinceImprovement == this.Reset)
+                    if (iterationsSinceImprovement == this.IterationsUntilReset)
                     {
                         iterationsSinceImprovement = 0;
                         (currentCost, currentNetwork) = (bestCost, bestNetwork);
