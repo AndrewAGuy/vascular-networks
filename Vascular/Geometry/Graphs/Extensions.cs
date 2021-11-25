@@ -127,5 +127,45 @@ namespace Vascular.Geometry.Graphs
                 e = e == e0 ? e1 : e0;
             }
         }
+
+        /// <summary>
+        /// Given a starting node <paramref name="v"/> in a graph <paramref name="G"/>,
+        /// iterate all connected nodes and return the edges visited along the way.
+        /// </summary>
+        /// <typeparam name="TV"></typeparam>
+        /// <typeparam name="TE"></typeparam>
+        /// <param name="G"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static (HashSet<TE> e, HashSet<TV> v) ConnectedComponent<TV, TE>(this Graph<TV, TE> G, TV v)
+            where TV : Vertex<TV, TE>, new()
+            where TE : Edge<TV, TE>, new()
+        {
+            var S = new Stack<TV>();
+            S.Push(v);
+
+            var E = new HashSet<TE>(G.E.Count, G.E.Comparer);
+            var V = new HashSet<TV>(G.V.Count) { v };
+
+            while (S.Count > 0)
+            {
+                v = S.Pop();
+                foreach (var e in v.E)
+                {
+                    if (!E.Contains(e))
+                    {
+                        E.Add(e);
+                        var o = e.Other(v);
+                        if (!V.Contains(o))
+                        {
+                            S.Push(o);
+                            V.Add(o);
+                        }
+                    }
+                }
+            }
+
+            return (E, V);
+        }
     }
 }
