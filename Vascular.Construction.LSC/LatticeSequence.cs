@@ -122,6 +122,31 @@ namespace Vascular.Construction.LSC
             state.OnExit?.Invoke();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Reset()
+        {
+            var list = currentNode.List;
+            foreach (var state in list)
+            {
+                state.Clear();
+            }
+            this.Current = list.First;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="action"></param>
+        public void Apply(Action<LatticeState> action)
+        {
+            foreach (var state in this.Elements)
+            {
+                action(state);
+            }
+        }
+
         private bool Refine()
         {
             if (currentNode.Next is not LinkedListNode<LatticeState> next)
