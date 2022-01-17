@@ -180,8 +180,13 @@ namespace Vascular.Construction.LSC
 
         /// <summary>
         /// If <see cref="InteriorMode"/> is <see cref="InteriorMode.Single"/>, used to convert multiple interiors to single.
+        /// Defaults to closest terminal to lattice point.
         /// </summary>
-        public InteriorReductionFunction InteriorReductionFunction { get; set; }
+        public InteriorReductionFunction InteriorReductionFunction { get; set; } =
+            (z, x, T) => T.ArgMin(t => Vector3.DistanceSquared(t.Position, x));
+
+        private Func<Vector3, ICollection<Terminal>, Terminal> ReductionFunction
+            => (z, T) => this.InteriorReductionFunction(z, this.Lattice.ToSpace(z), T);
 
         /// <summary>
         /// If non-null and interior is multiple, filters elements after acquisition.
@@ -258,17 +263,20 @@ namespace Vascular.Construction.LSC
                 default:
                 case InteriorMode.Default:
                     this.SingleInterior = LatticeActions.GetSingleInterior(this.Network.Root, this.ClosestBasisFunction);
+                    this.MultipleInterior = null;
                     this.Exterior = LatticeActions.GetExterior<List<Terminal>>(this.SingleInterior, this.Connections);
                     break;
 
                 case InteriorMode.Single:
                     this.SingleInterior = LatticeActions.Reduce(
                         LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction),
-                        (z, T) => this.InteriorReductionFunction(z, this.Lattice.ToSpace(z), T));
+                        this.ReductionFunction);
+                    this.MultipleInterior = null;
                     this.Exterior = LatticeActions.GetExterior<List<Terminal>>(this.SingleInterior, this.Connections);
                     break;
 
                 case InteriorMode.Multiple:
+                    this.SingleInterior = null;
                     this.MultipleInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
                     TryFilterInterior();
                     this.Exterior = LatticeActions.GetExterior<List<Terminal>>(this.MultipleInterior, this.Connections);
@@ -287,6 +295,11 @@ namespace Vascular.Construction.LSC
                 }
             }
         }
+
+        /// <summary>
+        /// Tests whether either interior is currently set.
+        /// </summary>
+        public bool IsInitialized => this.SingleInterior != null || this.MultipleInterior != null;
 
         /// <summary>
         /// Allows re-use.
@@ -309,51 +322,58 @@ namespace Vascular.Construction.LSC
         }
 
         /// <summary>
-        /// Enter into this lattice from a more refined lattice. Always results in a multiple map interior.
+        /// Enter into this lattice from a more refined lattice. 
+        /// Results in a multiple map interior unless reduced by specifying <see cref="InteriorMode.Single"/>.
+        /// Can be entered into without having been visited before, in which case maintains the exterior from
+        /// the more refined lattice, but ignores the reintroduction step.
         /// </summary>
         /// <param name="fine"></param>
         /// <param name="reintroduce"></param>
         public void Coarsen(LatticeState fine, bool reintroduce)
         {
-            // Only need to modify procedure if single interior requested, otherwise just filter
-            // Possibilities:
-            // single -> multiple (default = 1)
-            // multiple -> multiple (default > 1, multiple always)
-            // single -> single (single always)
-            // multiple -> single not possible
-            var newInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
-            this.Exterior = new MultipleMap(newInterior.Count * this.Connections.Length);
+            var (oldSingle, oldMultiple) = (this.SingleInterior, this.MultipleInterior);
+            var newMulitple = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
+            this.Exterior = new MultipleMap(newMulitple.Count * this.Connections.Length);
+
+            Action<Vector3> addExterior = null;
+            Func<Vector3, bool> inInterior = null;
+            IEnumerable<Vector3> oldInterior = null;
+            if (this.InteriorMode == InteriorMode.Single)
+            {
+                this.SingleInterior = LatticeActions.Reduce(newMulitple, this.ReductionFunction);
+                this.MultipleInterior = null;
+
+                addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, z, this.Connections);
+                inInterior = z => this.SingleInterior.ContainsKey(z);
+                oldInterior = (IEnumerable<Vector3>)oldSingle?.Keys ?? oldMultiple?.Keys;
+            }
+            else
+            {
+                this.MultipleInterior = newMulitple;
+                this.SingleInterior = null;
+                TryFilterInterior();
+
+                addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, z, this.Connections);
+                inInterior = z => this.MultipleInterior.ContainsKey(z);
+                oldInterior = (IEnumerable<Vector3>)oldMultiple?.Keys ?? oldSingle?.Keys;
+            }
+
             foreach (var zf in fine.Exterior.Keys)
             {
                 var x = fine.Lattice.ToSpace(zf);
                 var z = this.ClosestBasisFunction(x);
-                LatticeActions.AddExterior<List<Terminal>>(this.Exterior, newInterior, z, this.Connections);
+                addExterior(z);
             }
-            if (reintroduce)
+            if (reintroduce && oldInterior != null)
             {
-                if (this.MultipleInterior != null)
+                foreach (var i in oldInterior)
                 {
-                    foreach (var i in this.MultipleInterior.Keys)
+                    if (!inInterior(i))
                     {
-                        if (!newInterior.ContainsKey(i))
-                        {
-                            LatticeActions.AddExterior<List<Terminal>>(this.Exterior, newInterior, i, this.Connections);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var i in this.SingleInterior.Keys)
-                    {
-                        if (!newInterior.ContainsKey(i))
-                        {
-                            LatticeActions.AddExterior<List<Terminal>>(this.Exterior, newInterior, i, this.Connections);
-                        }
+                        addExterior(i);
                     }
                 }
             }
-            this.MultipleInterior = newInterior;
-            this.SingleInterior = null;
         }
 
         /// <summary>
@@ -363,43 +383,57 @@ namespace Vascular.Construction.LSC
         /// <param name="reintroduce"></param>
         public void Refine(bool reintroduce)
         {
-            // No need to do anything with the interior, as we only arrive here having already been at this state before.
-            // The interior mode is not supported to change between visits without clearing the state first.
-            if (this.MultipleInterior != null)
+            var (oldSingle, oldMultiple) = (this.SingleInterior, this.MultipleInterior);
+
+            ICollection<Vector3> oldInterior = null;
+            ICollection<Vector3> newInterior = null;
+            Action<Vector3> addExterior = null;
+            switch (this.InteriorMode)
             {
-                var oldInterior = this.MultipleInterior.Keys;
-                this.MultipleInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
-                TryFilterInterior();
-                LatticeActions.GetDifference<List<Vector3>>(oldInterior, this.MultipleInterior.Keys, out var gained, out var lost);
-                this.Exterior = new MultipleMap((gained.Count + lost.Count) * this.Connections.Length);
-                foreach (var g in gained)
-                {
-                    LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, g, this.Connections);
-                }
-                if (reintroduce)
-                {
-                    foreach (var l in lost)
+                default:
+                case InteriorMode.Default:
+                    if (oldMultiple != null)
                     {
-                        LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, l, this.Connections);
+                        goto case InteriorMode.Multiple;
                     }
-                }
+                    else
+                    {
+                        this.SingleInterior = LatticeActions.GetSingleInterior(this.Network.Root, this.ClosestBasisFunction);
+                        goto PREPARE_SINGLE;
+                    }
+
+                case InteriorMode.Single:
+                    this.SingleInterior = LatticeActions.Reduce(
+                        LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction),
+                        this.ReductionFunction);
+                PREPARE_SINGLE:
+                    this.MultipleInterior = null;
+                    oldInterior = (ICollection<Vector3>)oldSingle?.Keys ?? oldMultiple?.Keys;
+                    newInterior = this.SingleInterior.Keys;
+                    addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, z, this.Connections);
+                    break;
+
+                case InteriorMode.Multiple:
+                    this.MultipleInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
+                    this.SingleInterior = null;
+                    TryFilterInterior();
+                    oldInterior = (ICollection<Vector3>)oldMultiple?.Keys ?? oldSingle?.Keys;
+                    newInterior = this.MultipleInterior.Keys;
+                    addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, z, this.Connections);
+                    break;
             }
-            else
+
+            LatticeActions.GetDifference<List<Vector3>>(oldInterior, newInterior, out var gained, out var lost);
+            this.Exterior = new MultipleMap((gained.Count + lost.Count) * this.Connections.Length);
+            foreach (var g in gained)
             {
-                var oldInterior = this.SingleInterior.Keys;
-                this.SingleInterior = LatticeActions.GetSingleInterior(this.Network.Root, this.ClosestBasisFunction);
-                LatticeActions.GetDifference<List<Vector3>>(oldInterior, this.SingleInterior.Keys, out var gained, out var lost);
-                this.Exterior = new MultipleMap((gained.Count + lost.Count) * this.Connections.Length);
-                foreach (var g in gained)
+                addExterior(g);
+            }
+            if (reintroduce)
+            {
+                foreach (var l in lost)
                 {
-                    LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, g, this.Connections);
-                }
-                if (reintroduce)
-                {
-                    foreach (var l in lost)
-                    {
-                        LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, l, this.Connections);
-                    }
+                    addExterior(l);
                 }
             }
         }

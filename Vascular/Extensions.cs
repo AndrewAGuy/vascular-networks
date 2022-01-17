@@ -597,7 +597,7 @@ namespace Vascular
 
         /// <summary>
         /// Similar to <see cref="ArgMin{T}(IEnumerable{T}, Func{T, double}, out T, out double)"/> but where the value isn't required and
-        /// it is known that the sequence is empty.
+        /// it is known that the sequence is not empty.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ts"></param>

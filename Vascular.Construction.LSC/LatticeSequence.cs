@@ -154,7 +154,7 @@ namespace Vascular.Construction.LSC
                 return false;
             }
 
-            if (next.Value.SingleInterior != null || next.Value.MultipleInterior != null)
+            if (next.Value.IsInitialized)
             {
                 state.OnExit?.Invoke();
                 state.BeforeReRefineAction?.Invoke();
