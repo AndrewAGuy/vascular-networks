@@ -21,6 +21,13 @@ namespace Vascular.Intersections.Collision
         public Func<Terminal, Segment, bool> ImmediateCull { get; set; }
 
         /// <summary>
+        /// If not null, attempts to intercept recording process by culling all downstream 
+        /// of the first segment. Will be called both ways without modifying the network, 
+        /// giving both sides the same chance to be culled.
+        /// </summary>
+        public Func<Segment, Segment, bool> ImmediateCullDownstream { get; set; }
+
+        /// <summary>
         /// If one node is stationary, assign all perturbation to the other.
         /// </summary>
         public bool ResetStationaryFractions { get; set; } = true;
@@ -260,6 +267,11 @@ namespace Vascular.Intersections.Collision
         public Func<Branch, Branch, bool> BranchActionPredicate { get; set; } =
             (a, b) => Math.Min(a.Flow, b.Flow) > 4;
 
+        private void CullDownstream(Segment s)
+        {
+            Terminal.ForDownstream(s.Branch, t => culling.Add(t));
+        }
+
         private bool TryRecordTopology(SegmentIntersection i)
         {
             if (this.ImmediateCull != null)
@@ -280,6 +292,19 @@ namespace Vascular.Intersections.Collision
                     return true;
                 }
             }
+
+            if (this.ImmediateCullDownstream != null)
+            {
+                if (this.ImmediateCullDownstream(i.A, i.B))
+                {
+                    CullDownstream(i.A);
+                }
+                if (this.ImmediateCullDownstream(i.B, i.A))
+                {
+                    CullDownstream(i.B);
+                }
+            }
+
             var A = i.A.Branch;
             var B = i.B.Branch;
             if (!this.RecordTopology ||
@@ -292,6 +317,7 @@ namespace Vascular.Intersections.Collision
             {
                 return false;
             }
+
             var sA = A.Start.Position;
             var eA = A.End.Position;
             var sB = B.Start.Position;

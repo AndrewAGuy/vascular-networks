@@ -112,6 +112,11 @@ namespace Vascular.Intersections.Enforcement
         public Action<Terminal> TerminalCulled { get; set; }
 
         /// <summary>
+        /// Executed after each iteration.
+        /// </summary>
+        public Action AfterIteration { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="steps"></param>
@@ -136,7 +141,9 @@ namespace Vascular.Intersections.Enforcement
                 await TryChangeGeometry();
                 await TryChangeTopology();
                 await TryCull(await culling);
+
                 this.Iterations++;
+                this.AfterIteration?.Invoke();
             }
             return this.Recorder.Count;
         }
