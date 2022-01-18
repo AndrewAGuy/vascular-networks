@@ -240,8 +240,8 @@ namespace Vascular.Optimization.Topological
         /// <param name="enumerator"></param>
         /// <param name="tryAddLocal"></param>
         /// <returns></returns>
-        public static IEnumerable<BranchAction> OffloadTerminals(Branch from, 
-            Dictionary<Vector3,ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
+        public static IEnumerable<BranchAction> OffloadTerminals(Branch from,
+            Dictionary<Vector3, ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
             Func<Branch, IEnumerable<Terminal>> enumerator, bool tryAddLocal = false)
         {
             foreach (var terminal in enumerator(from))
