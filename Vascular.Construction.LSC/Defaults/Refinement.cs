@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Geometry;
+using Vascular.Geometry.Lattices;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC.Defaults
 {
@@ -54,7 +57,7 @@ namespace Vascular.Construction.LSC.Defaults
         /// <param name="elements"></param>
         /// <param name="baseFlow"></param>
         /// <param name="baseGenerations"></param>
-        public static void DeterminantRatioFlowAndGenerations(IEnumerable<LatticeState> elements, 
+        public static void DeterminantRatioFlowAndGenerations(IEnumerable<LatticeState> elements,
             double baseFlow = 1.0, int baseGenerations = 1)
         {
             var e = elements.GetEnumerator();
@@ -81,6 +84,103 @@ namespace Vascular.Construction.LSC.Defaults
 
                 previous = current;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <returns></returns>
+        public static InteriorFilter KeepExtremaByConnection(Lattice lattice)
+        {
+            var C = lattice.VoronoiCell.Connections;
+            var d = new Vector3[C.Length];
+            var mV = new double[C.Length];
+            var mT = new Terminal[C.Length];
+            var h = new HashSet<Terminal>(C.Length);
+
+            return (z, x, T) =>
+            {
+                for (var i = 0; i < C.Length; ++i)
+                {
+                    d[i] = lattice.ToSpace(z + C[i]) - x;
+                }
+                mV.SetArray(double.NegativeInfinity);
+                mT.SetArray(null);
+
+                foreach (var t in T)
+                {
+                    var r = t.Position - x;
+                    for (var i = 0; i < C.Length; ++i)
+                    {
+                        var v = r * d[i];
+                        if (v > mV[i])
+                        {
+                            mV[i] = v;
+                            mT[i] = t;
+                        }
+                    }
+                }
+
+                T.Clear();
+                h.Clear();
+                foreach (var t in mT)
+                {
+                    h.Add(t);
+                }
+                foreach (var t in h)
+                {
+                    T.Add(t);
+                }
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lattice"></param>
+        /// <returns></returns>
+        public static InteriorFilter KeepClosestToConnection(Lattice lattice)
+        {
+            var C = lattice.VoronoiCell.Connections;
+            var p = new Vector3[C.Length];
+            var mV = new double[C.Length];
+            var mT = new Terminal[C.Length];
+            var h = new HashSet<Terminal>(C.Length);
+
+            return (z, x, T) =>
+            {
+                for (var i = 0; i < C.Length; ++i)
+                {
+                    p[i] = lattice.ToSpace(z + C[i]);
+                }
+                mV.SetArray(double.PositiveInfinity);
+                mT.SetArray(null);
+
+                foreach (var t in T)
+                {
+                    for (var i = 0; i < C.Length; ++i)
+                    {
+                        var v = Vector3.DistanceSquared(t.Position, p[i]);
+                        if (v < mV[i])
+                        {
+                            mV[i] = v;
+                            mT[i] = t;
+                        }
+                    }
+                }
+
+                T.Clear();
+                h.Clear();
+                foreach (var t in mT)
+                {
+                    h.Add(t);
+                }
+                foreach (var t in h)
+                {
+                    T.Add(t);
+                }
+            };
         }
     }
 }

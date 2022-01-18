@@ -616,44 +616,45 @@ namespace Vascular.Geometry.Surfaces
         /// <param name="other"></param>
         /// <param name="a"></param>
         /// <param name="b"></param>
+        /// <param name="strict"></param>
         /// <returns></returns>
-        public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3 a, out Vector3 b)
+        public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3 a, out Vector3 b, bool strict = false)
         {
             var f = 0.0;
             Vector3 p = null;
             a = null;
             b = null;
-            
+
             if (TestRay(other.p0, other.e01, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
             if (TestRay(other.p1, other.e12, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
             if (TestRay(other.p0, other.e02, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
 
             if (other.TestRay(p0, e01, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
             if (other.TestRay(p1, e12, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
             if (other.TestRay(p0, e02, 0, ref f, ref p))
             {
-                TryAssign(ref a, ref b, p);
+                TryAssign(ref a, ref b, p, strict);
             }
 
-            return a != null && (b != null ? true : throw new GeometryException("Ray intersection tests must find 2 intersection points"));
+            return a != null && (b != null || (strict ? throw new GeometryException("Ray intersection tests must find 2 intersection points") : true));
         }
 
-        private static void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v)
+        private static void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v, bool strict)
         {
             if (a == null)
             {
@@ -663,7 +664,7 @@ namespace Vascular.Geometry.Surfaces
             {
                 b = v;
             }
-            else
+            else if (strict)
             {
                 throw new GeometryException("Ray intersection tests can only return 2 intersection points");
             }

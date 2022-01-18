@@ -94,6 +94,20 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Sets all elements of an array to the given value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <param name="v"></param>
+        public static void SetArray<T>(this T[] t, T v)
+        {
+            for (var i = 0; i < t.Length; ++i)
+            {
+                t[i] = v;
+            }
+        }
+
+        /// <summary>
         /// Creates a single element sequence.
         /// </summary>
         /// <typeparam name="T"></typeparam>
