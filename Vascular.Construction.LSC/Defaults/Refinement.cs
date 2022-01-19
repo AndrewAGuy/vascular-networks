@@ -87,6 +87,85 @@ namespace Vascular.Construction.LSC.Defaults
         }
 
         /// <summary>
+        /// Uses the bases of successive pairs of lattices to determine the downwards number of generations,
+        /// i.e., the number of generations that will be executed before coarsening when arriving from the
+        /// more coarse lattice. Defaults to using determinant ratios.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <param name="iterations"></param>
+        public static void SetGenerationsByBasis(IEnumerable<LatticeState> elements, Func<Matrix3, Matrix3, int> iterations = null)
+        {
+            iterations ??= GenerationsFromDeterminant();
+            var e = elements.GetEnumerator();
+            if (!e.MoveNext())
+            {
+                return;
+            }
+
+            var previous = e.Current;
+            while (e.MoveNext())
+            {
+                e.Current.GenerationsDown = iterations(previous.Lattice.Basis, e.Current.Lattice.Basis);
+                previous = e.Current;
+            }
+        }
+
+        /// <summary>
+        /// Assumes that characteristic length and hence iterations scales as determinant, useful when lattices
+        /// are of the same form but with different scales.
+        /// </summary>
+        /// <param name="extra"></param>
+        /// <returns></returns>
+        public static Func<Matrix3, Matrix3, int> GenerationsFromDeterminant()
+        {
+            return (A, B) => (int)Math.Ceiling(Math.Pow(A.Determinant / B.Determinant, 1.0 / 3.0));
+        }
+
+        /// <summary>
+        /// Uses induced Lp norms for lattice bases as proxy for the characteristic length, then uses this ratio
+        /// to determine how many iterations are required.
+        /// </summary>
+        /// <param name="extra"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static Func<Matrix3, Matrix3, int> GenerationsFromLpNorm(double p = double.PositiveInfinity)
+        {
+            return (A, B) =>
+            {
+                var r = p switch
+                {
+                    1 => A.NormL1 / B.NormL1,
+                    2 => A.NormL2 / B.NormL2,
+                    double.PositiveInfinity => A.NormLInf / B.NormLInf,
+                    _ => throw new GeometryException("Induced Lp norms outside 1, 2 and Inf are not supported.")
+                };
+                return (int)Math.Ceiling(r);
+            };
+        }
+
+        /// <summary>
+        /// Sets the flow rate for new terminals, and sets an interior filter which uniformly sets the flow rate
+        /// of each existing terminal such that the total flow associated with the lattice point is equal to this. 
+        /// Does not account for proximity between existing terminals.
+        /// </summary>
+        /// <param name="Q0"></param>
+        /// <param name="ls"></param>
+        /// <returns></returns>
+        public static void SetFlowByDeterminant(double Q0, LatticeState ls)
+        {
+            var Q = Q0 * ls.Lattice.Determinant;
+            ls.TerminalFlowFunction = (z, x) => Q;
+            ls.InteriorFilter = (z, x, T) =>
+            {
+                var q = Q / T.Count;
+                foreach (var t in T)
+                {
+                    t.SetFlow(q);
+                }
+            };
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="lattice"></param>

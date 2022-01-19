@@ -376,5 +376,45 @@ namespace Vascular.Geometry
             var id = 1.0 / d;
             return FromRows(yz, z ^ x, x ^ y) * id;
         }
+
+        /// <summary>
+        /// Returns max over columns of absolute sum.
+        /// </summary>
+        public double NormL1
+        {
+            get
+            {
+                var c1 = Math.Abs(m11) + Math.Abs(m21) + Math.Abs(m31);
+                var c2 = Math.Abs(m12) + Math.Abs(m22) + Math.Abs(m32);
+                var c3 = Math.Abs(m13) + Math.Abs(m23) + Math.Abs(m33);
+                return Math.Max(Math.Max(c1, c2), c3);
+            }
+        }
+
+        /// <summary>
+        /// Returns max over rows of absolute sum.
+        /// </summary>
+        public double NormLInf
+        {
+            get
+            {
+                var r1 = Math.Abs(m11) + Math.Abs(m12) + Math.Abs(m13);
+                var r2 = Math.Abs(m21) + Math.Abs(m22) + Math.Abs(m23);
+                var r3 = Math.Abs(m31) + Math.Abs(m32) + Math.Abs(m33);
+                return Math.Max(Math.Max(r1, r2), r3);
+            }
+        }
+
+        /// <summary>
+        /// Returns square root of maximum eigenvalue of this times its own transpose.
+        /// </summary>
+        public double NormL2
+        {
+            get
+            {
+                var lMax = LinearAlgebra.RealSymmetricEigenvalues(this.Transpose * this).Max;
+                return Math.Sqrt(lMax);
+            }
+        }
     }
 }
