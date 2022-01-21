@@ -166,6 +166,26 @@ namespace Vascular.Construction.LSC.Defaults
         }
 
         /// <summary>
+        /// Sets flow rate of terminals in the interior filter such that the total flow between all terminals 
+        /// associated with a lattice point is equal to the rate given by <see cref="LatticeState.TerminalFlowFunction"/>,
+        /// with flow being uniformly distributed across the terminals.
+        /// Similar to <see cref="SetFlowByDeterminant(double, LatticeState)"/>, except that the terminal flow is not
+        /// uniform and must be specified separately.
+        /// </summary>
+        /// <param name="ls"></param>
+        public static void AverageFlowFilter(LatticeState ls)
+        {
+            ls.InteriorFilter = (z, x, T) =>
+            {
+                var q = ls.TerminalFlowFunction(z, x) / T.Count;
+                foreach (var t in T)
+                {
+                    t.SetFlow(q);
+                }
+            };
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="lattice"></param>
@@ -218,10 +238,15 @@ namespace Vascular.Construction.LSC.Defaults
         /// 
         /// </summary>
         /// <param name="lattice"></param>
+        /// <param name="includeCentre"></param>
         /// <returns></returns>
-        public static InteriorFilter KeepClosestToConnection(Lattice lattice)
+        public static InteriorFilter KeepClosestToConnection(Lattice lattice, bool includeCentre = false)
         {
             var C = lattice.VoronoiCell.Connections;
+            if (includeCentre)
+            {
+                C = C.Append(Vector3.ZERO).ToArray();
+            }
             var p = new Vector3[C.Length];
             var mV = new double[C.Length];
             var mT = new Terminal[C.Length];
