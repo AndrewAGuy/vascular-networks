@@ -16,7 +16,7 @@ namespace Vascular.Structure
     public class Branch : IAxialBoundsQueryable<Segment>, IAxialBoundable
     {
         [DataMember]
-        private List<Segment> segments = new();
+        private List<Segment> segments = new(1);
 
         /// <summary>
         /// 
@@ -103,7 +103,7 @@ namespace Vascular.Structure
         public void Reset()
         {
             var s = segments[0];
-            segments = new List<Segment>() { s };
+            segments = new List<Segment>(1) { s };
             s.End = this.End;
             this.End.Parent = s;
         }

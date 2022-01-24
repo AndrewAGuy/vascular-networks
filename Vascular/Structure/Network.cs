@@ -31,6 +31,10 @@ namespace Vascular.Structure
                 if (source != null)
                 {
                     source.Network = this;
+                    if (this.Root != null)
+                    {
+                        source.ForEach(br => br.End.Network = this);
+                    }
                 }
             }
         }

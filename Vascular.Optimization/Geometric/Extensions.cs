@@ -204,5 +204,50 @@ namespace Vascular.Optimization.Geometric
             gd.OnGradientComputed += filter;
             return gd;
         }
+
+        /// <summary>
+        /// Takes the <see cref="GradientDescentMinimizer.MovingPredicate"/> and filters the acquired gradients with this,
+        /// setting the reference to null such that the check is not duplicated when moving.
+        /// </summary>
+        /// <param name="gd"></param>
+        /// <param name="zero">Whether to zero the gradient instead of removing from the dictionary.</param>
+        /// <returns></returns>
+        public static GradientDescentMinimizer FilterByPredicate(this GradientDescentMinimizer gd, bool zero = true)
+        {
+            var mp = gd.MovingPredicate;
+
+            void filter(IDictionary<IMobileNode, Vector3> G)
+            {
+                if (zero)
+                {
+                    foreach (var (n, g) in G)
+                    {
+                        if (!mp(n))
+                        {
+                            g.Copy(Vector3.ZERO);
+                        }
+                    }
+                }
+                else
+                {
+                    var R = new List<IMobileNode>(G.Count);
+                    foreach (var (n, g) in G)
+                    {
+                        if (!mp(n))
+                        {
+                            R.Add(n);
+                        }
+                    }
+                    foreach (var r in R)
+                    {
+                        G.Remove(r);
+                    }
+                }
+            }
+
+            gd.OnGradientComputed += filter;
+            gd.MovingPredicate = null;
+            return gd;
+        }
     }
 }

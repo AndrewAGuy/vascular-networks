@@ -439,7 +439,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        /// Copies in the elements of <paramref name="other"/>.
         /// </summary>
         /// <param name="other"></param>
         public void Copy(Vector3 other)
