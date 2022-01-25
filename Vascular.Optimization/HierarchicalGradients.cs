@@ -24,7 +24,12 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
-        public Source Source { get; set; }
+        public Network Network { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Source Source => this.Network.Source;
 
         /// <summary>
         /// 

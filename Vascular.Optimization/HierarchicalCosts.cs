@@ -35,11 +35,21 @@ namespace Vascular.Optimization
         /// 
         /// </summary>
         /// <param name="network"></param>
+        public HierarchicalCosts()
+        {
+            hierarchicalGradients = new();
+            fluidMechanicalWork = new FluidMechanicalWork(hierarchicalGradients);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
         public HierarchicalCosts(Network network)
         {
             hierarchicalGradients = new HierarchicalGradients()
             {
-                Source = network.Source
+                Network = network
             };
             fluidMechanicalWork = new FluidMechanicalWork(hierarchicalGradients);
         }
@@ -47,7 +57,11 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
-        public Network Network => hierarchicalGradients.Source.Network;
+        public Network Network
+        {
+            get => hierarchicalGradients.Network;
+            set => hierarchicalGradients.Network = value;
+        }
 
         /// <summary>
         /// 
