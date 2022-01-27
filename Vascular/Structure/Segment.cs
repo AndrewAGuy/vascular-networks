@@ -195,5 +195,28 @@ namespace Vascular.Structure
                 Radius = radius
             };
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="r"></param>
+        /// <returns></returns>
+        public static Segment MakeDummy(Vector3 a, Vector3 b, double r)
+        {
+            return new()
+            {
+                Start = new Dummy()
+                {
+                    Position = a
+                },
+                End = new Dummy()
+                {
+                    Position = b
+                },
+                Radius = r
+            };
+        }
     }
 }
