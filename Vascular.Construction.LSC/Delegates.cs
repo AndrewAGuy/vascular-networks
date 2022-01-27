@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Vascular.Geometry;
+using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Construction.LSC
@@ -53,6 +54,13 @@ namespace Vascular.Construction.LSC
     /// <param name="t"></param>
     /// <returns></returns>
     public delegate double TerminalPairCostFunction(Terminal T, Terminal t);
+
+    /// <summary>
+    /// Chooses which segment in the branch to bifurcate from.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    public delegate Segment BifurcationSegmentSelector(Branch b);
 
     /// <summary>
     /// Places the bifurcation upon creation.

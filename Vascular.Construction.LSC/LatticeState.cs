@@ -109,6 +109,11 @@ namespace Vascular.Construction.LSC
         public TerminalPairCostFunction TerminalPairCostFunction { get; set; }
 
         /// <summary>
+        /// Defaults to taking the parent of the end node.
+        /// </summary>
+        public BifurcationSegmentSelector BifurcationSegmentSelector { get; set; } = b => b.End.Parent;
+
+        /// <summary>
         /// 
         /// </summary>
         public BifurcationPositionFunction BifurcationPositionFunction { get; set; }
@@ -515,7 +520,8 @@ namespace Vascular.Construction.LSC
                     continue;
                 }
 
-                var bf = Topology.CreateBifurcation(tt.Parent, t);
+                var s = this.BifurcationSegmentSelector(tt.Upstream);
+                var bf = Topology.CreateBifurcation(s, t);
                 bf.Position = this.BifurcationPositionFunction(bf);
 
                 this.TerminalPairBuildAction?.Invoke(tt, t);

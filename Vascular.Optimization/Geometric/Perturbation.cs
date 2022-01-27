@@ -2,6 +2,7 @@
 using Vascular.Geometry;
 using Vascular.Geometry.Generators;
 using Vascular.Structure;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Geometric
 {
@@ -103,5 +104,60 @@ namespace Vascular.Optimization.Geometric
                 return Vector3.ZERO;
             };
         }
+
+        /// <summary>
+        /// Offsets a network by a factor of <paramref name="offset"/>, determined by <paramref name="amplification"/>.
+        /// Defaults to unity weighting if null. For amplification that ensures networks converge at their root points,
+        /// use either <see cref="FlowEstimatedRadiusAmplification"/> when only flow rates are set,
+        /// <see cref="DepthEstimatedRadiusAmplification"/> when only depths are set, or <see cref="ActualRadiusAmplification"/>
+        /// when radii are already set. These modes move terminals less than root vessels, to account for the fact that these
+        /// vessels are smaller and do not need to be moved as much to separate them.
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="offset"></param>
+        /// <param name="amplification"></param>
+        /// <param name="moveSource"></param>
+        /// <param name="moveTerminals"></param>
+        public static void Offset(this Network network, Vector3 offset, Func<INode, double> amplification = null,
+            bool moveSource = false, bool moveTerminals = false)
+        {
+            amplification ??= node => 1;
+
+            foreach (var node in network.Nodes)
+            {
+                if (node is IMobileNode mobile)
+                {
+                    mobile.Position += offset * amplification(mobile);
+                }
+                else if (node is Terminal terminal && moveTerminals)
+                {
+                    var newPosition = terminal.Position + offset * amplification(terminal);
+                    terminal.SetPosition(newPosition);
+                }
+                else if (node is Source source && moveSource)
+                {
+                    var newPosition = source.Position + offset * amplification(source);
+                    source.SetPosition(newPosition);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uses the approximation that <c>r ~ kQ^(1/3)</c>, thus the appropriate factor should be <c>(Q/Q_0)^(1/3)</c>.
+        /// </summary>
+        public static Func<INode, double> FlowEstimatedRadiusAmplification =>
+            node => Math.Pow(node.Parent.Flow / node.Network().Root.Flow, 1.0 / 3.0);
+
+        /// <summary>
+        /// Uses the approximation that <c>r ~ 2^(-1/3)r_p</c> at each bifurcation, thus the appropriate factor is <c>2^(-d/3)</c>.
+        /// </summary>
+        public static Func<INode, double> DepthEstimatedRadiusAmplification =>
+            node => Math.Pow(0.5, node.Parent.Branch.Start.Depth / 3.0);
+
+        /// <summary>
+        /// Uses the actual ratio of radii, <c>r/r_0</c>.
+        /// </summary>
+        public static Func<INode, double> ActualRadiusAmplification =>
+            node => node.Parent.Radius / node.Network().Root.Radius;
     }
 }
