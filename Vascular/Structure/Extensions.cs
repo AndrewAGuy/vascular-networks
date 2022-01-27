@@ -24,5 +24,15 @@
         {
             return node.Parent.Branch.Network;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public static double Flow(this INode node)
+        {
+            return node.Parent.Flow;
+        }
     }
 }

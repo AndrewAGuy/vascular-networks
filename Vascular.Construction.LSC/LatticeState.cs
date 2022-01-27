@@ -111,7 +111,7 @@ namespace Vascular.Construction.LSC
         /// <summary>
         /// Defaults to taking the parent of the end node.
         /// </summary>
-        public BifurcationSegmentSelector BifurcationSegmentSelector { get; set; } = b => b.End.Parent;
+        public BifurcationSegmentSelector BifurcationSegmentSelector { get; set; } = (b, t) => b.End.Parent;
 
         /// <summary>
         /// 
@@ -520,7 +520,7 @@ namespace Vascular.Construction.LSC
                     continue;
                 }
 
-                var s = this.BifurcationSegmentSelector(tt.Upstream);
+                var s = this.BifurcationSegmentSelector(tt.Upstream, t);
                 var bf = Topology.CreateBifurcation(s, t);
                 bf.Position = this.BifurcationPositionFunction(bf);
 

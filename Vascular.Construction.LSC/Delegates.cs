@@ -59,8 +59,9 @@ namespace Vascular.Construction.LSC
     /// Chooses which segment in the branch to bifurcate from.
     /// </summary>
     /// <param name="b"></param>
+    /// <param name="t"></param>
     /// <returns></returns>
-    public delegate Segment BifurcationSegmentSelector(Branch b);
+    public delegate Segment BifurcationSegmentSelector(Branch b, Terminal t);
 
     /// <summary>
     /// Places the bifurcation upon creation.

@@ -30,6 +30,25 @@ namespace Vascular.Construction.LSC.Defaults
         }
 
         /// <summary>
+        /// Simple heuristic for bifurcation placement, only for local segments rather than branches.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Vector3 LocalFlowWeightedPosition(Bifurcation b)
+        {
+            var c0 = b.Children[0].End;
+            var c1 = b.Children[1].End;
+            var w0 = c0.Flow();
+            var w1 = c1.Flow();
+            var wP = w0 + w1;
+            var p =
+                w0 * c0.Position +
+                w1 * c1.Position +
+                wP * b.Parent.Start.Position;
+            return p / (2.0 * wP);
+        }
+
+        /// <summary>
         /// Simple heuristic for bifurcation placement.
         /// </summary>
         /// <param name="b"></param>
@@ -114,6 +133,38 @@ namespace Vascular.Construction.LSC.Defaults
                 {
                     network.Source.PropagateRadiiDownstream();
                 }
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Segment NearestSegmentSelector(Branch b, Terminal t)
+        {
+            return b.Segments.ArgMin(s => LinearAlgebra.DistanceToLine(s.Start.Position, s.End.Position, t.Position));
+        }
+
+        /// <summary>
+        /// Uses the fact that child 0 of bifurcation is the previous terminal, recreates the old segment line from this.
+        /// Ensures that the bifurcation lies at least <paramref name="minFraction"/> away from the endpoints of the line.
+        /// </summary>
+        /// <param name="minFraction"></param>
+        /// <returns></returns>
+        public static BifurcationPositionFunction NearestPointPosition(double minFraction = 0.125)
+        {
+            var m = minFraction;
+            var M = 1 - minFraction;
+            return b =>
+            {
+                var s = b.Parent.Start.Position;
+                var e = b.Children[0].End.Position;
+                var t = b.Children[1].End.Position;
+                var d = e - s;
+                var f = LinearAlgebra.LineFactor(s, d, t);
+                return s + d * f.Clamp(m, M);
             };
         }
     }
