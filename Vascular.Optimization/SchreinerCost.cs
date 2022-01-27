@@ -51,8 +51,8 @@ namespace Vascular.Optimization
         {
             var (dr_dR, dr_dQ) = this.EffectiveLengths.Cache.RadiusGradients;
             dC_dLe = Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpR);
-            var c = this.EffectiveLengths.ExpR 
-                * Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpDR) 
+            var c = this.EffectiveLengths.ExpR
+                * Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpDR)
                 * this.EffectiveLengths.Value;
             dC_dRe = c * dr_dR;
             dC_dQe = c * dr_dQ;
@@ -69,6 +69,8 @@ namespace Vascular.Optimization
             {
                 Bifurcation bf => (this.EffectiveLengths.PositionGradient(bf), this.Cache.PositionGradient(bf)),
                 Transient tr => (this.EffectiveLengths.PositionGradient(tr), this.Cache.PositionGradient(tr)),
+                Terminal t => (this.EffectiveLengths.PositionGradient(t), this.Cache.PositionGradient(t)),
+                Source s => (this.EffectiveLengths.PositionGradient(s), this.Cache.PositionGradient(s)),
                 _ => (Vector3.ZERO, Vector3.ZERO)
             };
             return dLe_dx * dC_dLe

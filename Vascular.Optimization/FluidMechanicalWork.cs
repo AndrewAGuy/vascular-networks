@@ -71,6 +71,8 @@ namespace Vascular.Optimization
             {
                 Bifurcation bf => this.Cache.PositionGradient(bf),
                 Transient tr => this.Cache.PositionGradient(tr),
+                Terminal t => this.Cache.PositionGradient(t),
+                Source s => this.Cache.PositionGradient(s),
                 _ => Vector3.ZERO
             } * dW_dR;
         }

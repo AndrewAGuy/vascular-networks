@@ -113,5 +113,35 @@ namespace Vascular.Optimization
             var dL_dx = dp / lp - dc / lc;
             return gb.dRe_dR * dL_dx;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(Terminal t)
+        {
+            var br = t.Upstream;
+            var gb = this.Global[br];
+            var dp = t.Parent.Direction;
+            var lp = t.Parent.Length;
+            var dL_dx = dp / lp;
+            return gb.dRe_dR * dL_dx;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(Source s)
+        {
+            var br = s.Downstream[0];
+            var gb = this.Global[br];
+            var dc = s.Child.Direction;
+            var lp = s.Child.Length;
+            var dL_dx = -dc / lp;
+            return gb.dRe_dR * dL_dx;
+        }
     }
 }

@@ -198,6 +198,42 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(Terminal t)
+        {
+            var br = t.Upstream;
+            var gb = this.Gradients[br];
+            var bl = br.Length;
+
+            var dp = t.Parent.Direction;
+            var lp = t.Parent.Length;
+            var dL_dx = dp / lp;
+            return gb.dLe_dR * dL_dx
+                + gb.dLe_dL * this.ExpL * Math.Pow(bl, this.ExpDL) * dL_dx;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(Source s)
+        {
+            var br = s.Downstream[0];
+            var gb = this.Gradients[br];
+            var bl = br.Length;
+
+            var dc = s.Child.Direction;
+            var lc = s.Child.Length;
+            var dL_dx = -dc / lc;
+            return gb.dLe_dR * dL_dx
+                + gb.dLe_dL * this.ExpL * Math.Pow(bl, this.ExpDL) * dL_dx;
+        }
+
+        /// <summary>
         /// Updates all affected branches and propagates
         /// </summary>
         /// <param name="n"></param>
