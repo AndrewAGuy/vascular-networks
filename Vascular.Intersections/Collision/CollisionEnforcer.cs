@@ -65,7 +65,8 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        /// Clamps vessels which are too small to a minimum radius, although in practice it
+        /// may be better to just remove these vessels as they may not be manufacturable.
         /// </summary>
         /// <param name="minRadius"></param>
         /// <param name="pad"></param>
@@ -116,6 +117,53 @@ namespace Vascular.Intersections.Collision
                 var pMax = b.Start.Pressure + b.Network.PressureOffset;
                 var k = sMax / pMax;
                 return b.Radius * Math.Sqrt((1 + k) / (k - 1));
+            };
+        }
+
+        /// <summary>
+        /// Combines a branch-dependent padding function with a minimum value, ensuring that vessels
+        /// always have a minimum clearance between them.
+        /// </summary>
+        /// <param name="minPad"></param>
+        /// <param name="pad"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> ClampedPadding(double minPad, Func<Branch, double> pad)
+        {
+            return b => b.Radius + Math.Max(minPad, pad(b));
+        }
+
+        /// <summary>
+        /// See <see cref="ThinWalledStressPadding(double)"/>, but returns the wall thickness instead
+        /// so it can be combined with other padding methods, e.g. 
+        /// <see cref="ClampedPadding(double, Func{Branch, double})"/>
+        /// </summary>
+        /// <param name="sMax"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> ThinWalledCriticalThickness(double sMax)
+        {
+            return b =>
+            {
+                var pMax = b.Start.Pressure + b.Network.PressureOffset;
+                var k = pMax / sMax;
+                return b.Radius * k;
+            };
+        }
+
+        /// <summary>
+        /// See <see cref="ThickWalledStressPadding(double)"/>, but returns the wall thickness instead
+        /// so it can be combined with other padding methods, e.g. 
+        /// <see cref="ClampedPadding(double, Func{Branch, double})"/>
+        /// </summary>
+        /// <param name="sMax"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> ThickWalledCriticalThickness(double sMax)
+        {
+            return b =>
+            {
+                var pMax = b.Start.Pressure + b.Network.PressureOffset;
+                var k = sMax / pMax;
+                var f = Math.Sqrt((1 + k) / (k - 1));
+                return b.Radius * (f - 1);
             };
         }
 
