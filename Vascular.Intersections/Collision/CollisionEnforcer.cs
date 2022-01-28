@@ -75,10 +75,81 @@ namespace Vascular.Intersections.Collision
             return b => Math.Max(b.Radius, minRadius) + pad;
         }
 
-        private readonly List<Collider> externalColliders = new List<Collider>();
-        private readonly List<InternalCollider> internalColliders = new List<InternalCollider>();
-        private readonly List<MatchedCollider> matchedColliders = new List<MatchedCollider>();
-        private readonly List<DisjointCollider> disjointColliders = new List<DisjointCollider>();
+        /// <summary>
+        /// Given a maximum stress, use the highest pressure in the vessel alongside the inner radius
+        /// to compute the wall thickness such that the maximum hoop stress (assumed uniform) is 
+        /// equal to this critical value, then makes the vessel behave as though it is this large.
+        /// <para/>
+        /// Uses the classical thin-walled cylinder theory. Make sure that units are correctly scaled!
+        /// The units of pressure in the vessels must match the units of critical stress, and the rest
+        /// can be computed as the required ratio of outer to inner.
+        /// </summary>
+        /// <param name="sMax"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> ThinWalledStressPadding(double sMax)
+        {
+            return b =>
+            {
+                // Uses s = p r / t
+                var pMax = b.Start.Pressure + b.Network.PressureOffset;
+                var k = pMax / sMax;
+                return b.Radius * (1 + k);
+            };
+        }
+
+        /// <summary>
+        /// Given a maximum stress, use the highest pressure in the vessel alongside the inner radius
+        /// to compute the outer radius such that the maximum hoop stress (at the inner surface) is 
+        /// equal to this critical value, then makes the vessel behave as though it is this large.
+        /// <para/>
+        /// Uses the classical thick-walled cylinder theory. Make sure that units are correctly scaled!
+        /// The units of pressure in the vessels must match the units of critical stress, and the rest
+        /// can be computed as the required ratio of outer to inner.
+        /// </summary>
+        /// <param name="sMax"></param>
+        /// <returns></returns>
+        public static Func<Branch, double> ThickWalledStressPadding(double sMax)
+        {
+            return b =>
+            {
+                // Uses s = p ri^2 / (ro^2 - ri^2) (1 + ro^2 / r^2), evaluated at r = ri
+                var pMax = b.Start.Pressure + b.Network.PressureOffset;
+                var k = sMax / pMax;
+                return b.Radius * Math.Sqrt((1 + k) / (k - 1));
+            };
+        }
+
+        /// <summary>
+        /// Computes the pressure at each node, possibly recomputing required properties.
+        /// </summary>
+        /// <param name="setLogical"></param>
+        /// <param name="setPhysical"></param>
+        /// <returns></returns>
+        public static Action<Network> SetPressures(bool setLogical = false, bool setPhysical = false)
+        {
+            return n =>
+            {
+                switch ((setLogical, setPhysical))
+                {
+                    case (true, _):
+                        n.Root.SetLogical();
+                        goto PHYSICAL;
+
+                    case (false, true):
+                    PHYSICAL:
+                        n.Source.CalculatePhysical();
+                        break;
+                }
+
+                n.Source.PropagateRadiiDownstream();
+                n.Source.CalculatePressures();
+            };
+        }
+
+        private readonly List<Collider> externalColliders = new();
+        private readonly List<InternalCollider> internalColliders = new();
+        private readonly List<MatchedCollider> matchedColliders = new();
+        private readonly List<DisjointCollider> disjointColliders = new();
 
         /// <summary>
         /// 

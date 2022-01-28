@@ -117,6 +117,11 @@ namespace Vascular.Intersections.Enforcement
         public Action AfterIteration { get; set; }
 
         /// <summary>
+        /// Executed before radius and bounds have been set.
+        /// </summary>
+        public Action<Network> OnPrepare { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="steps"></param>
@@ -315,6 +320,7 @@ namespace Vascular.Intersections.Enforcement
                 : new Action<Network>(n => n.Source.GenerateDownstreamBounds());
             void networkAction(Network n)
             {
+                this.OnPrepare?.Invoke(n);
                 radiusAction(n);
                 boundsAction(n);
             }
