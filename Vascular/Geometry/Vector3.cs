@@ -413,6 +413,22 @@ namespace Vascular.Geometry
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Vector3 FromArrayPermissive(double[] array)
+        {
+            return array.Length switch
+            {
+                >= 3 => new(array[0], array[1], array[2]),
+                2 => new(array[0], array[1], 0),
+                1 => new(array[0], 0, 0),
+                _ => new(),
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <returns></returns>
         public double[] ToArray()
         {
