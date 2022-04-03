@@ -1,4 +1,5 @@
 ﻿using System;
+using Vascular.Structure.Diagnostics;
 
 namespace Vascular.Structure.Actions
 {
@@ -90,6 +91,25 @@ namespace Vascular.Structure.Actions
         public static Func<BranchAction, bool> Wrap(Func<Branch, Branch, bool> pred)
         {
             return action => pred(action.A, action.B);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="clone"></param>
+        /// <returns></returns>
+        public static BranchAction TransferToClone(BranchAction action, Network clone)
+        {
+            var a = Address.Navigate(clone.Root, Address.Get(action.A));
+            var b = Address.Navigate(clone.Root, Address.Get(action.B));
+            return action switch
+            {
+                SwapEnds => new SwapEnds(a, b),
+                MoveBifurcation mb => new MoveBifurcation(a, b) { Position = mb.Position },
+                RemoveBranch rb => new RemoveBranch(a) { OnCull = rb.OnCull },
+                _ => null
+            };
         }
     }
 }
