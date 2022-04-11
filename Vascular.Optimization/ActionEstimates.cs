@@ -1,15 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ActionEstimates
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hc"></param>
+        /// <param name="m"></param>
+        /// <param name="t"></param>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public static double MoveBifurcation(HierarchicalCosts hc, Branch m, Branch t, Vector3 x)
         {
             var dQt = m.Flow;
@@ -64,11 +72,58 @@ namespace Vascular.Optimization
             return dC;
         }
 
-        //public static double CreateBifurcation(BranchNode adding, Branch from, Vector3 position)
-        //{
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hc"></param>
+        /// <param name="t"></param>
+        /// <param name="f"></param>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static double CreateBifurcation(HierarchicalCosts hc, Terminal t, Branch f, Vector3 x)
+        {
+            var dQ = t.Flow;
 
-        //}
+            var Lp = Vector3.Distance(f.Start.Position, x);
+            var Ls = Vector3.Distance(f.End.Position, x);
+            var Lt = Vector3.Distance(t.Position, x);
 
+            var Rs = Ls + f.End.ReducedResistance;
+            var Rt = Lt;
+            var (fs, ft) = f.Network.Splitting.Fractions(Rs, f.Flow, Rt, dQ);
+            var Rp = Lp + 1.0 / (Math.Pow(fs, 4) / Rs + Math.Pow(ft, 4) / Rt);
+            var dR = Rp - f.ReducedResistance;
+
+            var dC = 0.0;
+            if (hc.WorkFactor != 0.0)
+            {
+                var (dW_dQ, dW_dR) = hc.Work.Gradients(f);
+                dC = hc.WorkFactor * (dW_dQ * dQ + dW_dR * dR);
+            }
+
+            foreach (var sc in hc.SchreinerCosts)
+            {
+                var el = sc.EffectiveLengths;
+
+                var ELsD = el.Values[f] - Math.Pow(f.Length, el.ExpL);
+                var EL = Math.Pow(Lp, el.ExpL)
+                    + Math.Pow(ft, el.ExpR) * Math.Pow(Lt, el.ExpL)
+                    + Math.Pow(fs, el.ExpR) * (Math.Pow(Ls, el.ExpL) + ELsD);
+                var dL = EL - el.Values[f];
+
+                var (dC_dQ, dC_dR, dC_dL) = sc.Gradients(f);
+                dC += sc.Multiplier * (dC_dQ * dQ + dC_dR * dR + dC_dL * dL);
+            }
+            return dC;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hc"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static double SwapEnds(HierarchicalCosts hc, Branch a, Branch b)
         {
             var dQa = b.Flow - a.Flow;

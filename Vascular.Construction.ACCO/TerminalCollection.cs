@@ -417,6 +417,17 @@ namespace Vascular.Construction.ACCO
             built.Clear();
         }
 
+        /// <summary>
+        /// Offloads the rejected terminals from the system and allows post processing.
+        /// </summary>
+        /// <returns></returns>
+        public List<Terminal> TakeRejected()
+        {
+            var r = rejected;
+            rejected = new();
+            return r;
+        }
+
         private void UpdateBuilt(Branch b)
         {
             if (b.End is Terminal t)

@@ -321,16 +321,9 @@ namespace Vascular.Optimization.Topological
                 case MoveBifurcation m:
                     placement ??= FlowWeightedPlacement;
                     var p = placement(action.B.Start, action.B.End, action.A.End);
-                    switch (m.A.End)
-                    {
-                        case Terminal t:
-                            return costs.EstimatedChange(m.B, t, p);
-                        case Bifurcation b:
-                            return costs.EstimatedChange(m.B, b, p);
-                    }
-                    break;
+                    return ActionEstimates.MoveBifurcation(costs, action.A, action.B, p);
                 case SwapEnds s:
-                    return costs.EstimatedChange(s.A, s.B);
+                    return ActionEstimates.SwapEnds(costs, action.A, action.B);
             }
             return double.PositiveInfinity;
         }

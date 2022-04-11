@@ -91,6 +91,11 @@ namespace Vascular.Optimization.Hybrid
         /// </summary>
         public Func<IEnumerable<(BranchAction a, double dC)>, IEnumerable<BranchAction>> ModifyRanked { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Action AfterTopologyChange { get; set; }
+
         private void ActTopology()
         {
             var executor = new TopologyExecutor()
@@ -160,6 +165,8 @@ namespace Vascular.Optimization.Hybrid
                 {
                     this.Minimizer.Stride = 0;
                 }
+
+                this.AfterTopologyChange?.Invoke();
             }
         }
 

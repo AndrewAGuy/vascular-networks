@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Geometry;
 using Vascular.Optimization.Topological;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -206,11 +207,15 @@ namespace Vascular.Optimization.Hybrid
         /// </summary>
         /// <param name="hm"></param>
         /// <param name="costs"></param>
-        public static HybridMinimizer AddHierarchicalCosts(this HybridMinimizer hm, HierarchicalCosts costs)
+        /// <param name="est">Whether to estimate the cost change using first order approximations</param>
+        public static HybridMinimizer AddHierarchicalCosts(this HybridMinimizer hm, HierarchicalCosts costs, bool est = true)
         {
             hm.Minimizer.Add(n => costs.Evaluate());
-            hm.AddTopologyEstimator(t => Grouping.EstimateCostChange(t, costs, hm.EvaluationPlacement));
-            hm.AddEstimatorPrepare(() => costs.SetCache());
+            if (est)
+            {
+                hm.AddTopologyEstimator(t => Grouping.EstimateCostChange(t, costs, hm.EvaluationPlacement));
+                hm.AddEstimatorPrepare(() => costs.SetCache());
+            }
             return hm;
         }
 
@@ -311,6 +316,32 @@ namespace Vascular.Optimization.Hybrid
             }
 
             return hm.AddTopologySource(generator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hm"></param>
+        /// <returns></returns>
+        public static HybridMinimizer AddDistanceEvaluation(this HybridMinimizer hm)
+        {
+            hm.AddTopologyEstimator(ba =>
+            {
+                switch (ba)
+                {
+                    case MoveBifurcation:
+                        return Vector3.Distance(ba.A.End.Position, ba.B.End.Position)
+                            - Vector3.Distance(ba.A.End.Position, ba.A.FirstSibling.End.Position);
+                    case SwapEnds:
+                        var d0 = ba.A.DirectLength + ba.B.DirectLength;
+                        var d1 = Vector3.Distance(ba.A.End.Position, ba.B.Start.Position)
+                            + Vector3.Distance(ba.A.Start.Position, ba.B.End.Position);
+                        return d1 - d0;
+                    default:
+                        return double.PositiveInfinity;
+                }
+            });
+            return hm;
         }
     }
 }

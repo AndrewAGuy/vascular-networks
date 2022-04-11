@@ -21,6 +21,18 @@ namespace Vascular.Geometry.Generators
             this.radius = radius;
         }
 
+        /// <summary>
+        /// Sets the radius sampling to generate uniform sampling by volume.
+        /// Uses inverse CDF, with F(r) = (r/R)^3.
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="radius"></param>
+        public SphericalRandom(Random random, double radius)
+        {
+            this.random = random;
+            this.radius = F => radius * Math.Pow(F, 1.0 / 3.0);
+        }
+
         /// <inheritdoc/>
         public Vector3 NextVector3()
         {
