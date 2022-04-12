@@ -2,7 +2,7 @@
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Surfaces;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     using Surface = IAxialBoundsQueryable<TriangleSurfaceTest>;
 

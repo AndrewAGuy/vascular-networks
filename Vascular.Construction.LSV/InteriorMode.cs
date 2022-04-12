@@ -2,7 +2,7 @@
 using Vascular.Geometry;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC
+namespace Vascular.Construction.LSV
 {
     /// <summary>
     /// How a <see cref="LatticeState"/> should behave on initialization, refinement and coarsening.

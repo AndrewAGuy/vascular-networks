@@ -5,7 +5,7 @@ using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     using Surface = IAxialBoundsQueryable<TriangleSurfaceTest>;
 

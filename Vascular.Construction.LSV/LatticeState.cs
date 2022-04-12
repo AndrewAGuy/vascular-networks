@@ -7,7 +7,7 @@ using Vascular.Structure;
 using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC
+namespace Vascular.Construction.LSV
 {
     using SingleMap = Dictionary<Vector3, Terminal>;
     using MultipleMap = Dictionary<Vector3, ICollection<Terminal>>;

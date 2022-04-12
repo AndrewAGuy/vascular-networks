@@ -50,7 +50,6 @@ namespace Vascular
         /// 
         /// </summary>
         /// <param name="number"></param>
-        /// <param name="format"></param>
         /// <returns></returns>
         public static string WriteDouble(double number)
         {

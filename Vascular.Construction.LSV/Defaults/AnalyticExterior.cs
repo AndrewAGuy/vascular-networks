@@ -1,7 +1,7 @@
 ﻿using System;
 using Vascular.Geometry;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// Simple shapes.

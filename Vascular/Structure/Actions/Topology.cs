@@ -324,6 +324,7 @@ namespace Vascular.Structure.Actions
         /// to their 'minimal' terminal downstream. Terminals must never compare equal for this to work.
         /// </summary>
         /// <param name="from"></param>
+        /// <param name="comparer"></param>
         public static void Canonicalize(Branch from, IComparer<Terminal> comparer)
         {
             _ = Canonicalize(from.End, comparer);

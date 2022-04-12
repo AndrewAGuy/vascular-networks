@@ -14,8 +14,14 @@ namespace Vascular.Optimization
         private readonly HierarchicalGradients hierarchicalGradients;
         private readonly FluidMechanicalWork fluidMechanicalWork;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public HierarchicalGradients Gradients => hierarchicalGradients;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public FluidMechanicalWork Work => fluidMechanicalWork;
 
         /// <summary>

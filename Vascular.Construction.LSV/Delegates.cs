@@ -4,7 +4,7 @@ using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC
+namespace Vascular.Construction.LSV
 {
     using MultipleMapEntry = KeyValuePair<Vector3, ICollection<Terminal>>;
 

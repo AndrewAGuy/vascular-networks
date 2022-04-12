@@ -1,6 +1,6 @@
 ﻿using Vascular.Geometry.Lattices.Manipulation;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// 

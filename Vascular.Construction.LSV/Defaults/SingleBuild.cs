@@ -4,7 +4,7 @@ using Vascular.Geometry;
 using Vascular.Geometry.Lattices.Manipulation;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// A set of delegates that ensure that in each iteration, only one bifurcation happens from each terminal.

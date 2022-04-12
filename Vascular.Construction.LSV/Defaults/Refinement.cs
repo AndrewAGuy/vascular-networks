@@ -5,7 +5,7 @@ using Vascular.Geometry;
 using Vascular.Geometry.Lattices;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// Delegates used on moving to a more fine lattice.
@@ -114,7 +114,6 @@ namespace Vascular.Construction.LSC.Defaults
         /// Assumes that characteristic length and hence iterations scales as determinant, useful when lattices
         /// are of the same form but with different scales.
         /// </summary>
-        /// <param name="extra"></param>
         /// <returns></returns>
         public static Func<Matrix3, Matrix3, int> GenerationsFromDeterminant()
         {
@@ -125,7 +124,6 @@ namespace Vascular.Construction.LSC.Defaults
         /// Uses induced Lp norms for lattice bases as proxy for the characteristic length, then uses this ratio
         /// to determine how many iterations are required.
         /// </summary>
-        /// <param name="extra"></param>
         /// <param name="p"></param>
         /// <returns></returns>
         public static Func<Matrix3, Matrix3, int> GenerationsFromLpNorm(double p = double.PositiveInfinity)

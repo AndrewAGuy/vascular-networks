@@ -3,7 +3,7 @@ using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// Delegates related to the spreading phase.

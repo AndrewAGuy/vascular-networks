@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Vascular.Construction.LSC
+namespace Vascular.Construction.LSV
 {
     /// <summary>
     /// Represents a sequence of <see cref="LatticeState"/> and moves between them.

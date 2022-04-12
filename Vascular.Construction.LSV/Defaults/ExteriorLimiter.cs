@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Vascular.Geometry;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// Some schemes, particularly when running trimming actions as a <see cref="LatticeState.AfterSpreadAction"/>, 

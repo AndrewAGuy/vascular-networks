@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Vascular.Construction.LSC.Defaults
+namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
     /// Delegates for random ordering of exteriors.
