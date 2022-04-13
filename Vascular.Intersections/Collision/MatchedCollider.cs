@@ -7,14 +7,15 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Intersections.Collision
 {
     /// <summary>
-    /// Tests for intersections allowing terminals which have non-empty <see cref="Terminal.Partners"/> to have intersections at their matching points.
+    /// Tests for intersections allowing terminals which have non-empty 
+    /// <see cref="Terminal.Partners"/> to have intersections at their matching points.
     /// </summary>
     public class MatchedCollider : Collider
     {
         private readonly Network networkA;
         private readonly Network networkB;
         private List<SegmentIntersection> intersections = null;
-        private readonly List<Branch> ignore = new List<Branch>();
+        private readonly List<Branch> ignore = new();
 
         /// <summary>
         /// If true, reduce the immune set to just the segments until divergence.
@@ -50,7 +51,7 @@ namespace Vascular.Intersections.Collision
         private void SetIgnore(Branch b)
         {
             ignore.Clear();
-            if (b.End is Terminal t)
+            if (b.End is Terminal t && t.Partners is not null)
             {
                 foreach (var p in t.Partners)
                 {
