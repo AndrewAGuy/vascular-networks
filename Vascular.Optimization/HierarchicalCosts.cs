@@ -39,7 +39,6 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="network"></param>
         public HierarchicalCosts()
         {
             hierarchicalGradients = new();
