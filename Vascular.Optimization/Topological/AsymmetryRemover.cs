@@ -23,6 +23,11 @@ namespace Vascular.Optimization.Topological
             get => rRatio;
             set
             {
+                if (value < 1)
+                {
+                    value = 1.0 / value;
+                }
+
                 if (value > 1)
                 {
                     rRatio = value;
@@ -39,6 +44,11 @@ namespace Vascular.Optimization.Topological
             get => qRatio;
             set
             {
+                if (value < 1)
+                {
+                    value = 1.0 / value;
+                }
+
                 if (value > 1)
                 {
                     qRatio = value;

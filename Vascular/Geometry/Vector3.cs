@@ -399,6 +399,17 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
+        /// L2 norm. Same as <see cref="Normalize(double)"/> but returns zero rather than throwing.
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public Vector3 NormalizeZero(double t = 1.0e-12)
+        {
+            var m = this.Length;
+            return m > t ? this / m : new();
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="array"></param>
