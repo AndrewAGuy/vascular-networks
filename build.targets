@@ -1,11 +1,11 @@
 <Project>
   <Target Name="Pack">
+    <RemoveDir Directories="Release"/>
+    <MSBuild Projects="Vascular.Networks.sln"
+             Properties="Configuration=Release"/>
     <ItemGroup>
       <PackageFiles Include="package/*.*"/>
     </ItemGroup>
-    <RemoveDir Directories="Release"/>
-    <MSBuild Projects="Vascular.Networks.sln"
-             Properties="Configuration=Release;BuildDocs=True"/>
     <Copy SourceFiles="@(PackageFiles)"
           DestinationFolder="Release/"/>
     <Exec Command="nuget pack ./Release/Vascular.Networks.nuspec"/>

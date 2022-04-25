@@ -29,9 +29,7 @@ The FreeCAD .csv import macro was developed to work with FreeCAD 0.19, but will 
 ## Build
 The project copies its output to a [NuGet convention-based working directory](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory) /Release/ in release configuration: `dotnet build -c Release`. All additional content files are copied to this structure. In Debug, output files are copied to a flat folder structure /Debug/TFM/ for the given Target Framework Moniker.
 
-To clean the release folder, copy over package assets and build the package, use the build file with the 'pack' target: `dotnet msbuild build.targets t:pack`. This sets the configuration to release and builds documentation.
-
-To build XML documentation, set the property `-p:BuildDocs=True`. To treat warnings as errors set `-p:WError=True`.
+To clean the release folder, copy over package assets and build the package, use the build file with the 'pack' target: `dotnet msbuild build.targets -t:pack`. This sets the configuration to release and builds documentation.
 
 #### Conditional compilation
 For types in the `Vascular.Structure` namespace, a custom build can choose to improve performance by removing fields that are not needed:
