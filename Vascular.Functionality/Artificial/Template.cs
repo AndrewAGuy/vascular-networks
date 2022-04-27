@@ -57,9 +57,14 @@ namespace Vascular.Functionality.Artificial
         public Func<Vector3, Matrix3> Orientation { get; set; } = x => new();
 
         /// <summary>
+        /// Return 0 to ignore, &gt; 0 to cull, &lt; 0 to reject.
+        /// </summary>
+        public Func<TriangleIntersection, int> PermittedIntersection { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
-        public Func<TriangleIntersection, bool> PermittedIntersection { get; set; }
+        public Action<Terminal> OnCull { get; set; }
 
         /// <summary>
         /// 
@@ -149,26 +154,28 @@ namespace Vascular.Functionality.Artificial
                 return null;
             }
 
-            MakeBifurcations(A, T, S, X);
+            Connect(A, T, S, X);
             return T;
         }
 
-        private void MakeBifurcations(Attachment[] A, Terminal[] T, Segment[] S, Vector3[] X)
+        private void Connect(Attachment[] A, Terminal[] T, Segment[] S, Vector3[] X)
         {
             for (var i = 0; i < A.Length; ++i)
             {
                 if (T[i] is not null)
                 {
-                    continue;
+                    T[i].SetPosition(A[i].Position);
                 }
-
-                var n = S[i].Network();
-                T[i] = new Terminal(X[i], this.TerminalFlowRate(n))
+                else
                 {
-                    Network = n
-                };
-                var b = Topology.CreateBifurcation(S[i], T[i]);
-                b.Position = X[i];
+                    var n = S[i].Network();
+                    T[i] = new Terminal(A[i].Position, this.TerminalFlowRate(n))
+                    {
+                        Network = n
+                    };
+                    var b = Topology.CreateBifurcation(S[i], T[i]);
+                    b.Position = X[i];
+                }
             }
         }
 
@@ -176,9 +183,22 @@ namespace Vascular.Functionality.Artificial
         {
             for (var i = 0; i < T.Length; ++i)
             {
-                if (T[i] is null && S[i] is null)
+                if (T[i] is null)
                 {
-                    return false;
+                    if (S[i] is null)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    for (var j = 0; j < i; ++j)
+                    {
+                        if (T[i] == T[j])
+                        {
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
@@ -255,12 +275,12 @@ namespace Vascular.Functionality.Artificial
 
         private List<Branch>[] Candidates(Network[] N, Attachment[] A)
         {
-            var C = new List<Branch>[N.Length];
-            for (var i = 0; i < N.Length; ++i)
+            var C = new List<Branch>[A.Length];
+            for (var i = 0; i < A.Length; ++i)
             {
                 C[i] = new List<Branch>();
                 var AB = new AxialBounds(A[i].Position, this.TerminalSearchLength);
-                N[i].Query(AB, (Branch b) =>
+                N[A[i].Type].Query(AB, (Branch b) =>
                 {
                     if (this.CandidateConnection(b))
                     {
@@ -275,10 +295,25 @@ namespace Vascular.Functionality.Artificial
         {
             foreach (var n in N)
             {
-                var I = B.Evaluate(n);
-                if (!I.All(this.PermittedIntersection))
+                var I = B.Evaluate(n).ToList();
+                var P = I.Select(this.PermittedIntersection).ToArray();
+                if (P.Any(p => p < 0))
                 {
                     return false;
+                }
+
+                var C = new List<Terminal>();
+                for (var i = 0; i < I.Count; ++i)
+                {
+                    if (P[i] > 0)
+                    {
+                        Terminal.ForDownstream(I[i].Segment.Branch, t => C.Add(t));
+                    }
+                }
+                foreach (var c in C)
+                {
+                    this.OnCull?.Invoke(c);
+                    Topology.CullTerminalAndPropagate(c);
                 }
             }
             return true;
