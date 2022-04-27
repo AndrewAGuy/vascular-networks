@@ -24,7 +24,7 @@ namespace Vascular.Geometry.Surfaces
         /// <param name="direction"></param>
         /// <param name="rayTolerance"></param>
         /// <returns></returns>
-        public static IEnumerable<RayIntersection<TriangleSurfaceTest>> RayIntersections(
+        public static List<RayIntersection<TriangleSurfaceTest>> RayIntersections(
             this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
             Vector3 point, Vector3 direction, double rayTolerance)
         {

@@ -18,6 +18,17 @@ namespace Vascular.Geometry.Generators
         }
 
         /// <summary>
+        /// If <paramref name="i"/> is non-negative, seeds a <see cref="Random"/> using <paramref name="i"/>.
+        /// Otherwise, returns a new generator using the default constructor.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public static Random SeedRandom(this int i)
+        {
+            return i >= 0 ? new(i) : new();
+        }
+
+        /// <summary>
         /// Returns a predicate that wraps <paramref name="r"/> and returns <see langword="true"/> with probability <paramref name="p"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>

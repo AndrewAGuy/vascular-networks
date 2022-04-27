@@ -1,14 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\Vascular.Intersections\Vascular.Intersections.csproj" />
     <ProjectReference Include="..\Vascular\Vascular.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Artificial\Exchanger\" />
-    <Folder Include="Artificial\Mixer\" />
-    <Folder Include="Kidney\" />
-    <Folder Include="Lung\" />
   </ItemGroup>
 
 </Project>

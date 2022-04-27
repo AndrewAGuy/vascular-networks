@@ -44,7 +44,8 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// How far along the direction <paramref name="dir"/> from <paramref name="clamp"/> do we go to get to the closest point to <paramref name="target"/>. 
+        /// How far along the direction <paramref name="dir"/> from <paramref name="clamp"/> 
+        /// do we go to get to the closest point to <paramref name="target"/>. 
         /// </summary>
         /// <param name="clamp"></param>
         /// <param name="dir"></param>
@@ -53,6 +54,18 @@ namespace Vascular.Geometry
         public static double LineFactor(Vector3 clamp, Vector3 dir, Vector3 target)
         {
             return (target - clamp) * dir / dir.LengthSquared;
+        }
+
+        /// <summary>
+        /// Returns the closest point on the segment to the target position.
+        /// </summary>
+        /// <param name="clamp"></param>
+        /// <param name="dir"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static Vector3 ClosestPoint(Vector3 clamp, Vector3 dir, Vector3 target)
+        {
+            return clamp + dir * LineFactor(clamp, dir, target).Clamp(0, 1);
         }
 
         /// <summary>
