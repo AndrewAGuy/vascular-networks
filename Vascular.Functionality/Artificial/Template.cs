@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Surfaces;
@@ -19,7 +17,8 @@ namespace Vascular.Functionality.Artificial
     using Surface = IIntersectionEvaluator<TriangleIntersection>;
 
     /// <summary>
-    /// 
+    /// Takes a templated functional unit (e.g. designed in CAD) with a predetermined set of channels
+    /// and a triangulated boundary, then places these at specified locations.
     /// </summary>
     public class Template : Discrete
     {
@@ -77,7 +76,7 @@ namespace Vascular.Functionality.Artificial
         public double TerminalSearchLength { get; set; }
 
         /// <summary>
-        /// 
+        /// Allows a small amount of intersection at the end points.
         /// </summary>
         public double TerminalEndFraction { get; set; } = 1e-3;
 
@@ -85,6 +84,44 @@ namespace Vascular.Functionality.Artificial
         /// 
         /// </summary>
         public Func<Network, double> TerminalFlowRate { get; set; } = n => 1;
+
+        /// <summary>
+        /// Gets the boundary of the forbidden region when placed at multiple locations.
+        /// </summary>
+        /// <param name="locations"></param>
+        /// <returns></returns>
+        public Mesh GetBoundary(IEnumerable<Vector3> locations)
+        {
+            var M = new Mesh();
+            foreach (var x in locations)
+            {
+                var R = this.Orientation(x);
+                var m = this.Boundary.Transform(R, x);
+                M.Merge(m);
+            }
+            return M;
+        }
+
+        /// <summary>
+        /// Gets the attachment points when placed at multiple locations.
+        /// </summary>
+        /// <param name="locations"></param>
+        /// <returns></returns>
+        public List<Attachment> GetAttachments(IEnumerable<Vector3> locations)
+        {
+            var A = new List<Attachment>();
+            foreach (var x in locations)
+            {
+                var R = this.Orientation(x);
+                A.AddRange(this.Attachments.Select(a =>
+                {
+                    var p = R * a.Position + x;
+                    var d = R * a.Direction;
+                    return new Attachment(p, d, a.Type);
+                }));
+            }
+            return A;
+        }
 
         /// <summary>
         /// 
@@ -100,7 +137,8 @@ namespace Vascular.Functionality.Artificial
         }
 
         /// <summary>
-        /// 
+        /// If location is permitted, clears the site and attempts to connect nearby terminals.
+        /// If no terminals available, tries to create bifurcations into the attachment points.
         /// </summary>
         /// <param name="networks"></param>
         /// <param name="locations"></param>
