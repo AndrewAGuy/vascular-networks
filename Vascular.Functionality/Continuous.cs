@@ -1,41 +1,93 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Graphs;
 using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
-using Vascular.Structure.Nodes;
 
 namespace Vascular.Functionality
 {
     /// <summary>
     /// Represents a continuous functional structure that attaches at many points to the networks.
     /// </summary>
+    /// <typeparam name="TV"></typeparam>
+    /// <typeparam name="TE"></typeparam>
     public abstract class Continuous<TV, TE>
         where TV : Vertex<TV, TE>, new()
         where TE : Edge<TV, TE>, new()
     {
-        public abstract (Graph<TV, TE> graph, HashSet<Vector3> boundary) GenerateChunk(AxialBounds bounds);
+        /// <summary>
+        /// Create all vessels within a chunk.
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        public abstract (Graph<TV, TE> graph, HashSet<Vector3> boundary) GenerateChunkEdges(AxialBounds bounds);
 
+        /// <summary>
+        /// Generate edges, then remove illegal intersections and all leaf branches which cannot be fixed.
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <param name="vessels"></param>
+        /// <returns></returns>
+        public virtual (Graph<TV, TE> graph, HashSet<Vector3> boundary) GenerateChunk(
+            AxialBounds bounds, IEnumerable<IAxialBoundsQueryable<Segment>> vessels)
+        {
+            var (g, chunkExterior) = GenerateChunkEdges(bounds);
+
+            // Identify edges that intersect major vessels, or intersect minor vessels by an insufficient amount
+            var segments = new List<Segment>();
+            foreach (var n in vessels)
+            {
+                n.Query(bounds, seg => segments.Add(seg));
+            }
+            var segTree = AxialBoundsBinaryTree.Create(segments.Select(seg => new SegmentSurfaceTest(seg)));
+            Continuous.RemoveIllegalIntersections(g, segTree, this);
+
+            // Remove leaf branches, except for those that are at the chunk boundary
+            // It is possible that a two-way leaf branch existed, in which case the exterior vector is lost
+            g.RemoveLeafBranches(v => chunkExterior.Contains(v.P));
+            chunkExterior.RemoveWhere(e => !g.V.ContainsKey(e));
+
+            return (g, chunkExterior);
+        }
+
+        /// <summary>
+        /// Given a cumulative graph + boundary, merge new chunk into it.
+        /// </summary>
+        /// <param name="existing"></param>
+        /// <param name="existingBoundary"></param>
+        /// <param name="adding"></param>
+        /// <param name="addingBoundary"></param>
         protected abstract void StitchChunks(Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
             Graph<TV, TE> adding, HashSet<Vector3> addingBoundary);
 
-        public Func<AxialBounds, IEnumerable<AxialBounds>> ChunkGenerator { get; set; }
+        //public Func<AxialBounds, IEnumerable<AxialBounds>> ChunkGenerator { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public abstract double GetRadius(TE e);
 
+        /// <summary>
+        /// Allows only intersections with suitably small vessels in the major vessel trees and
+        /// enough overlap to be created.
+        /// </summary>
+        /// <param name="segment"></param>
+        /// <param name="overlap"></param>
+        /// <returns></returns>
         public abstract bool IsIntersectionPermitted(Segment segment, double overlap);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public Segment Convert(TE e)
         {
-            return new Segment()
-            {
-                Start = new Dummy() { Position = e.S.P },
-                End = new Dummy() { Position = e.E.P },
-                Radius = GetRadius(e)
-            };
+            return Segment.MakeDummy(e.S.P, e.E.P, GetRadius(e));
         }
 
         //public IEnumerable<Segment> Generate(AxialBounds totalBounds)
