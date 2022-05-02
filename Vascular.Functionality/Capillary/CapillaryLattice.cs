@@ -73,7 +73,7 @@ namespace Vascular.Functionality.Capillary
                 (iMax - iMin) * (jMax - jMin) +
                 (jMax - jMin) * (kMax - kMin) +
                 (kMax - kMin) * (iMax - iMin));
-            var chunkExterior = new HashSet<Vector3>(faceVertices);
+            var dG = new HashSet<Vector3>(faceVertices);
 
             // Loop and create edges
             for (var i = iMin; i <= iMax; ++i)
@@ -97,22 +97,19 @@ namespace Vascular.Functionality.Capillary
                             {
                                 if (this.PermittedEdge(x0, x))
                                 {
-                                    var v0 = g.AddVertex(x0);
-                                    var v = g.AddVertex(x);
-                                    var e = new Edge(v0, v);
-                                    g.AddEdge(e);
+                                    g.AddEdge(x0, x);
                                 }
                             }
                             else
                             {
-                                chunkExterior.Add(x0);
+                                dG.Add(x0);
                             }
                         }
                     }
                 }
             }
 
-            return (g, chunkExterior);
+            return (g, dG);
         }
 
         /// <summary>
@@ -122,16 +119,31 @@ namespace Vascular.Functionality.Capillary
         /// <param name="existingBoundary"></param>
         /// <param name="adding"></param>
         /// <param name="addingBoundary"></param>
-        protected override void StitchChunks(Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
+        public override void StitchChunk(Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
             Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary)
         {
+            Merge(existing, adding);
+
             // Find vertices that are on the boundary faces and merge them
-            foreach (var ab in addingBoundary)
+            var C = this.Lattice.VoronoiCell.Connections;
+            foreach (var x0 in addingBoundary)
             {
                 // Should not be possible to have vertices present in both boundaries, as we use strict inequality
                 // at the upper boundary and all vertex positions have followed the same transform from integral
                 // coordinates, so will have been generated at the exact same values.
+                var z0 = this.Lattice.ClosestVectorBasis(x0);
+                foreach (var c in C)
+                {
+                    var z1 = z0 + c;
+                    var x1 = this.Lattice.ToSpace(z1);
+                    if (!existingBoundary.Contains(x1) || 
+                        !this.PermittedEdge(x0, x1))
+                    {
+                        continue;
+                    }
 
+                    existing.AddEdge(x0, x1);
+                }
             }
         }
 

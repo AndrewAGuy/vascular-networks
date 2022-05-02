@@ -108,6 +108,21 @@ namespace Vascular
         }
 
         /// <summary>
+        /// Sets every element of <paramref name="t"/> to that returned by default constructor.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static T[] SetNew<T>(this T[] t) where T : new()
+        {
+            for (var i = 0; i < t.Length; ++i)
+            {
+                t[i] = new();
+            }
+            return t;
+        }
+
+        /// <summary>
         /// Creates a single element sequence.
         /// </summary>
         /// <typeparam name="T"></typeparam>

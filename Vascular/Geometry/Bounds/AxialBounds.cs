@@ -279,5 +279,20 @@ namespace Vascular.Geometry.Bounds
             this.Upper.z = Math.Min(this.Upper.z, other.Upper.z);
             return this;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Contains(AxialBounds other)
+        {
+            return this.Upper.x >= other.Upper.x
+                && this.Upper.y >= other.Upper.y
+                && this.Upper.z >= other.Upper.z
+                && this.Lower.x <= other.Lower.x
+                && this.Lower.y <= other.Lower.y
+                && this.Lower.z <= other.Lower.z;
+        }
     }
 }

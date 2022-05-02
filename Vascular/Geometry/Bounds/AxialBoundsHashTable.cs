@@ -63,7 +63,7 @@ namespace Vascular.Geometry.Bounds
         {
             baseStride = stride;
             this.factor = factor;
-            if (!elements.Any())
+            if (elements is null || !elements.Any())
             {
                 table = new Dictionary<Key, LinkedList<T>>();
                 levels = new HashSet<int>();
