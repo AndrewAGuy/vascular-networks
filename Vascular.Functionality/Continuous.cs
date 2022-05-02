@@ -53,6 +53,17 @@ namespace Vascular.Functionality
         }
 
         /// <summary>
+        /// Add the stitching edges into <paramref name="existing"/>.
+        /// </summary>
+        /// <param name="existing"></param>
+        /// <param name="existingBoundary"></param>
+        /// <param name="adding"></param>
+        /// <param name="addingBoundary"></param>
+        public abstract IEnumerable<TE> GenerateStitchEdges(
+            Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
+            Graph<TV, TE> adding, HashSet<Vector3> addingBoundary);
+
+        /// <summary>
         /// Given a cumulative graph + boundary, merge new chunk into it.
         /// </summary>
         /// <param name="existing"></param>
@@ -60,9 +71,28 @@ namespace Vascular.Functionality
         /// <param name="adding"></param>
         /// <param name="addingBoundary"></param>
         /// <param name="vessels"></param>
-        public abstract void StitchChunk(Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
+        public virtual void StitchChunk(
+            Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
             Graph<TV, TE> adding, HashSet<Vector3> addingBoundary, 
-            IEnumerable<IAxialBoundsQueryable<Segment>> vessels);
+            IEnumerable<IAxialBoundsQueryable<Segment>> vessels)
+        {
+            Merge(existing, adding);
+
+            var edges = GenerateStitchEdges(existing, existingBoundary, adding, addingBoundary);
+            var bounds = new AxialBounds();
+            foreach (var e in edges)
+            {
+                bounds.Append(new AxialBounds(e.S.P, e.E.P, GetRadius(e)));
+            }
+
+            var segments = new List<Segment>();
+            foreach (var n in vessels)
+            {
+                n.Query(bounds, seg => segments.Add(seg));
+            }
+            var segTree = AxialBoundsBinaryTree.Create(segments.Select(seg => new SegmentSurfaceTest(seg)));
+            RemoveIllegalIntersections(existing, segTree);
+        }
 
         /// <summary>
         /// 

@@ -119,15 +119,12 @@ namespace Vascular.Functionality.Capillary
         /// <param name="existingBoundary"></param>
         /// <param name="adding"></param>
         /// <param name="addingBoundary"></param>
-        /// <param name="vessels"></param>
-        public override void StitchChunk(Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
-            Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary,
-            IEnumerable<IAxialBoundsQueryable<Segment>> vessels)
+        /// <returns></returns>
+        public override IEnumerable<Edge> GenerateStitchEdges(
+            Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
+            Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary)
         {
-            Merge(existing, adding);
-
             var C = this.Lattice.VoronoiCell.Connections;
-            var bounds = new AxialBounds();
             foreach (var x0 in addingBoundary)
             {
                 // Should not be possible to have vertices present in both boundaries, as we use strict inequality
@@ -138,24 +135,16 @@ namespace Vascular.Functionality.Capillary
                 {
                     var z1 = z0 + c;
                     var x1 = this.Lattice.ToSpace(z1);
-                    if (!existingBoundary.Contains(x1) || 
+                    if (!existingBoundary.Contains(x1) ||
                         !this.PermittedEdge(x0, x1))
                     {
                         continue;
                     }
 
                     var edge = existing.AddEdge(x0, x1);
-                    bounds.Append(new AxialBounds(x0, x1, GetRadius(edge)));
+                    yield return edge;
                 }
             }
-
-            var segments = new List<Segment>();
-            foreach (var n in vessels)
-            {
-                n.Query(bounds, seg => segments.Add(seg));
-            }
-            var segTree = AxialBoundsBinaryTree.Create(segments.Select(seg => new SegmentSurfaceTest(seg)));
-            RemoveIllegalIntersections(existing, segTree);
         }
 
         private (Vertex, double) Walk(
