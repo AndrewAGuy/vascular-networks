@@ -59,8 +59,10 @@ namespace Vascular.Functionality
         /// <param name="existingBoundary"></param>
         /// <param name="adding"></param>
         /// <param name="addingBoundary"></param>
+        /// <param name="vessels"></param>
         public abstract void StitchChunk(Graph<TV, TE> existing, HashSet<Vector3> existingBoundary,
-            Graph<TV, TE> adding, HashSet<Vector3> addingBoundary);
+            Graph<TV, TE> adding, HashSet<Vector3> addingBoundary, 
+            IEnumerable<IAxialBoundsQueryable<Segment>> vessels);
 
         /// <summary>
         /// 

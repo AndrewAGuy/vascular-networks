@@ -119,13 +119,15 @@ namespace Vascular.Functionality.Capillary
         /// <param name="existingBoundary"></param>
         /// <param name="adding"></param>
         /// <param name="addingBoundary"></param>
+        /// <param name="vessels"></param>
         public override void StitchChunk(Graph<Vertex, Edge> existing, HashSet<Vector3> existingBoundary,
-            Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary)
+            Graph<Vertex, Edge> adding, HashSet<Vector3> addingBoundary,
+            IEnumerable<IAxialBoundsQueryable<Segment>> vessels)
         {
             Merge(existing, adding);
 
-            // Find vertices that are on the boundary faces and merge them
             var C = this.Lattice.VoronoiCell.Connections;
+            var bounds = new AxialBounds();
             foreach (var x0 in addingBoundary)
             {
                 // Should not be possible to have vertices present in both boundaries, as we use strict inequality
@@ -142,9 +144,18 @@ namespace Vascular.Functionality.Capillary
                         continue;
                     }
 
-                    existing.AddEdge(x0, x1);
+                    var edge = existing.AddEdge(x0, x1);
+                    bounds.Append(new AxialBounds(x0, x1, GetRadius(edge)));
                 }
             }
+
+            var segments = new List<Segment>();
+            foreach (var n in vessels)
+            {
+                n.Query(bounds, seg => segments.Add(seg));
+            }
+            var segTree = AxialBoundsBinaryTree.Create(segments.Select(seg => new SegmentSurfaceTest(seg)));
+            RemoveIllegalIntersections(existing, segTree);
         }
 
         private (Vertex, double) Walk(

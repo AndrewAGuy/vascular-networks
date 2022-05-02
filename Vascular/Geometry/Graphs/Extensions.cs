@@ -94,12 +94,20 @@ namespace Vascular.Geometry.Graphs
         /// <param name="v"></param>
         /// <returns></returns>
         public static (TV v0, TV v1) WalkBranch<TV, TE>(this TV v)
-            where TV : Vertex<TV, TE>
-            where TE : Edge<TV, TE>
+            where TV : Vertex<TV, TE>, new()
+            where TE : Edge<TV, TE>, new()
         {
             var e0 = v.E.First.Value;
-            var e1 = v.E.Last.Value;
-            return (WalkBranch(v, e0), WalkBranch(v, e1));
+            var v0 = WalkBranch(v, e0);
+            if (v.E.Count == 1)
+            {
+                return (v0, null);
+            }
+            else
+            {
+                var e1 = v.E.Last.Value;
+                return (v0, WalkBranch(v, e1));
+            }
         }
 
         /// <summary>
@@ -112,8 +120,8 @@ namespace Vascular.Geometry.Graphs
         /// <param name="e"></param>
         /// <returns></returns>
         public static TV WalkBranch<TV, TE>(TV v, TE e)
-            where TV : Vertex<TV, TE>
-            where TE : Edge<TV, TE>
+            where TV : Vertex<TV, TE>, new()
+            where TE : Edge<TV, TE>, new()
         {
             while (true)
             {

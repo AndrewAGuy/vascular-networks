@@ -92,7 +92,7 @@ namespace Vascular.Functionality
             // Performed before new chunk added to table, so never duplicates.
             var dG = new HashSet<Vector3>(chunk.Boundary.Count * this.BoundarySizeMultiplier);
             chunks.Query(chunk.Bounds, c => dG.UnionWith(c.Boundary));
-            continuous.StitchChunk(graph, dG, chunk.Graph, chunk.Boundary);
+            continuous.StitchChunk(graph, dG, chunk.Graph, chunk.Boundary, major);
         }
 
         /// <summary>
@@ -103,6 +103,8 @@ namespace Vascular.Functionality
         /// <returns></returns>
         public Graph<TV, TE> Take(AxialBounds bounds)
         {
+            Trim(bounds);
+
             var output = new Graph<TV, TE>();
             var removing = new List<TE>();
             foreach (var e in graph.E.Values)
@@ -124,6 +126,25 @@ namespace Vascular.Functionality
                 graph.RemoveEdge(e);
             }
             return output;
+        }
+
+        private void Trim(AxialBounds bounds)
+        {
+            bool validTrim(TV v)
+            {
+                // Leaf branches which end in the export region cannot be fixed.
+                // Those which start outside but end inside are also removed, it is possible
+                // that they could be fixed (e.g. through another chunk entirely) but these
+                // should be so long that it is not justified to save them.
+                if (bounds.Intersects(v.P))
+                {
+                    return true;
+                }
+                var (V, _) = v.WalkBranch<TV, TE>();
+                return bounds.Intersects(V.P);
+            }
+
+            graph.RemoveLeafBranches(v => !validTrim(v));
         }
     }
 }
