@@ -10,7 +10,7 @@ namespace Vascular.Intersections.Segmental
     /// </summary>
     public class SegmentList : SegmentRegion
     {
-        private readonly List<Segment> list = new List<Segment>();
+        private readonly List<Segment> list = new();
 
         /// <summary>
         /// 

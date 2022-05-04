@@ -20,7 +20,7 @@ namespace Vascular.Intersections.Segmental
         /// <param name="factor"></param>
         public SegmentHashTable(IEnumerable<Segment> s, double stride = 1, double factor = 2)
         {
-            segments = new AxialBoundsHashTable<Segment>(s, stride, factor);
+            segments = new(s, stride, factor);
         }
 
         /// <summary>

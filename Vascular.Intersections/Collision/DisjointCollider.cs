@@ -68,7 +68,7 @@ namespace Vascular.Intersections.Collision
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()
         {
-            intersections = new List<SegmentIntersection>();
+            intersections = new();
             Search(networkA.Root, networkB.Root);
             return intersections;
         }

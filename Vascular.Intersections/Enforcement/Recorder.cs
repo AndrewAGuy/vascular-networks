@@ -67,12 +67,12 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// 
         /// </summary>
-        protected HashSet<TPenalizing> intersecting = new HashSet<TPenalizing>();
+        protected HashSet<TPenalizing> intersecting = new();
 
         /// <summary>
         /// 
         /// </summary>
-        protected HashSet<TPenalizing> culling = new HashSet<TPenalizing>();
+        protected HashSet<TPenalizing> culling = new();
 
         /// <summary>
         /// 
@@ -80,8 +80,8 @@ namespace Vascular.Intersections.Enforcement
         public virtual void Reset()
         {
             this.GeometryActions = null;
-            intersecting = new HashSet<TPenalizing>();
-            culling = new HashSet<TPenalizing>();
+            intersecting = new();
+            culling = new();
             total = 0;
         }
 

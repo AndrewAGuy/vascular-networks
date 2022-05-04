@@ -40,8 +40,8 @@ namespace Vascular.Intersections.Segmental
         /// </summary>
         public override int Count => intersecting.Count;
 
-        private Dictionary<IMobileNode, SingleEntry> nodes = new Dictionary<IMobileNode, SingleEntry>();
-        private Dictionary<Segment, DoubleEntry> segments = new Dictionary<Segment, DoubleEntry>();
+        private Dictionary<IMobileNode, SingleEntry> nodes = new();
+        private Dictionary<Segment, DoubleEntry> segments = new();
 
         /// <summary>
         /// 
@@ -49,8 +49,8 @@ namespace Vascular.Intersections.Segmental
         public override void Reset()
         {
             base.Reset();
-            nodes = new Dictionary<IMobileNode, SingleEntry>();
-            segments = new Dictionary<Segment, DoubleEntry>();
+            nodes = new();
+            segments = new();
         }
 
         /// <summary>

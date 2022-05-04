@@ -5,7 +5,6 @@ using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Graphs;
 using Vascular.Geometry.Lattices;
-using Vascular.Geometry.Surfaces;
 using Vascular.Structure;
 
 namespace Vascular.Functionality.Capillary

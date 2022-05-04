@@ -29,8 +29,7 @@ namespace Vascular.Intersections.Triangulation
         /// <param name="factor"></param>
         public MeshHashTable(Mesh mesh, double r = 0.0, double t2 = 1e-12, double stride = 1, double factor = 2)
         {
-            this.Table = new AxialBoundsHashTable<TriangleSurfaceTest>(
-                mesh.T.Select(t => new TriangleSurfaceTest(t, r, t2)), stride, factor);
+            this.Table = new(mesh.T.Select(t => new TriangleSurfaceTest(t, r, t2)), stride, factor);
         }
 
         /// <summary>

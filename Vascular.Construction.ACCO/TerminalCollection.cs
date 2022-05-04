@@ -12,12 +12,12 @@ namespace Vascular.Construction.ACCO
     /// </summary>
     public class TerminalCollection
     {
-        private List<Terminal> waiting = new List<Terminal>();
-        private List<Terminal> rejected = new List<Terminal>();
-        private List<Terminal> culled = new List<Terminal>();
-        private readonly LinkedList<Terminal> built = new LinkedList<Terminal>();
+        private List<Terminal> waiting = new();
+        private List<Terminal> rejected = new();
+        private List<Terminal> culled = new();
+        private readonly LinkedList<Terminal> built = new();
 
-        private Random random = new Random();
+        private Random random = new();
         private Network network = null;
         private int rejections = 0;
 

@@ -76,7 +76,7 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// 
         /// </summary>
-        public virtual Penalizer<TPenalizing> Penalizer { get; set; } = new Penalizer<TPenalizing>();
+        public virtual Penalizer<TPenalizing> Penalizer { get; set; } = new();
 
         /// <summary>
         /// 
@@ -86,7 +86,7 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// The recorder is single threaded.
         /// </summary>
-        protected SemaphoreSlim recorderSemaphore = new SemaphoreSlim(1);
+        protected SemaphoreSlim recorderSemaphore = new(1);
 
         /// <summary>
         /// 

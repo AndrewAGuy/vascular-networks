@@ -147,7 +147,7 @@ namespace Vascular.Intersections.Collision
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()
         {
-            intersections = new List<SegmentIntersection>();
+            intersections = new();
             TestFrom(network.Root);
             return intersections;
         }

@@ -21,7 +21,7 @@ namespace Vascular.Intersections.Segmental
             tree = AxialBoundsBinaryTree.Create(segments);
         }
 
-        private readonly List<SegmentIntersection> intersections = new List<SegmentIntersection>();
+        private readonly List<SegmentIntersection> intersections = new();
 
         /// <summary>
         /// 

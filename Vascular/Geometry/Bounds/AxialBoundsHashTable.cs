@@ -39,7 +39,7 @@ namespace Vascular.Geometry.Bounds
 
         private readonly Dictionary<Key, LinkedList<T>> table;
         private readonly HashSet<int> levels;
-        private readonly AxialBounds totalBounds = new AxialBounds();
+        private readonly AxialBounds totalBounds = new();
         private readonly double factor;
         private readonly double baseStride;
 

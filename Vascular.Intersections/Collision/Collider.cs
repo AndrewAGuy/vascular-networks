@@ -18,7 +18,7 @@ namespace Vascular.Intersections.Collision
         /// <summary>
         /// Used for generating normals.
         /// </summary>
-        public CubeGrayCode GrayCode { get; set; } = new CubeGrayCode();
+        public CubeGrayCode GrayCode { get; set; } = new();
 
         /// <summary>
         /// Adds any intersecting segments between <paramref name="a"/> and <paramref name="b"/> to <paramref name="ii"/>.

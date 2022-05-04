@@ -171,7 +171,7 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private readonly List<IAxialBoundsQueryable<Segment>> features = new List<IAxialBoundsQueryable<Segment>>();
+        private readonly List<IAxialBoundsQueryable<Segment>> features = new();
         
         /// <summary>
         /// 

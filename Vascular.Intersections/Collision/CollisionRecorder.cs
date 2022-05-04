@@ -44,10 +44,10 @@ namespace Vascular.Intersections.Collision
             // All immediate cull nodes are also present in the stationary set
             segments.Count + nodes.Count + intersecting.Count;
 
-        private Dictionary<Segment, SingleEntry> segments = new Dictionary<Segment, SingleEntry>();
-        private Dictionary<IMobileNode, SingleEntry> nodes = new Dictionary<IMobileNode, SingleEntry>();
+        private Dictionary<Segment, SingleEntry> segments = new();
+        private Dictionary<IMobileNode, SingleEntry> nodes = new();
 
-        private HashSet<BranchAction> branchActions = new HashSet<BranchAction>();
+        private HashSet<BranchAction> branchActions = new();
 
         /// <summary>
         /// 
@@ -55,9 +55,9 @@ namespace Vascular.Intersections.Collision
         public override void Reset()
         {
             base.Reset();
-            segments = new Dictionary<Segment, SingleEntry>();
-            nodes = new Dictionary<IMobileNode, SingleEntry>();
-            branchActions = new HashSet<BranchAction>();
+            segments = new();
+            nodes = new();
+            branchActions = new();
         }
 
         /// <summary>

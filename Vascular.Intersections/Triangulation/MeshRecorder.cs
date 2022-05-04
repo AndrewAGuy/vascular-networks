@@ -20,7 +20,7 @@ namespace Vascular.Intersections.Triangulation
         /// </summary>
         public override int Count => intersecting.Count;
 
-        private Dictionary<Segment, MeshIntersectionExtrema> intersections = new Dictionary<Segment, MeshIntersectionExtrema>();
+        private Dictionary<Segment, MeshIntersectionExtrema> intersections = new();
 
         /// <summary>
         /// Some use cases require branches to cross from outside to inside a mesh.
@@ -33,7 +33,7 @@ namespace Vascular.Intersections.Triangulation
         /// </summary>
         public override void Reset()
         {
-            intersections = new Dictionary<Segment, MeshIntersectionExtrema>();
+            intersections = new();
             base.Reset();
         }
 

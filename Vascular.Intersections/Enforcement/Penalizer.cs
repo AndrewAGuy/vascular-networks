@@ -34,9 +34,9 @@ namespace Vascular.Intersections.Enforcement
             }
         }
 
-        private readonly Dictionary<T, Entry> tracked = new Dictionary<T, Entry>();
-        private readonly List<T> violators = new List<T>();
-        private readonly List<T> dropping = new List<T>();
+        private readonly Dictionary<T, Entry> tracked = new();
+        private readonly List<T> violators = new();
+        private readonly List<T> dropping = new();
 
         /// <summary>
         /// 

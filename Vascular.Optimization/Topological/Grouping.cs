@@ -375,8 +375,6 @@ namespace Vascular.Optimization.Topological
                     var tst = new TriangleSurfaceTest(
                         action.A.End.Position, action.B.Start.Position, action.B.End.Position,
                         rayTolerance);
-                    // TODO: extend Query method to have a continuation predicate overload? Might be nice to terminate early.
-                    // TODO: move this to somewhere else, it's a bit of a weird spot to be keeping this.
                     surface.Query(tst.GetAxialBounds(), TST =>
                     {
                         if (tst.TestTriangleRays(TST, out var a, out var b))
