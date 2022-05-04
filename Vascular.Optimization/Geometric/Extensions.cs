@@ -249,5 +249,45 @@ namespace Vascular.Optimization.Geometric
             gd.MovingPredicate = null;
             return gd;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gd"></param>
+        /// <param name="weighting"></param>
+        /// <param name="fraction"></param>
+        /// <returns></returns>
+        public static GradientDescentMinimizer UnfoldIfNonFinite(this GradientDescentMinimizer gd,
+            Func<Segment, double> weighting = null, double fraction = 0.5)
+        {
+            var unfolder = new Unfolder()
+            {
+                Fraction = fraction,
+            };
+            if (weighting is not null)
+            {
+                unfolder.Weighting = weighting;
+            }
+
+            void filter(IDictionary<IMobileNode, Vector3> G)
+            {
+                foreach (var (n, g) in G)
+                {
+                    if (!g.IsFinite)
+                    {
+                        var p = unfolder.Perturbation(n);
+                        var d = p.Length * gd.Stride;
+                        if (d > gd.TargetStep)
+                        {
+                            p *= gd.TargetStep / d;
+                        }
+                        g.Copy(p);
+                    }
+                }
+            }
+
+            gd.OnGradientComputed += filter;
+            return gd;
+        }
     }
 }

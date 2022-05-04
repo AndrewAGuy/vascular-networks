@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -12,22 +14,33 @@ namespace Vascular.Optimization.Topological
     public static class Fragmentation
     {
         /// <summary>
-        /// Tries to split each segment into parts with prescribed slenderness, up to the given limit.
+        /// Tries to split each into parts with prescribed slenderness, up to the given limit.
+        /// If <paramref name="asSegments"/> is true, treats each segment separately and does not
+        /// modify the overall shape of the branch, otherwise interpolates the computed number of
+        /// points uniformly onto the branch centreline.
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="slenderness"></param>
         /// <param name="limit"></param>
-        public static void Fragment(Branch branch, double slenderness, int limit)
+        /// <param name="asSegments"></param>
+        public static void Fragment(Branch branch, double slenderness, int limit, bool asSegments = true)
         {
-            var reinit = false;
-            foreach (var segment in branch.Segments)
+            if (asSegments)
             {
-                reinit |= TrySplit(segment, slenderness, limit);
-            }
+                var reinit = false;
+                foreach (var segment in branch.Segments)
+                {
+                    reinit |= TrySplit(segment, slenderness, limit);
+                }
 
-            if (reinit)
+                if (reinit)
+                {
+                    Reinitialize(branch);
+                }
+            }
+            else
             {
-                Reinitialize(branch);
+                TrySplit(branch, slenderness, limit);
             }
         }
 
@@ -168,6 +181,59 @@ namespace Vascular.Optimization.Topological
                 return true;
             }
             return false;
+        }
+
+        private static void TrySplit(Branch branch, double slenderness, int limit)
+        {
+            var length = branch.Length;
+            var radius = branch.Radius;
+            if (length / radius <= slenderness)
+            {
+                return;
+            }
+
+            var splits = (int)Math.Floor(length / (radius * slenderness));
+            splits = Math.Min(splits, limit);
+
+            var positions = branch.AtFractions(
+                Enumerable.Range(1, splits).Select(i => i / (splits + 1.0)))
+                .ToArray();
+            branch.Reset();
+            var transients = Topology.InsertTransients(branch.Segments[0], splits);
+            for(var i = 0; i < splits; ++i)
+            {
+                transients[i].Position = positions[i];
+            }
+            branch.UpdateLengths();
+            branch.UpdateRadii();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="br"></param>
+        /// <param name="F"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vector3> AtFractions(this Branch br, IEnumerable<double> F)
+        {
+            var L = br.Length;
+            var l = 0.0;
+            var s = br.Segments[0];
+            foreach (var f in F)
+            {
+                var lT = f * L;
+                while (true)
+                {
+                    var lR = lT - l;
+                    if (lR <= s.Length)
+                    {
+                        yield return s.AtFraction(lR / s.Length);
+                        break;
+                    }
+                    s = s.End.Children[0];
+                    l += s.Length;
+                }
+            }
         }
     }
 }

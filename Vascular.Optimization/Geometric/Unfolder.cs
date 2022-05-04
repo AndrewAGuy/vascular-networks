@@ -34,19 +34,29 @@ namespace Vascular.Optimization.Geometric
 
             foreach (var m in n.MobileNodes)
             {
-                if (m is Transient tr)
-                {
-                    var x = 0.5 * (tr.Parent.Start.Position + tr.Child.End.Position);
-                    P[tr] = (x - tr.Position) * this.Fraction;
-                }
-                else
-                {
-                    var x = WeightedMean(m);
-                    P[m] = (x - m.Position) * this.Fraction;
-                }
+                P[m] = Perturbation(m);
             }
 
             return P;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public Vector3 Perturbation(IMobileNode node)
+        {
+            if (node is Transient tr)
+            {
+                var x = 0.5 * (tr.Parent.Start.Position + tr.Child.End.Position);
+                return (x - tr.Position) * this.Fraction;
+            }
+            else
+            {
+                var x = WeightedMean(node);
+                return (x - node.Position) * this.Fraction;
+            }
         }
 
         /// <summary>

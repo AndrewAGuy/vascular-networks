@@ -14,8 +14,9 @@ namespace Vascular.Structure.Actions
         /// 
         /// </summary>
         /// <param name="seg"></param>
+        /// <param name="reinit"></param>
         /// <returns></returns>
-        public static Transient InsertTransient(Segment seg)
+        public static Transient InsertTransient(Segment seg, bool reinit = true)
         {
             var end = seg.End;
             var child = new Segment();
@@ -29,6 +30,26 @@ namespace Vascular.Structure.Actions
             seg.End = tr;
             tr.Parent = seg;
             // Update branch
+            if (reinit)
+            {
+                seg.Branch.Reinitialize();
+            }
+            return tr;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="seg"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static Transient[] InsertTransients(Segment seg, int n)
+        {
+            var tr = new Transient[n];
+            for (var i = 0; i < n; ++i)
+            {
+                tr[i] = InsertTransient(seg, false);
+            }
             seg.Branch.Reinitialize();
             return tr;
         }
