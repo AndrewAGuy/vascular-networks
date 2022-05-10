@@ -11,7 +11,7 @@ namespace Vascular.Structure.Actions
     public static class Topology
     {
         /// <summary>
-        /// 
+        /// The existing segment becomes the parent of the new one.
         /// </summary>
         /// <param name="seg"></param>
         /// <param name="reinit"></param>
@@ -45,10 +45,12 @@ namespace Vascular.Structure.Actions
         /// <returns></returns>
         public static Transient[] InsertTransients(Segment seg, int n)
         {
+            var s = seg;
             var tr = new Transient[n];
             for (var i = 0; i < n; ++i)
             {
-                tr[i] = InsertTransient(seg, false);
+                tr[i] = InsertTransient(s, false);
+                s = tr[i].Child;
             }
             seg.Branch.Reinitialize();
             return tr;

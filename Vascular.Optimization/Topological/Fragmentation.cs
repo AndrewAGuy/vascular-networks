@@ -200,7 +200,7 @@ namespace Vascular.Optimization.Topological
                 .ToArray();
             branch.Reset();
             var transients = Topology.InsertTransients(branch.Segments[0], splits);
-            for(var i = 0; i < splits; ++i)
+            for (var i = 0; i < splits; ++i)
             {
                 transients[i].Position = positions[i];
             }
@@ -230,8 +230,8 @@ namespace Vascular.Optimization.Topological
                         yield return s.AtFraction(lR / s.Length);
                         break;
                     }
-                    s = s.End.Children[0];
                     l += s.Length;
+                    s = s.End.Children[0];
                 }
             }
         }

@@ -282,59 +282,5 @@ namespace Vascular.Optimization.Geometric
         /// 
         /// </summary>
         public Func<IMobileNode, bool> RecordPredicate { get; set; } = n => true;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="network"></param>
-        /// <param name="targetStep"></param>
-        /// <param name="iterations"></param>
-        /// <param name="fragSlenderness"></param>
-        /// <param name="maxFrag"></param>
-        /// <param name="asSegments"></param>
-        /// <param name="termDir"></param>
-        /// <param name="srcDir"></param>
-        /// <param name="termBoost"></param>
-        /// <param name="linSpring"></param>
-        public static void FragmentAndSmooth(Network network, double targetStep, int iterations,
-            double fragSlenderness = 2, int maxFrag = 10, bool asSegments = false,
-            Func<Terminal, Vector3> termDir = null, Func<Source, Vector3> srcDir = null,
-            double termBoost = 1, double linSpring = 1)
-        {
-            termDir ??= GroupTerminalDirection();
-            srcDir ??= s => network.InletDirection;
-
-            if (double.IsFinite(fragSlenderness))
-            {
-                network.Source.PropagateRadiiDownstream();
-                foreach (var b in network.Branches)
-                {
-                    Fragmentation.Fragment(b, fragSlenderness, maxFrag, asSegments);
-                }
-            }
-
-            var smoother = new Smoother()
-            {
-                AngularSpringConstant = s => s.End is Terminal ? termBoost : 1,
-                LinearSpringConstant = s => linSpring,
-                SourceDirection = srcDir,
-                TerminalDirection = termDir,
-                Scaling = -1
-            };
-            var minimizer = new GradientDescentMinimizer(network)
-            {
-                TargetStep = targetStep,
-                MovingPredicate = n => n is Transient,
-                BlockLength = iterations / 5,
-                BlockRatio = 0.75,
-            }.Add(smoother.Forces)
-            .FilterByPredicate()
-            .UnfoldIfNonFinite();
-
-            for (var i = 0; i < iterations; ++i)
-            {
-                minimizer.Iterate();
-            }
-        }
     }
 }

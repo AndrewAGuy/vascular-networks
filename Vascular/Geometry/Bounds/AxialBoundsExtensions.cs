@@ -92,18 +92,22 @@ namespace Vascular.Geometry.Bounds
             var v011 = new Vector3(v000.x, v111.y, v111.z);
             var v110 = new Vector3(v111.x, v111.y, v000.z);
             var v101 = new Vector3(v111.x, v000.y, v111.z);
-            m.AddTriangle(v000, v100, v101); // -Y
-            m.AddTriangle(v000, v101, v001);
-            m.AddTriangle(v100, v110, v111); // +X
-            m.AddTriangle(v100, v111, v101);
+
             m.AddTriangle(v001, v101, v111); // +Z
             m.AddTriangle(v001, v111, v011);
+            m.AddTriangle(v000, v110, v100); // -Z
+            m.AddTriangle(v000, v010, v110);
+
+            m.AddTriangle(v100, v110, v111); // +X
+            m.AddTriangle(v100, v111, v101);
+            m.AddTriangle(v000, v011, v010); // -X
+            m.AddTriangle(v000, v001, v011);
+
             m.AddTriangle(v110, v010, v011); // +Y
             m.AddTriangle(v110, v011, v111);
-            m.AddTriangle(v010, v110, v000); // -Z
-            m.AddTriangle(v010, v000, v100);
-            m.AddTriangle(v010, v000, v001); // -X
-            m.AddTriangle(v010, v001, v011);
+            m.AddTriangle(v100, v001, v000); // -Y
+            m.AddTriangle(v100, v101, v001);
+
             return m;
         }
     }

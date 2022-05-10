@@ -61,6 +61,24 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
+        public HierarchicalCosts Copy(Network network)
+        {
+            var hc = new HierarchicalCosts(network)
+            {
+                WorkFactor = this.WorkFactor
+            };
+            foreach (var sc in this.SchreinerCosts)
+            {
+                hc.AddSchreinerCost(sc.EffectiveLengths.ExpL, sc.EffectiveLengths.ExpR, sc.Multiplier);
+            }
+            return hc;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Network Network
         {
             get => hierarchicalGradients.Network;
