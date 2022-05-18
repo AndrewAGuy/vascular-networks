@@ -21,8 +21,6 @@ namespace Vascular.Intersections.Segmental
             tree = AxialBoundsBinaryTree.Create(segments);
         }
 
-        private readonly List<SegmentIntersection> intersections = new();
-
         /// <summary>
         /// 
         /// </summary>
@@ -30,12 +28,12 @@ namespace Vascular.Intersections.Segmental
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate(Network network)
         {
-            intersections.Clear();
-            Test(tree, network.Root);
+            var intersections = new List<SegmentIntersection>();
+            Test(intersections, tree, network.Root);
             return intersections;
         }
 
-        private void Test(AxialBoundsBinaryTreeNode<Segment> node, Branch branch)
+        private void Test(List<SegmentIntersection> intersections, AxialBoundsBinaryTreeNode<Segment> node, Branch branch)
         {
             if (branch.LocalBounds.Intersects(node.GetAxialBounds()))
             {
@@ -53,32 +51,30 @@ namespace Vascular.Intersections.Segmental
                     });
                 });
             }
-            else
+                      
+            // If local bounds of branch didn't hit global bounds of node, then it won't hit anything downstream either.
+            // Split search based on child pairs if we can, otherwise we need to keep searching down the network against this.
+            if (node is AxialBoundsBinaryTreeSplit<Segment> split)
             {
-                // If local bounds of branch didn't hit global bounds of node, then it won't hit anything downstream either.
-                // Split search based on child pairs if we can, otherwise we need to keep searching down the network against this.
-                if (node is AxialBoundsBinaryTreeSplit<Segment> split)
+                foreach (var child in branch.Children)
                 {
-                    foreach (var child in branch.Children)
+                    if (child.GlobalBounds.Intersects(split.Left.GetAxialBounds()))
                     {
-                        if (child.GlobalBounds.Intersects(split.Left.GetAxialBounds()))
-                        {
-                            Test(split.Left, child);
-                        }
-                        if (child.GlobalBounds.Intersects(split.Right.GetAxialBounds()))
-                        {
-                            Test(split.Right, child);
-                        }
+                        Test(intersections, split.Left, child);
+                    }
+                    if (child.GlobalBounds.Intersects(split.Right.GetAxialBounds()))
+                    {
+                        Test(intersections, split.Right, child);
                     }
                 }
-                else
+            }
+            else
+            {
+                foreach (var child in branch.Children)
                 {
-                    foreach (var child in branch.Children)
+                    if (child.GlobalBounds.Intersects(node.GetAxialBounds()))
                     {
-                        if (child.GlobalBounds.Intersects(node.GetAxialBounds()))
-                        {
-                            Test(node, child);
-                        }
+                        Test(intersections, node, child);
                     }
                 }
             }
