@@ -33,51 +33,20 @@ namespace Vascular.Intersections.Segmental
             return intersections;
         }
 
-        private void Test(List<SegmentIntersection> intersections, AxialBoundsBinaryTreeNode<Segment> node, Branch branch)
+        private void Test(List<SegmentIntersection> intersections, 
+            AxialBoundsBinaryTreeNode<Segment> node, Branch root)
         {
-            if (branch.LocalBounds.Intersects(node.GetAxialBounds()))
+            node.Query(root, (branch, forbidden) =>
             {
-                // We want to test this branch against everything downstream of this node.
-                // We will never test this branch against anything again.
-                node.Query(branch.LocalBounds, forbiddenSegment =>
+                branch.Query(forbidden.Bounds, segment =>
                 {
-                    branch.Query(forbiddenSegment.Bounds, networkSegment =>
+                    var i = new SegmentIntersection(forbidden, segment, this.GrayCode);
+                    if (i.Intersecting)
                     {
-                        var i = new SegmentIntersection(forbiddenSegment, networkSegment, this.GrayCode);
-                        if (i.Intersecting)
-                        {
-                            intersections.Add(i);
-                        }
-                    });
+                        intersections.Add(i);
+                    }
                 });
-            }
-                      
-            // If local bounds of branch didn't hit global bounds of node, then it won't hit anything downstream either.
-            // Split search based on child pairs if we can, otherwise we need to keep searching down the network against this.
-            if (node is AxialBoundsBinaryTreeSplit<Segment> split)
-            {
-                foreach (var child in branch.Children)
-                {
-                    if (child.GlobalBounds.Intersects(split.Left.GetAxialBounds()))
-                    {
-                        Test(intersections, split.Left, child);
-                    }
-                    if (child.GlobalBounds.Intersects(split.Right.GetAxialBounds()))
-                    {
-                        Test(intersections, split.Right, child);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var child in branch.Children)
-                {
-                    if (child.GlobalBounds.Intersects(node.GetAxialBounds()))
-                    {
-                        Test(intersections, node, child);
-                    }
-                }
-            }
+            });
         }
 
         /// <summary>

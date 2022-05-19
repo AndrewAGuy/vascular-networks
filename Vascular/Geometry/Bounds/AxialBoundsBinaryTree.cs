@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Structure;
 
 namespace Vascular.Geometry.Bounds
 {
@@ -152,6 +153,51 @@ namespace Vascular.Geometry.Bounds
             {
                 Visit(split.Left, leafAction);
                 Visit(split.Right, leafAction);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        /// <param name="branch"></param>
+        /// <param name="action"></param>
+        public static void Query<T>(this AxialBoundsBinaryTreeNode<T> node, Branch branch, Action<Branch, T> action)
+            where T : IAxialBoundable
+        {
+            if (branch.LocalBounds.Intersects(node.GetAxialBounds()))
+            {
+                // We want to test this branch against everything downstream of this node.
+                // We will never test this branch against anything again.
+                node.Query(branch.LocalBounds, item => action(branch, item));
+            }
+
+            // If local bounds of branch didn't hit global bounds of node, then it won't hit anything downstream either.
+            // Split search based on child pairs if we can, otherwise we need to keep searching down the network against this.
+            if (node is AxialBoundsBinaryTreeSplit<T> split)
+            {
+                foreach (var child in branch.Children)
+                {
+                    if (child.GlobalBounds.Intersects(split.Left.GetAxialBounds()))
+                    {
+                        split.Left.Query(child, action);
+                    }
+                    if (child.GlobalBounds.Intersects(split.Right.GetAxialBounds()))
+                    {
+                        split.Right.Query(child, action);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var child in branch.Children)
+                {
+                    if (child.GlobalBounds.Intersects(node.GetAxialBounds()))
+                    {
+                        node.Query(child, action);
+                    }
+                }
             }
         }
     }
