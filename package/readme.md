@@ -1,6 +1,6 @@
 # Vascular.Networks
 #### Procedural Plumbing for Bioengineering
-Andrew Guy, 2022                                
+Copyright Andrew Guy, 2022                                
 
 ---
 
