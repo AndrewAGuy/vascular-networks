@@ -604,5 +604,43 @@ namespace Vascular.Geometry.Lattices.Manipulation
         {
             return v => walker.NearestBasis(v);
         }
+
+        /// <summary>
+        /// For a lattice <paramref name="L"/> with connection pattern <paramref name="C"/>,
+        /// start from point <paramref name="x0"/> (in real space) and walk the connection pattern.
+        /// Each point is tested (in real space) by <paramref name="xPredicate"/>, and all connected
+        /// lattice sites starting from the closest point to <paramref name="x0"/> are returned.
+        /// If <paramref name="x0"/> is outside according to <paramref name="xPredicate"/>, returns
+        /// empty set.
+        /// </summary>
+        /// <param name="L"></param>
+        /// <param name="C"></param>
+        /// <param name="x0"></param>
+        /// <param name="xPredicate"></param>
+        /// <returns></returns>
+        public static HashSet<Vector3> GetComponent(Lattice L, Vector3[] C, Vector3 x0, Func<Vector3, bool> xPredicate)
+        {
+            var Z = new HashSet<Vector3>();
+            var z0 = L.ClosestVectorBasis(x0);
+            var E = new HashSet<Vector3>() { z0 };
+            while (E.Count != 0)
+            {
+                var eNew = new HashSet<Vector3>(E.Count * C.Length);
+                foreach (var e in E)
+                {
+                    var x = L.ToSpace(e);
+                    if (!Z.Contains(e) && xPredicate(x))
+                    {
+                        Z.Add(e);
+                        foreach (var c in C)
+                        {
+                            eNew.Add(e + c);
+                        }
+                    }
+                }
+                E = eNew;
+            }
+            return Z;
+        }
     }
 }

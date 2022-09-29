@@ -3,7 +3,7 @@
 namespace Vascular.Structure.Actions
 {
     /// <summary>
-    /// Whilst a wrapper for <see cref="Topology.InsertTransient(Segment)"/>, this doesn't have an impact on
+    /// Whilst a wrapper for <see cref="Topology.InsertTransient(Segment, bool)"/>, this doesn't have an impact on
     /// the branch-based topology.
     /// </summary>
     public class InsertTransient : GeometryAction
