@@ -39,13 +39,21 @@ namespace Vascular.Geometry.Bounds
 
         private readonly Dictionary<Key, LinkedList<T>> table;
         private readonly HashSet<int> levels;
-        private readonly AxialBounds totalBounds = new();
+        private AxialBounds totalBounds = new();
         private readonly double factor;
         private readonly double baseStride;
+        private readonly int minLevel = int.MinValue;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Count { get; private set; }
 
         private int Level(double range)
         {
-            return (int)Math.Ceiling(Math.Log(range / baseStride, factor));
+            // Keep comparison in doubles, as 0 range will return -Inf
+            var actual = Math.Ceiling(Math.Log(range / baseStride, factor));
+            return (int)Math.Max(actual, minLevel);
         }
 
         private double Stride(int level)
@@ -59,10 +67,16 @@ namespace Vascular.Geometry.Bounds
         /// <param name="elements"></param>
         /// <param name="stride">The base stride. All boxes will be multiples of this.</param>
         /// <param name="factor">The scaling factor between levels.</param>
-        public AxialBoundsHashTable(IEnumerable<T> elements, double stride = 1.0, double factor = 2.0)
+        /// <param name="minStride">The minimum stride, preventing small objects from dominating query times.</param>
+        public AxialBoundsHashTable(IEnumerable<T> elements,
+            double stride = 1.0, double factor = 2.0, double minStride = 0.0)
         {
             baseStride = stride;
             this.factor = factor;
+            if (minStride > 0)
+            {
+                this.minLevel = Level(minStride);
+            }
             if (elements is null || !elements.Any())
             {
                 table = new Dictionary<Key, LinkedList<T>>();
@@ -106,6 +120,7 @@ namespace Vascular.Geometry.Bounds
                     }
                 }
             }
+            ++this.Count;
         }
 
         /// <summary>
@@ -119,6 +134,7 @@ namespace Vascular.Geometry.Bounds
             var stride = Stride(level);
             var lower = (bounds.Lower / stride).Floor;
             var upper = (bounds.Upper / stride).Ceiling;
+            var removed = false;
             for (var i = lower.i; i < upper.i; ++i)
             {
                 for (var j = lower.j; j < upper.j; ++j)
@@ -128,7 +144,7 @@ namespace Vascular.Geometry.Bounds
                         var key = new Key(i, j, k, level);
                         if (table.TryGetValue(key, out var bucket))
                         {
-                            bucket.Remove(element);
+                            removed |= bucket.Remove(element);
                             if (bucket.Count == 0)
                             {
                                 table.Remove(key);
@@ -136,6 +152,10 @@ namespace Vascular.Geometry.Bounds
                         }
                     }
                 }
+            }
+            if (removed)
+            {
+                --this.Count;
             }
         }
 
@@ -145,6 +165,14 @@ namespace Vascular.Geometry.Bounds
             return totalBounds;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public void UpdateAxialBounds()
+        {
+            totalBounds = this.GetTotalBounds();
+        }
+
         /// <inheritdoc/>
         public void Query(AxialBounds query, Action<T> action)
         {
@@ -152,13 +180,21 @@ namespace Vascular.Geometry.Bounds
             foreach (var level in levels)
             {
                 var stride = Stride(level);
-                var lower = (query.Lower / stride).Floor;
-                var upper = (query.Upper / stride).Ceiling;
-                for (var i = lower.i; i < upper.i; ++i)
+                var lower = query.Lower / stride;
+                var (li, lj, lk) = lower.Floor;
+                li -= lower.x == li ? 1 : 0;
+                lj -= lower.y == lj ? 1 : 0;
+                lk -= lower.z == lk ? 1 : 0;
+                var upper = query.Upper / stride;
+                var (ui, uj, uk) = upper.Ceiling;
+                ui += upper.x == ui ? 1 : 0;
+                uj += upper.y == uj ? 1 : 0;
+                uk += upper.z == uk ? 1 : 0;
+                for (var i = li; i < ui; ++i)
                 {
-                    for (var j = lower.j; j < upper.j; ++j)
+                    for (var j = lj; j < uj; ++j)
                     {
-                        for (var k = lower.k; k < upper.k; ++k)
+                        for (var k = lk; k < uk; ++k)
                         {
                             var key = new Key(i, j, k, level);
                             if (table.TryGetValue(key, out var elements))
@@ -193,6 +229,55 @@ namespace Vascular.Geometry.Bounds
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="Query"/> wrapper which prevents duplicate hits.
+        /// Create one of these per thread, as the test set underneath is persisted.
+        /// </summary>
+        /// <param name="comp"></param>
+        public IAxialBoundsQueryable<T> Deduplicated(IEqualityComparer<T> comp = null)
+        {
+            return new DeduplicatedQuery(this, comp);
+        }
+
+        private class DeduplicatedQuery : IAxialBoundsQueryable<T>
+        {
+            private readonly AxialBoundsHashTable<T> table;
+            private readonly HashSet<T> hit;
+
+            public DeduplicatedQuery(AxialBoundsHashTable<T> table, IEqualityComparer<T> comp = null)
+            {
+                this.table = table;
+                hit = comp is null ? new() : new(comp);
+            }
+
+            public void Query(AxialBounds query, Action<T> action)
+            {
+                hit.Clear();
+                table.Query(query, obj =>
+                {
+                    if (hit.Add(obj))
+                    {
+                        action(obj);
+                    }
+                });
+            }
+
+            public AxialBounds GetAxialBounds()
+            {
+                return table.GetAxialBounds();
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return table.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable)table).GetEnumerator();
+            }
         }
     }
 }

@@ -67,8 +67,8 @@ namespace Vascular.Geometry.Bounds
         {
             if (bounds.Intersects(query))
             {
-                this.Left.Query(bounds, action);
-                this.Right.Query(bounds, action);
+                this.Left.Query(query, action);
+                this.Right.Query(query, action);
             }
         }
 
