@@ -749,6 +749,23 @@ namespace Vascular.Structure
         /// <summary>
         /// 
         /// </summary>
+        public IEnumerable<Branch> Siblings
+        {
+            get
+            {
+                foreach (var d in this.Start.Downstream)
+                {
+                    if (d != this)
+                    {
+                        yield return d;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int IndexInParent => Array.IndexOf(this.Start.Downstream, this);
     }
 }

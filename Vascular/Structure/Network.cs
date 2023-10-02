@@ -89,6 +89,11 @@ namespace Vascular.Structure
         public ISplittingFunction Splitting { get; set; } = new Murray() { Exponent = 3.0 };
 
         /// <summary>
+        /// Experimental.
+        /// </summary>
+        public IArbitrarySplittingFunction ArbitrarySplitting { get; set; }
+
+        /// <summary>
         /// Used in collision resolution.
         /// </summary>
         [DataMember]

@@ -16,11 +16,37 @@ This project is licensed under the [GNU Affero General Public License v3.0 (AGPL
 #### Contributing
 This project does not currently accept contributions.
 
+## The roadmap to 1.0
+- Support for variable viscosity (e.g. Fåhræus-Lindqvist effect) and some degree of variable pressure at the network outlets (e.g. two-stage networks for functional structures and surrounding capillary bed), if possible to do without a generic constrained minimization package.
+  - A separate package for optimization and setting radii in the most general case.
+- Support for amplifying downstream radii (and reducing upstream) to ensure minimum features sizes, as well as fixed vessels (where radii fractions are always known).
+- Support for higher order splitting:
+  - Adapt splitting function and optimizer to work with n-furcations.
+  - Adapt topological actions.
+  - Fix any holes in collision/export that don't actually work with arbitrary degree splits.
+  - Merging/splitting heuristics.
+- Structure:
+  - Multiple source networks, mobile source nodes.
+  - Remove conditional compilation terms, or make network/branch/node generic so that data can be attached without requiring additional maps.
+- Optimization:
+  - Replace old costs with new ones.
+  - Simplify interface to optimizer.
+- Hybrid of LSV/ACCO growth - a general purpose growth method.
+- Move Vascular.Analysis and CAD interop into a separate repository.
+- Output:
+  - Slice streaming as image/curve.
+  - Support for basic mesh options such as cutting out of a boundary.
+- Input:
+  - Support for approximating a mesh with point sources - deriving this set of sources to be in a separate repository.
+- Housekeeping:
+  - Documentation and API consistency.
+  - Tidy up legacy bits.
+
 ## Installation
 `dotnet add package Vascular.Networks`
 
 #### Requirements
-.NET 5.0
+.NET 6.0
 
 Vascular.Analysis was developed to interoperate with Python 3.7.8 - earlier versions may work. Requires NumPy, optionally SciPy.
 

@@ -114,7 +114,7 @@ namespace Vascular.Geometry.Bounds
         public Vector3 Range => this.Upper - this.Lower;
 
         /// <summary>
-        /// 
+        /// Modifies the bounds to also contain <paramref name="v"/> if required, then returns the same object.
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -130,7 +130,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        /// Modifies the bounds to also contain <paramref name="b"/> if required, then returns the same object.
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
