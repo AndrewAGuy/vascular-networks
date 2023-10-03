@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions;
@@ -34,9 +36,11 @@ public static class HigherTopology
             ++i;
         }
 
-        var hs = new HigherSplit();
-        hs.Initialize(S);
-        hs.Parent = parentS;
+        var hs = new HigherSplit(S)
+        {
+            Parent = parentS,
+            Network = br.Network
+        };
         parentS.End = hs;
         parentB.End = hs;
 
@@ -52,7 +56,67 @@ public static class HigherTopology
     /// <returns></returns>
     public static (BranchNode remaining, BranchNode leaving) SplitToChild(HigherSplit hs, int[] indices)
     {
-        throw new NotImplementedException();
+        // TODO: add in size checks here
+        var pSeg = hs.Parent;
+        var pBr = hs.Upstream;
+        var (splitS, remS) = hs.Children.SplitArrayStack(indices);
+
+        // Generate new child and attaching segment
+        var sSeg = new Segment();
+        BranchNode leaving = null;
+        if (splitS.Length == 2)
+        {
+            // TODO: Make this a similar function to higher split
+            var bfSpl = new Bifurcation() { Network = hs.Network, Parent = sSeg };
+            sSeg.End = bfSpl;
+            bfSpl.Children[0] = splitS[0];
+            bfSpl.Children[1] = splitS[1];
+            splitS[0].Start = bfSpl;
+            splitS[1].Start = bfSpl;
+            splitS[0].Branch.Start = bfSpl;
+            splitS[1].Branch.Start = bfSpl;
+            bfSpl.UpdateDownstream();
+            leaving = bfSpl;
+        }
+        else if (splitS.Length > 2)
+        {
+            var hsSpl = new HigherSplit(splitS)
+            {
+                Network = hs.Network,
+                Parent = sSeg
+            };
+            sSeg.End = hsSpl;
+            leaving = hsSpl;
+        }
+
+        // We have complete child endpoint, dangling segment and no branch.
+        BranchNode remaining = null;
+        if (remS.Length == 1)
+        {
+            var bfRem = new Bifurcation() { Network = hs.Network, Parent = pSeg };
+            pSeg.End = bfRem;
+            pBr.End = bfRem;
+            remaining = bfRem;
+            bfRem.Children[0] = remS[0];
+            remS[0].Start = bfRem;
+            remS[0].Branch.Start = bfRem;
+            bfRem.Children[1] = sSeg;
+            sSeg.Start = bfRem;
+            var brSeg = new Branch(sSeg) { End = leaving, Start = bfRem };
+            bfRem.UpdateDownstream();
+        }
+        else if (remS.Length > 1)
+        {
+            var hsRem = new HigherSplit() { Network = hs.Network, Parent = pSeg };
+            pSeg.End = hsRem;
+            pBr.End = hsRem;
+            remaining = hsRem;
+            var remSC = new List<Segment>(remS).Append(sSeg).ToArray();
+            var brSeg = new Branch(sSeg) { End = leaving, Start = hsRem };
+            hsRem.Initialize(remSC);
+        }
+
+        return (remaining, leaving);
     }
 
     /// <summary>
@@ -70,6 +134,7 @@ public static class HigherTopology
     // TODO: Implement methods for:
     //  - Removing a branch / multiple branches (e.g. culling terminals)
     //  - Splitting into multiple clusters
+    //  - Canonicalization
     // Requring methods for:
     //  - Initializing/adding/removing branches from a higher split.
 }

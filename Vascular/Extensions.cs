@@ -665,5 +665,41 @@ namespace Vascular
             }
             return total;
         }
+
+        /// <summary>
+        /// Splits an array into two parts based on <paramref name="idx"/>.
+        /// Uses a stack-allocated buffer, so don't call on large arrays.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="array"></param>
+        /// <param name="idx"></param>
+        /// <returns></returns>
+        public static (T[] inIdx, T[] notInIdx) SplitArrayStack<T>(this T[] array, int[] idx)
+        {
+            Span<bool> hit = stackalloc bool[array.Length];
+            hit.Fill(false);
+
+            var taken = new T[idx.Length];
+            var n = 0;
+            foreach (var i in idx)
+            {
+                taken[n] = array[i];
+                hit[i] = true;
+                ++n;
+            }
+
+            var remaining = new T[array.Length - idx.Length];
+            n = 0;
+            for (var i = 0; i < array.Length; ++i)
+            {
+                if (!hit[i])
+                {
+                    remaining[n] = array[i];
+                    ++n;
+                }
+            }
+
+            return (taken, remaining);
+        }
     }
 }

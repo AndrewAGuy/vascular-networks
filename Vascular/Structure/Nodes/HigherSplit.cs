@@ -27,6 +27,15 @@ public class HigherSplit : BranchNode, IMobileNode
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="S"></param>
+    public HigherSplit(Segment[] S)
+    {
+        Initialize(S);
+    }
+
+    /// <summary>
     /// Takes the array of child segments <paramref name="S"/> without making a copy.
     /// These are currently only created by merges/splits, so the corresponding branches always exist,
     /// and we can do all the housekeeping here for updating the start node references.
