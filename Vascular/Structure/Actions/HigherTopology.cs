@@ -137,8 +137,17 @@ public static class HigherTopology
 
         var sRem = new Segment() { Start = pBf };
         var sSpl = new Segment() { Start = pBf };
+        var brRem = new Branch(sRem) { Start = pBf };
+        var brSpl = new Branch(sSpl) { Start = pBf };
+        pBf.Children[0] = sRem;
+        pBf.Children[1] = sSpl;
+        pBf.UpdateDownstream();
+        pBf.UpdateChildTopology();
 
-        throw new NotImplementedException();
+        var nRem = MakeNode(sRem, remS, hs.Network);
+        var nSpl = MakeNode(sSpl, splitS, hs.Network);
+
+        return (nRem, nSpl);
     }
 
     /// <summary>
@@ -146,13 +155,14 @@ public static class HigherTopology
     /// </summary>
     /// <param name="parent"></param>
     /// <param name="children"></param>
+    /// <param name="network"></param>
     /// <returns></returns>
     /// <exception cref="TopologyException"></exception>
-    public static BranchNode MakeNode(Segment parent, Segment[] children)
+    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network = null)
     {
         if (children.Length == 2)
         {
-            var bf = new Bifurcation() { Parent = parent, Network = parent.Network() };
+            var bf = new Bifurcation() { Parent = parent, Network = network };
             parent.End = bf;
             parent.Branch.End = bf;
             bf.SetChildren(children);
@@ -162,7 +172,7 @@ public static class HigherTopology
         }
         else if (children.Length > 2)
         {
-            var hs = new HigherSplit(children) { Parent = parent, Network = parent.Network() };
+            var hs = new HigherSplit(children) { Parent = parent, Network = network };
             parent.End = hs;
             parent.Branch.End = hs;
             return hs;
@@ -170,9 +180,19 @@ public static class HigherTopology
         throw new TopologyException();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    public static (Branch, Segment) MakeBranch(BranchNode start = null, BranchNode end = null)
+    {
+        var s = new Segment() { Start = start, End = end };
+        var b = new Branch(s) { Start = start, End = end };
+        return (b, s);
+    }
+
     // TODO: Implement methods for:
     //  - Removing a branch / multiple branches (e.g. culling terminals)
-    //  - Splitting into multiple clusters
-    // Requring methods for:
-    //  - Initializing/adding/removing branches from a higher split.
 }
