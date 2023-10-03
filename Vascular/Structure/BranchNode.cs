@@ -178,5 +178,40 @@ namespace Vascular.Structure
                 n--;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="S"></param>
+        public virtual void SetChildren(Segment[] S)
+        {
+            for (var i = 0; i < S.Length; ++i)
+            {
+                this.Children[i] = S[i];
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void UpdateDownstream()
+        {
+            for (var i = 0; i < this.Children.Length; ++i)
+            {
+                this.Downstream[i] = this.Children[i].Branch;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void UpdateChildTopology()
+        {
+            for (var i = 0; i < this.Children.Length; ++i)
+            {
+                this.Children[i].Start = this;
+                this.Downstream[i].Start = this;
+            }
+        }
     }
 }

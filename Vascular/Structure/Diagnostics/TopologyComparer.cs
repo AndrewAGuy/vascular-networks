@@ -75,7 +75,8 @@ namespace Vascular.Structure.Diagnostics
                 }
                 var nx = Bx.Current.End;
                 var ny = By.Current.End;
-                if (nx.GetType() != ny.GetType())
+                // In case we have e.g. bifurcation vs. higher split w/ 2 children.
+                if (nx.Children.Length != ny.Children.Length)
                 {
                     return false;
                 }

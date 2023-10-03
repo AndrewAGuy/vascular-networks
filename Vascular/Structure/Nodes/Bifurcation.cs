@@ -45,7 +45,7 @@ namespace Vascular.Structure.Nodes
         /// <summary>
         /// Construct using a segment view, then pull the branch references in from those.
         /// </summary>
-        public void UpdateDownstream()
+        public override void UpdateDownstream()
         {
             downstream[0] = children[0].Branch;
             downstream[1] = children[1].Branch;

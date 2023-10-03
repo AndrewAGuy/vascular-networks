@@ -29,6 +29,17 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="n"></param>
+    public HigherSplit(int n)
+    {
+        children = new Segment[n];
+        downstream = new Branch[n];
+        fractions = new double[n];
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="S"></param>
     public HigherSplit(Segment[] S)
     {
@@ -47,11 +58,7 @@ public class HigherSplit : BranchNode, IMobileNode
         downstream = new Branch[S.Length];
         fractions = new double[S.Length];
         UpdateDownstream();
-        for (var i = 0; i < S.Length; ++i)
-        {
-            children[i].Start = this;
-            downstream[i].Start = this;
-        }
+        UpdateChildTopology();
     }
 
     /// <inheritdoc/>
@@ -68,17 +75,6 @@ public class HigherSplit : BranchNode, IMobileNode
 
     /// <inheritdoc/>
     public override Branch Upstream => this.Parent?.Branch;
-
-    /// <summary>
-    /// Construct using a segment view, then pull the branch references in from those.
-    /// </summary>
-    public void UpdateDownstream()
-    {
-        for (var i = 0; i < children.Length; ++i)
-        {
-            downstream[i] = children[i].Branch;
-        }
-    }
 
 #if !NoEffectiveLength
     /// <inheritdoc/>

@@ -49,7 +49,7 @@ public static class HigherTopology
 
     /// <summary>
     /// Elements in <paramref name="indices"/> split into new child of <paramref name="hs"/>, which is
-    /// adapted to its new size.
+    /// removed from the network and replaced with a new node.
     /// </summary>
     /// <param name="hs"></param>
     /// <param name="indices"></param>
@@ -121,20 +121,58 @@ public static class HigherTopology
 
     /// <summary>
     /// Elements in <paramref name="indices"/> split into a sibling of <paramref name="hs"/>, which is
-    /// adapted to its new size.
+    /// replaced with a new node.
     /// </summary>
     /// <param name="hs"></param>
     /// <param name="indices"></param>
     /// <returns></returns>
     public static (BranchNode remaining, BranchNode leaving) SplitToSibling(HigherSplit hs, int[] indices)
     {
+        var pSeg = hs.Parent;
+        var pBr = hs.Upstream;
+        var (splitS, remS) = hs.Children.SplitArrayStack(indices);
+        var pBf = new Bifurcation() { Parent = pSeg, Network = hs.Network };
+        pSeg.End = pBf;
+        pBr.End = pBf;
+
+        var sRem = new Segment() { Start = pBf };
+        var sSpl = new Segment() { Start = pBf };
+
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Needs all segments to have valid branches attached to them.
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <param name="children"></param>
+    /// <returns></returns>
+    /// <exception cref="TopologyException"></exception>
+    public static BranchNode MakeNode(Segment parent, Segment[] children)
+    {
+        if (children.Length == 2)
+        {
+            var bf = new Bifurcation() { Parent = parent, Network = parent.Network() };
+            parent.End = bf;
+            parent.Branch.End = bf;
+            bf.SetChildren(children);
+            bf.UpdateDownstream();
+            bf.UpdateChildTopology();
+            return bf;
+        }
+        else if (children.Length > 2)
+        {
+            var hs = new HigherSplit(children) { Parent = parent, Network = parent.Network() };
+            parent.End = hs;
+            parent.Branch.End = hs;
+            return hs;
+        }
+        throw new TopologyException();
     }
 
     // TODO: Implement methods for:
     //  - Removing a branch / multiple branches (e.g. culling terminals)
     //  - Splitting into multiple clusters
-    //  - Canonicalization
     // Requring methods for:
     //  - Initializing/adding/removing branches from a higher split.
 }
