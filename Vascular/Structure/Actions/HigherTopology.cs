@@ -158,7 +158,7 @@ public static class HigherTopology
     /// <param name="network"></param>
     /// <returns></returns>
     /// <exception cref="TopologyException"></exception>
-    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network = null)
+    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network)
     {
         if (children.Length == 2)
         {
@@ -191,6 +191,47 @@ public static class HigherTopology
         var s = new Segment() { Start = start, End = end };
         var b = new Branch(s) { Start = start, End = end };
         return (b, s);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="hs"></param>
+    /// <param name="idx"></param>
+    /// <param name="markDownstream"></param>
+    /// <param name="nullDownstream"></param>
+    /// <param name="nullLost"></param>
+    /// <returns></returns>
+    public static INode Remove(HigherSplit hs, int[] idx, bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
+    {
+        var (kept, lost) = hs.Children.SplitArrayStack(idx);
+        var newNode = MakeNode(hs.Parent, kept, hs.Network);
+        foreach (var L in lost)
+        {
+            if (markDownstream)
+            {
+                Terminal.ForDownstream(L.Branch, t =>
+                {
+                    if (nullDownstream)
+                    {
+                        t.Parent = null;
+                    }
+                    t.Culled = true;
+                });
+            }
+            if (nullLost)
+            {
+                L.Start = null;
+                L.Branch.Start = null;
+                L.Branch.End.Parent = null;
+                L.Branch.End = null;
+            }
+        }
+        if (nullLost)
+        {
+            hs.Parent = null;
+        }
+        return newNode;
     }
 
     // TODO: Implement methods for:
