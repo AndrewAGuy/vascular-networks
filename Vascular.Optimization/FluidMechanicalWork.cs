@@ -73,6 +73,7 @@ namespace Vascular.Optimization
                 Transient tr => this.Cache.PositionGradient(tr),
                 Terminal t => this.Cache.PositionGradient(t),
                 Source s => this.Cache.PositionGradient(s),
+                HigherSplit hs => this.Cache.PositionGradient(hs),
                 _ => Vector3.ZERO
             } * dW_dR;
         }

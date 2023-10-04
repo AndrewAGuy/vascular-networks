@@ -19,6 +19,11 @@ namespace Vascular.Optimization
         /// <summary>
         /// 
         /// </summary>
+        public Dictionary<HigherSplit, SplittingGradients> LocalHigher { get; } = new();
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary<Branch, BranchGradients> Global { get; } = new Dictionary<Branch, BranchGradients>();
 
         /// <summary>
@@ -81,6 +86,15 @@ namespace Vascular.Optimization
                 SetCache(b.Children[1], d.dRp_dR1 * RR, d.dRp_dR1 * RQ + d.dRp_dQ1);
                 this.Local[bf] = d;
             }
+            else if (b.End is HigherSplit hs)
+            {
+                var d = new SplittingGradients(hs);
+                this.LocalHigher[hs] = d;
+                for (var i = 0; i < b.Children.Length; ++i)
+                {
+                    SetCache(b.Children[i], d.dRp_dRi[i] * RR, d.dRp_dRi[i] * RQ + d.dRp_dQi[i]);
+                }
+            }
             this.Global[b] = new BranchGradients(RR, RQ);
         }
 
@@ -93,6 +107,19 @@ namespace Vascular.Optimization
         {
             var p = bf.Upstream;
             var gd = this.Local[bf];
+            var gp = this.Global[p];
+            return gp.dRe_dR * gd.dRp_dx;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hs"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(HigherSplit hs)
+        {
+            var p = hs.Upstream;
+            var gd = this.LocalHigher[hs];
             var gp = this.Global[p];
             return gp.dRe_dR * gd.dRp_dx;
         }

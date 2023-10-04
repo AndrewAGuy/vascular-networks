@@ -71,6 +71,7 @@ namespace Vascular.Optimization
                 Transient tr => (this.EffectiveLengths.PositionGradient(tr), this.Cache.PositionGradient(tr)),
                 Terminal t => (this.EffectiveLengths.PositionGradient(t), this.Cache.PositionGradient(t)),
                 Source s => (this.EffectiveLengths.PositionGradient(s), this.Cache.PositionGradient(s)),
+                HigherSplit hs => (this.EffectiveLengths.PositionGradient(hs), this.Cache.PositionGradient(hs)),
                 _ => (Vector3.ZERO, Vector3.ZERO)
             };
             return dLe_dx * dC_dLe

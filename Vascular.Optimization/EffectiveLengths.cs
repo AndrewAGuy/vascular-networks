@@ -105,6 +105,13 @@ namespace Vascular.Optimization
                 e += Math.Pow(f0, this.ExpR) * Calculate(bf.Downstream[0]);
                 e += Math.Pow(f1, this.ExpR) * Calculate(bf.Downstream[1]);
             }
+            else if (b.End is HigherSplit hs)
+            {
+                for (var i = 0; i < hs.Downstream.Length; ++i)
+                {
+                    e += Math.Pow(hs.Fractions[i], this.ExpR) * Calculate(hs.Downstream[i]);
+                }
+            }
             this.Values[b] = e;
             return e;
         }
@@ -129,6 +136,7 @@ namespace Vascular.Optimization
                 var (f0, f1) = bf.Fractions;
                 var c0 = this.ExpR * Math.Pow(f0, this.ExpDR) * ls0;
                 var c1 = this.ExpR * Math.Pow(f1, this.ExpDR) * ls1;
+
                 var dLQ = c0 * dl.df0_dQ0 + c1 * dl.df1_dQ0;
                 var dLR = c0 * dl.df0_dR0 + c1 * dl.df1_dR0;
                 var dLL = Math.Pow(f0, this.ExpR);
@@ -136,6 +144,7 @@ namespace Vascular.Optimization
                     dLQ + dLR * dg.dRe_dQ + dLL * LQ,
                     dLR * dg.dRe_dR + dLL * LR,
                     dLL * LL);
+                    
                 dLQ = c0 * dl.df0_dQ1 + c1 * dl.df1_dQ1;
                 dLR = c0 * dl.df0_dR1 + c1 * dl.df1_dR1;
                 dLL = Math.Pow(f1, this.ExpR);
@@ -144,6 +153,32 @@ namespace Vascular.Optimization
                     dLR * dg.dRe_dR + dLL * LR,
                     dLL * LL);
             }
+            else if (b.End is HigherSplit hs)
+            {
+                var dl = this.Cache.LocalHigher[hs];
+                var dg = this.Cache.Global[b];
+                Span<double> c = stackalloc double[hs.Downstream.Length];
+                for (var i = 0; i < hs.Downstream.Length; ++i)
+                {
+                    c[i] = this.ExpR * Math.Pow(hs.Fractions[i], this.ExpDR) * this.Values[hs.Downstream[i]];
+                }
+
+                for (var i = 0; i < hs.Downstream.Length; ++i)
+                {
+                    var (dLQ, dLR) = (0.0, 0.0);
+                    for (var j = 0; j < hs.Downstream.Length; ++j)
+                    {
+                        dLQ += c[j] * dl.dfi_dQj[j, i];
+                        dLR += c[j] * dl.dfi_dRj[j, i];
+                    }
+                    var dLL = Math.Pow(hs.Fractions[i], this.ExpR);
+                    Calculate(hs.Downstream[i],
+                        dLQ + dLR * dg.dRe_dQ + dLL * LQ,
+                        dLR * dg.dRe_dR + dLL * LR,
+                        dLL * LL);
+                }
+            }
+
             this.Gradients[b] = new RootGradient()
             {
                 dLe_dL = LL,
@@ -172,6 +207,28 @@ namespace Vascular.Optimization
                 Math.Pow(gd.L1, this.ExpDL) * Math.Pow(f1, this.ExpR) * gd.dL1_dx)
                 + ls0 * this.ExpR * Math.Pow(f0, this.ExpDR) * gd.df0_dx
                 + ls1 * this.ExpR * Math.Pow(f1, this.ExpDR) * gd.df1_dx;
+
+            return gp.dLe_dR * gd.dRp_dx
+                + gp.dLe_dL * dLp_dx;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hs"></param>
+        /// <returns></returns>
+        public Vector3 PositionGradient(HigherSplit hs)
+        {
+            var p = hs.Upstream;
+            var gp = this.Gradients[p];
+            var gd = this.Cache.LocalHigher[hs];
+
+            var dLp_dx = this.ExpL * Math.Pow(gd.Lp, this.ExpDL) * gd.dLp_dx;
+            for (var i = 0; i < hs.Downstream.Length; ++i)
+            {
+                dLp_dx += this.ExpL * Math.Pow(gd.Li[i], this.ExpDL) * Math.Pow(hs.Fractions[i], this.ExpR) * gd.dLi_dx[i]
+                    + this.Values[hs.Downstream[i]] * this.ExpR * Math.Pow(hs.Fractions[i], this.ExpDR) * gd.dfi_dx[i];
+            }
 
             return gp.dLe_dR * gd.dRp_dx
                 + gp.dLe_dL * dLp_dx;
@@ -249,6 +306,13 @@ namespace Vascular.Optimization
                     Update(bf.Downstream[1]);
                     Propagate(bf.Upstream);
                     break;
+                case HigherSplit hs:
+                    foreach (var br in hs.Downstream)
+                    {
+                        Update(br);
+                    }
+                    Propagate(hs.Upstream);
+                    break;
             }
         }
 
@@ -265,6 +329,13 @@ namespace Vascular.Optimization
                 var (f0, f1) = bf.Fractions;
                 e += Math.Pow(f0, this.ExpR) * this.Values[bf.Downstream[0]];
                 e += Math.Pow(f1, this.ExpR) * this.Values[bf.Downstream[1]];
+            }
+            else if (b.End is HigherSplit hs)
+            {
+                for (var i = 0; i < hs.Downstream.Length; ++i)
+                {
+                    e += Math.Pow(hs.Fractions[i], this.ExpR) * this.Values[hs.Downstream[i]];
+                }
             }
             this.Values[b] = e;
             return e;
