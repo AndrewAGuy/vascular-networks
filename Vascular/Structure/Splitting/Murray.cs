@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Security.AccessControl;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting
 {
@@ -8,7 +9,7 @@ namespace Vascular.Structure.Splitting
     /// A constant exponent Murray's law.
     /// </summary>
     [DataContract]
-    public class Murray : ISplittingFunction, IArbitrarySplittingFunction
+    public class Murray : ISplittingFunction
     {
         [DataMember]
         private double e, e_ni, e_dd, e_dn;
@@ -176,6 +177,43 @@ namespace Vascular.Structure.Splitting
                 Q[i] = node.Downstream[i].Flow;
             }
             BasicGradient(Q, R, dfi_dQj);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public (double f1, double f2) Fractions(Bifurcation node)
+        {
+            var d = node.Downstream;
+            return Fractions(d[0].ReducedResistance, d[0].Flow, d[1].ReducedResistance, d[1].Flow);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public (double df1_dq1, double df1_dq2, double df2_dq1, double df2_dq2) FlowGradient(Bifurcation node)
+        {
+            var d = node.Downstream;
+            var (df1_dq1, df2_dq1) = FlowGradient(d[0].ReducedResistance, d[0].Flow, d[1].ReducedResistance, d[1].Flow);
+            var (df1_dq2, df2_dq2) = FlowGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
+            return (df1_dq1, df1_dq2, df2_dq1, df2_dq2);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public (double df1_drs1, double df1_drs2, double df2_drs1, double df2_drs2) ReducedResistanceGradient(Bifurcation node)
+        {
+            var d = node.Downstream;
+            var (df1_drs1, df2_drs1) = ReducedResistanceGradient(d[0].ReducedResistance, d[0].Flow, d[1].ReducedResistance, d[1].Flow);
+            var (df1_drs2, df2_drs2) = ReducedResistanceGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
+            return (df1_drs1, df1_drs2, df2_drs1, df2_drs2);
         }
     }
 }

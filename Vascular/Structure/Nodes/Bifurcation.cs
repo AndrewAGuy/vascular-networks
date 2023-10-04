@@ -183,9 +183,7 @@ namespace Vascular.Structure.Nodes
 
         private void UpdatePhysicalDerived()
         {
-            (f0, f1) = this.Network.Splitting.Fractions(
-                downstream[0].ReducedResistance, downstream[0].Flow,
-                downstream[1].ReducedResistance, downstream[1].Flow);
+            (f0, f1) = this.Network.Splitting.Fractions(this);
         }
 
         /// <inheritdoc/>

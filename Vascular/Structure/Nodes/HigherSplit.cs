@@ -246,7 +246,7 @@ public class HigherSplit : BranchNode, IMobileNode
 
     private void UpdatePhysicalDerived()
     {
-        this.Network.ArbitrarySplitting.Fractions(this, fractions);
+        this.Network.Splitting.Fractions(this, fractions);
     }
 
     /// <inheritdoc/>
