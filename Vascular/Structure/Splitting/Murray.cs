@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Security.AccessControl;
 
 namespace Vascular.Structure.Splitting
 {
@@ -7,7 +8,7 @@ namespace Vascular.Structure.Splitting
     /// A constant exponent Murray's law.
     /// </summary>
     [DataContract]
-    public class Murray : ISplittingFunction
+    public class Murray : ISplittingFunction, IArbitrarySplittingFunction
     {
         [DataMember]
         private double e, e_ni, e_dd, e_dn;
@@ -86,6 +87,95 @@ namespace Vascular.Structure.Splitting
             (var df1_dc1, var df2_dc1) = GroupGradient(c1, c2);
             var dc1_drs1 = 0.25 * q1 * Math.Pow(c1, -3);
             return (df1_dc1 * dc1_drs1, df2_dc1 * dc1_drs1);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="fracs"></param>
+        public void Fractions(BranchNode node, double[] fracs)
+        {
+            var S = 0.0;
+            Span<double> c = stackalloc double[fracs.Length];
+            for (var i = 0; i < fracs.Length; ++i)
+            {
+                var di = node.Downstream[i];
+                c[i] = Math.Pow(di.Flow * di.ReducedResistance, 0.25);
+                S += Math.Pow(c[i], e);
+            }
+            S = Math.Pow(S, e_ni);
+            for (var i = 0; i < fracs.Length; ++i)
+            {
+                fracs[i] = c[i] * S;
+            }
+        }
+
+        private void BasicGradient(Span<double> A, Span<double> B, double[,] dfi_dAj)
+        {
+            Span<double> c = stackalloc double[A.Length];
+            var S = 0.0;
+            for (var i = 0; i < c.Length; ++i)
+            {
+                c[i] = Math.Pow(A[i] * B[i], 0.25);
+                S += Math.Pow(c[i], e);
+            }
+            S = Math.Pow(S, e_ni);
+            for (var i = 0; i < c.Length; ++i)
+            {
+                c[i] = c[i] * S;
+            }
+
+            // dfi_dAi = fi (1-fi^y) / 4Ai
+            // fdi_dAj = -fj fi^y / 4Ai
+            for (var i = 0; i < c.Length; ++i)
+            {
+                for (var j = 0; j < c.Length; ++j)
+                {
+                    if (i == j)
+                    {
+                        dfi_dAj[i, j] = c[i] * (1 - Math.Pow(c[i], e)) * 0.25 / A[i];
+                    }
+                    else
+                    {
+                        dfi_dAj[i, j] = -c[j] * Math.Pow(c[i], e) * 0.25 / A[i];
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="dfi_dRj"></param>
+        public void ReducedResistanceGradient(BranchNode node, double[,] dfi_dRj)
+        {
+            Span<double> R = stackalloc double[node.Downstream.Length];
+            Span<double> Q = stackalloc double[node.Downstream.Length];
+            for (var i = 0; i < node.Downstream.Length; ++i)
+            {
+                R[i] = node.Downstream[i].ReducedResistance;
+                Q[i] = node.Downstream[i].Flow;
+            }
+            BasicGradient(R, Q, dfi_dRj);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="dfi_dQj"></param>
+        public void FlowGradient(BranchNode node, double[,] dfi_dQj)
+        {
+            Span<double> R = stackalloc double[node.Downstream.Length];
+            Span<double> Q = stackalloc double[node.Downstream.Length];
+            for (var i = 0; i < node.Downstream.Length; ++i)
+            {
+                R[i] = node.Downstream[i].ReducedResistance;
+                Q[i] = node.Downstream[i].Flow;
+            }
+            BasicGradient(Q, R, dfi_dQj);
         }
     }
 }
