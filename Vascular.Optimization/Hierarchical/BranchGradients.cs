@@ -1,4 +1,4 @@
-﻿namespace Vascular.Optimization
+﻿namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
     /// Flow always has the trivial gradient 1, but reduced resistance is more complex.
@@ -6,7 +6,7 @@
     public class BranchGradients
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="RR"></param>
         /// <param name="RQ"></param>
@@ -17,12 +17,12 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public readonly double dRe_dR;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public readonly double dRe_dQ;
     }

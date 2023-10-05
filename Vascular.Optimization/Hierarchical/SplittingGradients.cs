@@ -1,17 +1,16 @@
 using System;
-using System.Runtime.InteropServices;
 using Vascular.Geometry;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Optimization;
+namespace Vascular.Optimization.Hierarchical;
 
 /// <summary>
-/// 
+///
 /// </summary>
 public class SplittingGradients
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="hs"></param>
     public SplittingGradients(HigherSplit hs)

@@ -11,7 +11,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Optimization.Hybrid
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
@@ -81,8 +81,8 @@ namespace Vascular.Optimization.Hybrid
         /// Removal behaviour can be modified: if <paramref name="offloadRemoved"/> is true,
         /// uses the <see cref="HybridMinimizer.Interior"/> representation to attempt to offload
         /// terminals using <see cref="Balancing.OffloadTerminals(Branch, Dictionary
-        /// {Geometry.Vector3, ICollection{Terminal}}, Geometry.Lattices.Manipulation.ClosestBasisFunction, 
-        /// Geometry.Vector3[], Func{Branch, IEnumerable{Terminal}}, bool)"/>, with 
+        /// {Geometry.Vector3, ICollection{Terminal}}, Geometry.Lattices.Manipulation.ClosestBasisFunction,
+        /// Geometry.Vector3[], Func{Branch, IEnumerable{Terminal}}, bool)"/>, with
         /// <paramref name="tryLocalTerminals"/>. If <paramref name="persistRemove"/> is true,
         /// additionally returns the remove action, such that an attempt is made to offload terminals
         /// but the branch is also removed afterwards. If using, ensure that remove actions are
@@ -155,7 +155,7 @@ namespace Vascular.Optimization.Hybrid
 
         /// <summary>
         /// Uses <see cref="Balancing.TerminalActions(Dictionary{Geometry.Vector3, ICollection{Terminal}},
-        /// Geometry.Lattices.Manipulation.ClosestBasisFunction, Geometry.Vector3[], bool, 
+        /// Geometry.Lattices.Manipulation.ClosestBasisFunction, Geometry.Vector3[], bool,
         /// Func{Terminal, IEnumerable{Branch}})"/> to generate all possible terminals actions.
         /// </summary>
         /// <param name="hm"></param>
@@ -208,6 +208,7 @@ namespace Vascular.Optimization.Hybrid
         /// <param name="hm"></param>
         /// <param name="costs"></param>
         /// <param name="est">Whether to estimate the cost change using first order approximations</param>
+        [Obsolete]
         public static HybridMinimizer AddHierarchicalCosts(this HybridMinimizer hm, HierarchicalCosts costs, bool est = true)
         {
             hm.Minimizer.Add(n => costs.Evaluate());
@@ -310,8 +311,8 @@ namespace Vascular.Optimization.Hybrid
             {
                 var sampleA = hm.Network.Root.SampleDownstream(random, weighting, predicate);
                 var sampleB = hm.Network.Root.SampleDownstream(random, weighting, predicate);
-                yield return sampleA.IsAncestorOf(sampleB) 
-                    ? new MoveBifurcation(sampleB, sampleA) 
+                yield return sampleA.IsAncestorOf(sampleB)
+                    ? new MoveBifurcation(sampleB, sampleA)
                     : new MoveBifurcation(sampleA, sampleB);
             }
 
@@ -319,7 +320,7 @@ namespace Vascular.Optimization.Hybrid
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hm"></param>
         /// <returns></returns>

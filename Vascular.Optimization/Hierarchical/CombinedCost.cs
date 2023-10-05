@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 
@@ -14,7 +10,7 @@ namespace Vascular.Optimization.Hierarchical
     public class CombinedCost : HierarchicalCost
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="cache"></param>
         /// <param name="costs"></param>
@@ -39,10 +35,10 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         /// Defers to combination function.
         /// </summary>
-        public override double Cost => combiner(costs);      
+        public override double Cost => combiner(costs);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -57,7 +53,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <returns></returns>
@@ -72,7 +68,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <returns></returns>

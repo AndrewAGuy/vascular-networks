@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 
@@ -14,39 +11,39 @@ namespace Vascular.Optimization.Hierarchical
     public abstract class HierarchicalCost
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
         public abstract Vector3 PositionGradient(IMobileNode node);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <returns></returns>
         public abstract double FlowGradient(Branch branch);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <returns></returns>
         public abstract double ReducedResistanceGradient(Branch branch);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         public abstract void SetCache(Network network = null);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public abstract double Cost { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -62,7 +59,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         ///// <summary>
-        ///// 
+        /////
         ///// </summary>
         //public abstract HierarchicalGradients Cache { get; }
     }

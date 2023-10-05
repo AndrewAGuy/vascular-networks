@@ -4,7 +4,7 @@ using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Optimization
+namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
     /// Gradients of common properties: <see cref="Branch.Flow"/>, <see cref="Branch.ReducedResistance"/>.
@@ -12,39 +12,39 @@ namespace Vascular.Optimization
     public class HierarchicalGradients
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<Bifurcation, BifurcationGradients> Local { get; } = new Dictionary<Bifurcation, BifurcationGradients>();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<HigherSplit, SplittingGradients> LocalHigher { get; } = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<Branch, BranchGradients> Global { get; } = new Dictionary<Branch, BranchGradients>();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Network Network { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Source Source => this.Network.Source;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch Root => this.Source.Child.Branch;
 
         private double dr_dR, dr_dQ;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public (double dr_dR, double dr_dQ) RadiusGradients => (dr_dR, dr_dQ);
 
@@ -67,7 +67,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void SetCache()
         {
@@ -99,7 +99,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bf"></param>
         /// <returns></returns>
@@ -112,7 +112,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hs"></param>
         /// <returns></returns>
@@ -125,7 +125,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tr"></param>
         /// <returns></returns>
@@ -142,7 +142,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -157,7 +157,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>

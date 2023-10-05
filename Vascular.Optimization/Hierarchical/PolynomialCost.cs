@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
@@ -10,13 +6,13 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
-    /// A cost that is the sum over branches of length and radius powers, 
+    /// A cost that is the sum over branches of length and radius powers,
     /// such as total vessel length, area and volume. Allows caching of effective length terms.
     /// </summary>
     public class PolynomialCost : HierarchicalCost
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="g"></param>
         /// <param name="a"></param>
@@ -30,29 +26,29 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Multiplier { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public EffectiveLengths EffectiveLengths { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Cache { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override double Cost => this.EffectiveLengths.Value * dC_dLe;
 
         private double dC_dLe, dC_dRe, dC_dQe;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void SetCache(Network n)
         {
@@ -76,7 +72,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -96,7 +92,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -110,7 +106,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -123,7 +119,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -134,7 +130,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>

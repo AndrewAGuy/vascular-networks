@@ -4,7 +4,16 @@
 This package contains the core libraries for defining vascular trees, their bounding geometries and functional structures, and the operations to build, optimize, constrain, analyze and triangulate them.
 Libraries for import/export of common file formats are also provided.
 
+This is a heavy, memory hungry package designed to solve a very limited subset of the general vasculature design problem very quickly, focussed entirely on practical tissue engineering.
+It does not deal with the microenvironment or functional unit design, focussing instead on tiling vessels into the mesoscale (the limit of where we actually have control over in tissue engineering).
+You need to do the microscale design work and run simulations or tests yourself before passing it to the methods contained here, or just guess / copy whatever real tissue looks like (it works more often than you'd expect).
+Similarly, it does not make adjustments for viscosity correction factors that are required at small radii, because successful tissue engineering requires the cells to remodel and actively control the vessel radii at this scale.
+If you need to do design work below this length scale, you'll probably want to work in subregions to generate microvasculature.
+
 This package is currently in pre-release so APIs should not be considered stable: if you build on top of this, fix your version number!
+Development is directly onto the `develop` branch, there are no guarantees that this will even build at a point in time.
+Releases to NuGet will occur on a vibes-based schedule.
+During Version 0.X, the minor version number will indicate breaking changes.
 
 #### Collaboration/Support
 This is not a complete piece of software; rather, a set of libraries that may be used to build one.
@@ -21,9 +30,9 @@ This project does not currently accept contributions.
   - A separate package for optimization and setting radii in the most general case.
 - Support for amplifying downstream radii (and reducing upstream) to ensure minimum features sizes, as well as fixed vessels (where radii fractions are always known).
 - Support for higher order splitting:
-  - Adapt splitting function and optimizer to work with n-furcations.
+  - ~~Adapt splitting function and optimizer to work with n-furcations.~~
   - Adapt topological actions.
-  - Fix any holes in collision/export that don't actually work with arbitrary degree splits.
+  - Fix any holes in collision/~~export~~ that don't actually work with arbitrary degree splits.
   - Merging/splitting heuristics.
 - Structure:
   - Multiple source networks, mobile source nodes.

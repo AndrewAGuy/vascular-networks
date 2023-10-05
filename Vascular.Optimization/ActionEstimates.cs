@@ -6,12 +6,13 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Optimization
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [Obsolete]
     public static class ActionEstimates
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hc"></param>
         /// <param name="m"></param>
@@ -73,7 +74,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hc"></param>
         /// <param name="t"></param>
@@ -118,7 +119,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hc"></param>
         /// <param name="a"></param>

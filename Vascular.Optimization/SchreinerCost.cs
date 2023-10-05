@@ -2,16 +2,18 @@
 using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
+using Vascular.Optimization.Hierarchical;
 
 namespace Vascular.Optimization
 {
     /// <summary>
     /// A cost that is the sum over branches of length and radius powers. Allows caching of effective length terms.
     /// </summary>
+    [Obsolete]
     public class SchreinerCost
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="e"></param>
@@ -23,29 +25,29 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Multiplier { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public EffectiveLengths EffectiveLengths { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Cache { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Cost => this.EffectiveLengths.Value * dC_dLe;
 
         private double dC_dLe, dC_dRe, dC_dQe;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void SetCache()
         {
@@ -59,7 +61,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -79,7 +81,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -93,7 +95,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -106,7 +108,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -117,7 +119,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>

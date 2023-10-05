@@ -156,7 +156,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// Gets all branches involved in a grouping between the <see cref="BranchNode.Upstream"/> 
+        /// Gets all branches involved in a grouping between the <see cref="BranchNode.Upstream"/>
         /// branches of <paramref name="endpoints"/> up to <paramref name="parent"/>.
         /// If <paramref name="includeChildren"/> is specified, adds the children of <paramref name="endpoints"/>
         /// to the returned set. This can prevent bugs due to potentially invalid branches, in which the creation
@@ -228,7 +228,7 @@ namespace Vascular.Optimization.Topological
                 : AllInGrouping(endpoints, parent);
             // For each pair, work out if we can move A -> B, B -> A or swap A <-> B
             // Making an action will invalidate the cost cache for this grouping
-            // So for all valid actions with negative cost impact, pick the smallest           
+            // So for all valid actions with negative cost impact, pick the smallest
             return branches.Pairs()
                 .SelectMany(p => BranchPairActions(p.a, p.b))
                 .Where(a => a.IsPermissible());
@@ -270,7 +270,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <param name="c"></param>
@@ -302,7 +302,7 @@ namespace Vascular.Optimization.Topological
         /// Estimates the cost change of executing action <paramref name="action"/> under the costs
         /// <paramref name="costs"/>. For <see cref="MoveBifurcation"/> actions, uses <paramref name="placement"/>
         /// to decide where to place the bifurcation. Note that typical weightings might not be valid as the topology
-        /// hasn't been changed at this point, so for flow weightings use 
+        /// hasn't been changed at this point, so for flow weightings use
         /// <see cref="FlowWeightedPlacement(BranchNode, BranchNode, BranchNode)"/> (if no function supplied, this is
         /// the default).
         /// </summary>
@@ -313,6 +313,7 @@ namespace Vascular.Optimization.Topological
         /// child node and target node (in that order) and returns the bifurcation position.
         /// </param>
         /// <returns></returns>
+        [Obsolete]
         public static double EstimateCostChange(BranchAction action, HierarchicalCosts costs,
             Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
         {
@@ -336,6 +337,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="costs"></param>
         /// <param name="placement"></param>
         /// <returns></returns>
+        [Obsolete]
         public static (BranchAction a, double dC) OptimalAction(IEnumerable<BranchAction> actions, HierarchicalCosts costs,
             Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
         {

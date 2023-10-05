@@ -2,7 +2,7 @@
 using Vascular.Geometry;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Optimization
+namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
     /// Gradients at a bifurcation depend on the splitting rule used.
@@ -10,7 +10,7 @@ namespace Vascular.Optimization
     public class BifurcationGradients
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bf"></param>
         public BifurcationGradients(Bifurcation bf)
@@ -32,8 +32,6 @@ namespace Vascular.Optimization
 
             var rs0 = bf.Downstream[0].ReducedResistance;
             var rs1 = bf.Downstream[1].ReducedResistance;
-            var Q0 = bf.Downstream[0].Flow;
-            var Q1 = bf.Downstream[1].Flow;
 
             (df0_dR0, df0_dR1, df1_dR0, df1_dR1) = sr.ReducedResistanceGradient(bf);
             var (f0, f1) = bf.Fractions;

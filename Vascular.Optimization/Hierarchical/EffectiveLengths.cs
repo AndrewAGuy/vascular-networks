@@ -4,7 +4,7 @@ using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
-namespace Vascular.Optimization
+namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
     /// For <see cref="SchreinerCost"/> terms.
@@ -12,7 +12,7 @@ namespace Vascular.Optimization
     public class EffectiveLengths
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r"></param>
         /// <param name="l"></param>
@@ -27,68 +27,68 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double ExpR { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double ExpL { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double ExpDL { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double ExpDR { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public struct RootGradient
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public double dLe_dQ;
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public double dLe_dR;
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public double dLe_dL;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<Branch, double> Values { get; } = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<Branch, RootGradient> Gradients { get; } = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Cache { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Value { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void SetLengths()
         {
@@ -117,7 +117,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void SetGradients()
         {
@@ -144,7 +144,7 @@ namespace Vascular.Optimization
                     dLQ + dLR * dg.dRe_dQ + dLL * LQ,
                     dLR * dg.dRe_dR + dLL * LR,
                     dLL * LL);
-                    
+
                 dLQ = c0 * dl.df0_dQ1 + c1 * dl.df1_dQ1;
                 dLR = c0 * dl.df0_dR1 + c1 * dl.df1_dR1;
                 dLL = Math.Pow(f1, this.ExpR);
@@ -188,7 +188,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bf"></param>
         /// <returns></returns>
@@ -213,7 +213,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="hs"></param>
         /// <returns></returns>
@@ -235,7 +235,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tr"></param>
         /// <returns></returns>
@@ -255,7 +255,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -273,7 +273,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>

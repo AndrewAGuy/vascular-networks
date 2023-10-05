@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vascular.Geometry;
+﻿using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
 
@@ -15,7 +10,7 @@ namespace Vascular.Optimization.Hierarchical
     public class PumpingWorkCost : HierarchicalCost
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="c"></param>
         /// <param name="multiplier">Captures effect of viscosity and channel shape, must account for default
@@ -30,12 +25,12 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Cache { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override double Cost => cost;
 
@@ -46,7 +41,7 @@ namespace Vascular.Optimization.Hierarchical
         private readonly double multiplier;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void SetCache(Network n)
         {
@@ -70,7 +65,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -82,7 +77,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -100,7 +95,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -110,7 +105,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>

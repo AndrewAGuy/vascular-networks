@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vascular.Optimization.Hierarchical
 {
@@ -11,15 +7,15 @@ namespace Vascular.Optimization.Hierarchical
     /// <br/>
     /// - "maximize useful output": <see cref="ProjectedArea"/> for the retina or <see cref="Volume"/> in 3D;
     /// <br/>
-    /// - "minimize operating cost": <see cref="Resistance"/> and <see cref="Work"/> for open circuit applications (filtration) 
+    /// - "minimize operating cost": <see cref="Resistance"/> and <see cref="Work"/> for open circuit applications (filtration)
     /// or <see cref="Murray"/> for closed systems (incorporating the cost of blood maintenance);
     /// <br/>
-    /// - "maximize efficiency": <see cref="ProjectedAreaEfficiency"/> and <see cref="ProjectedAreaEfficiencyVariableFlow"/>  in 2D, 
-    /// <see cref="VolumeEfficiency"/> and <see cref="VolumeEfficiencyVariableFlow"/> in 3D 
+    /// - "maximize efficiency": <see cref="ProjectedAreaEfficiency"/> and <see cref="ProjectedAreaEfficiencyVariableFlow"/>  in 2D,
+    /// <see cref="VolumeEfficiency"/> and <see cref="VolumeEfficiencyVariableFlow"/> in 3D
     /// (the variable flow variants account for the reduction in metabolic requirements when useful tissue is lost to vasculature).
     /// <para>
     /// Future costs may consider a contribution to 3D constructs where increased surface area is desirable (e.g. cell seeding),
-    /// the term <see cref="SurfaceArea"/> is implemented in anticipation of this. 
+    /// the term <see cref="SurfaceArea"/> is implemented in anticipation of this.
     /// </para>
     /// </summary>
     public static class StandardCosts
@@ -72,7 +68,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="g"></param>
         /// <param name="viscosity"></param>
@@ -85,7 +81,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// A balance of work and metabolic cost to maintain blood volume, 
+        /// A balance of work and metabolic cost to maintain blood volume,
         /// as considered in the derivation of Murray's law.
         /// </summary>
         /// <param name="g"></param>
@@ -106,7 +102,7 @@ namespace Vascular.Optimization.Hierarchical
         }
 
         /// <summary>
-        /// For a domain of volume <paramref name="dV"/>, the cost which when minimized yields the 
+        /// For a domain of volume <paramref name="dV"/>, the cost which when minimized yields the
         /// maximum useful tissue per unit power required to run the organ.
         /// </summary>
         /// <param name="g"></param>
@@ -236,13 +232,13 @@ namespace Vascular.Optimization.Hierarchical
                 return new CombinedCost(g,
                     new[] { R, A },
                     C => -(dA - C[1].Cost) / (Math.Pow(Q0 * (dA - C[1].Cost), 2) * C[0].Cost),
-                    C => 
+                    C =>
                     {
                         var num = -(dA - C[1].Cost);
                         var den = Math.Pow(Q0 * (dA - C[1].Cost), 2) * C[0].Cost;
                         var dDen_dA = -2 * Math.Pow(Q0, 2) * C[0].Cost * (dA - C[1].Cost);
                         var dDen_dR = Math.Pow(Q0 * (dA - C[1].Cost), 2);
-                        return new double[] 
+                        return new double[]
                         {
                             -num * dDen_dR / Math.Pow(den, 2),
                             (den - num * dDen_dA) / Math.Pow(den, 2)
@@ -263,7 +259,7 @@ namespace Vascular.Optimization.Hierarchical
                         var den = Math.Pow(Q0 * (dV - C[2].Cost), 2) * C[0].Cost + mb * C[2].Cost;
                         var dDen_dV = mb - Math.Pow(Q0, 2) * C[0].Cost * 2 * (dV - C[2].Cost);
                         var dDen_dR = Math.Pow(Q0 * (dV - C[2].Cost), 2);
-                        return new double[] 
+                        return new double[]
                         {
                             -num * dDen_dR / Math.Pow(den, 2),
                             1.0 / den,
@@ -283,14 +279,14 @@ namespace Vascular.Optimization.Hierarchical
                         var dDen_dV = mb;
                         var dDen_dA = -2 * Math.Pow(Q0, 2) * C[0].Cost * (dA - C[1].Cost);
                         var dDen_dR = Math.Pow(Q0 * (dA - C[1].Cost), 2);
-                        return new double[] 
+                        return new double[]
                         {
                             -num * dDen_dR / Math.Pow(den, 2),
                             (den - num * dDen_dA) / Math.Pow(den, 2),
                             -num * dDen_dV / Math.Pow(den, 2)
                         };
                     });
-            } 
+            }
         }
     }
 }

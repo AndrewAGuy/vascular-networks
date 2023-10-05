@@ -1,6 +1,7 @@
 ﻿using System;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Optimization.Hierarchical;
 
 namespace Vascular.Optimization
 {
@@ -102,7 +103,7 @@ namespace Vascular.Optimization
 #endif
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="el"></param>
         /// <param name="node"></param>
@@ -120,7 +121,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="el"></param>
         /// <param name="branch"></param>
@@ -138,7 +139,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="probeLength"></param>
@@ -150,7 +151,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="probeFlow"></param>
@@ -162,7 +163,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="probeLength"></param>
@@ -174,7 +175,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="probeFlow"></param>

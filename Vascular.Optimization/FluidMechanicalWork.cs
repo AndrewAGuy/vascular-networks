@@ -1,16 +1,19 @@
 ﻿using Vascular.Geometry;
 using Vascular.Structure;
 using Vascular.Structure.Nodes;
+using Vascular.Optimization.Hierarchical;
+using System;
 
 namespace Vascular.Optimization
 {
     /// <summary>
     /// Represents the work done to move fluid through the tubes.
     /// </summary>
+    [Obsolete]
     public class FluidMechanicalWork
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="c"></param>
         public FluidMechanicalWork(HierarchicalGradients c)
@@ -19,19 +22,19 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Cache { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Cost { get; private set; }
 
         private double dW_dQ, dW_dR;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void SetCache()
         {
@@ -49,7 +52,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -61,7 +64,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -79,7 +82,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -89,7 +92,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>

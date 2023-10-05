@@ -3,24 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Optimization.Hierarchical;
 
 namespace Vascular.Optimization
 {
     /// <summary>
     /// Represents a collection of costs that have hierarchical gradients and update rules.
     /// </summary>
+    [Obsolete]
     public class HierarchicalCosts
     {
         private readonly HierarchicalGradients hierarchicalGradients;
         private readonly FluidMechanicalWork fluidMechanicalWork;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalGradients Gradients => hierarchicalGradients;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public FluidMechanicalWork Work => fluidMechanicalWork;
 
@@ -32,12 +34,12 @@ namespace Vascular.Optimization
         private readonly List<SchreinerCost> schreinerCosts = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<SchreinerCost> SchreinerCosts => schreinerCosts;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public HierarchicalCosts()
         {
@@ -46,7 +48,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         public HierarchicalCosts(Network network)
@@ -59,7 +61,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -77,7 +79,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Network Network
         {
@@ -86,7 +88,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lengthExponent"></param>
         /// <param name="radiusExponent"></param>
@@ -100,7 +102,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public (double cost, IDictionary<IMobileNode, Vector3> gradients) Evaluate()
@@ -144,7 +146,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double SetCache()
@@ -167,7 +169,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -184,7 +186,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -201,7 +203,7 @@ namespace Vascular.Optimization
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="workFactor"></param>
         /// <param name="schreiner"></param>
