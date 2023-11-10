@@ -28,7 +28,6 @@ This project does not currently accept contributions.
 ## The roadmap to 1.0
 - Support for variable viscosity (e.g. Fåhræus-Lindqvist effect) and some degree of variable pressure at the network outlets (e.g. two-stage networks for functional structures and surrounding capillary bed), if possible to do without a generic constrained minimization package.
   - A separate package for optimization and setting radii in the most general case.
-- Support for amplifying downstream radii (and reducing upstream) to ensure minimum features sizes, as well as fixed vessels (where radii fractions are always known).
 - Support for higher order splitting:
   - ~~Adapt splitting function and optimizer to work with n-furcations.~~
   - Adapt topological actions.
@@ -37,11 +36,18 @@ This project does not currently accept contributions.
 - Structure:
   - Multiple source networks, mobile source nodes.
   - Remove conditional compilation terms, or make network/branch/node generic so that data can be attached without requiring additional maps.
+  - Splitting:
+    - Amplifying downstream radii (and reducing upstream) to ensure minimum feature sizes.
+    - Fixed vessels (where radii fractions are always known).
 - Optimization:
   - Replace old costs with new ones.
   - Simplify interface to optimizer.
+    - Integrate "soft-toplogy" and gradient descent (+ predicated movement) to ensure valid state.
+    - Remove actions queue, provide interface to rebalance+trim/regroup+split
+- Collision:
+  - Intercept and ignore API for imaging/predefined roots context.
 - Hybrid of LSV/ACCO growth - a general purpose growth method.
-- Move Vascular.Analysis and CAD interop into a separate repository.
+- Move Vascular.Analysis and CAD interop into a separate repository, merge with rendering libraries.
 - Output:
   - Slice streaming as image/curve.
   - Support for basic mesh options such as cutting out of a boundary.
@@ -50,6 +56,8 @@ This project does not currently accept contributions.
 - Housekeeping:
   - Documentation and API consistency.
   - Tidy up legacy bits.
+  - Enable nullable.
+  - Remove data contract members.
 
 ## Installation
 `dotnet add package Vascular.Networks`
@@ -73,6 +81,6 @@ This sets the configuration to release and builds documentation.
 For types in the `Vascular.Structure` namespace, a custom build can choose to improve performance by removing fields that are not needed:
 - `NoEffectiveLength` - The most common use case for optimization is a combination of work and volume, so the branches by default keep track of their effective lengths and propagate these changes upstream, allowing instant query of the volume from the source node.
   Defining this disables the effective length caching.
-- `NoDepthPathLength` - Path lengths and logical depths are calculated from the root downwards in a single pass and stored at each node. If defined, these fields and methods are removed. 
+- `NoDepthPathLength` - Path lengths and logical depths are calculated from the root downwards in a single pass and stored at each node. If defined, these fields and methods are removed.
   Note that some optimization predicates may require depths to be defined, although flow rate could be used as a proxy in this case.
 - `NoPressure` - Pressures may be calculated downwards from the root after radii are assigned. If defined, these fields and methods are removed.
