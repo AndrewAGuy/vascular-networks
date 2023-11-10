@@ -9,12 +9,12 @@ namespace Vascular.Geometry.Bounds
     public class AxialBoundsBinaryTreeLeaf<T> : AxialBoundsBinaryTreeNode<T> where T : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public T Element { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         public AxialBoundsBinaryTreeLeaf(T e) : base(e.GetAxialBounds(), 1)
@@ -35,6 +35,16 @@ namespace Vascular.Geometry.Bounds
         public override void UpdateBounds()
         {
             bounds = this.Element.GetAxialBounds();
+        }
+
+        /// <inheritdoc/>
+        public override bool Query(AxialBounds query, Func<T, bool> action)
+        {
+            if (bounds.Intersects(query))
+            {
+                return action(this.Element);
+            }
+            return false;
         }
     }
 }

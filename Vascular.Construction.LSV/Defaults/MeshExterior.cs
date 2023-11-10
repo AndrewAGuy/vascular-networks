@@ -45,22 +45,14 @@ namespace Vascular.Construction.LSV.Defaults
         {
             return (T, t) =>
             {
-                var ok = true;
                 var tst = new TriangleSurfaceTest(
                     T.Position, t.Position, T.Upstream.Start.Position, rayTolerance, normalTolerance);
-                surface.Query(tst.GetAxialBounds(), TST =>
-                {
-                    if (tst.TestTriangleRays(TST, out var a, out var b))
-                    {
-                        ok = false;
-                    }
-                });
-                return ok;
+                return !surface.Query(tst.GetAxialBounds(), TST => tst.TestTriangleRays(TST, out var a, out var b));
             };
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="testDirections"></param>

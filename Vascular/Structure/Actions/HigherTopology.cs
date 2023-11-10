@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Geometry;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Actions;
@@ -14,14 +15,14 @@ public static class HigherTopology
     // TODO: Merge into main topology class.
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="br"></param>
     /// <returns></returns>
     public static HigherSplit Collapse(Branch br)
     {
         // We collapse the given branch, putting its children into the same grouping as its siblings.
-        // We therefore need to swap out the end node held by the parent, 
+        // We therefore need to swap out the end node held by the parent,
         // and the higher split will handle the references held by its children.
         var parentB = br.Parent;
         var parentS = parentB.Segments[^1];
@@ -39,7 +40,8 @@ public static class HigherTopology
         var hs = new HigherSplit(S)
         {
             Parent = parentS,
-            Network = br.Network
+            Network = br.Network,
+            Position = br.Start.Position
         };
         parentS.End = hs;
         parentB.End = hs;
@@ -156,13 +158,14 @@ public static class HigherTopology
     /// <param name="parent"></param>
     /// <param name="children"></param>
     /// <param name="network"></param>
+    /// <param name="position"></param>
     /// <returns></returns>
     /// <exception cref="TopologyException"></exception>
-    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network)
+    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network, Vector3 position = null)
     {
         if (children.Length == 2)
         {
-            var bf = new Bifurcation() { Parent = parent, Network = network };
+            var bf = new Bifurcation() { Parent = parent, Network = network, Position = position };
             parent.End = bf;
             parent.Branch.End = bf;
             bf.SetChildren(children);
@@ -172,7 +175,7 @@ public static class HigherTopology
         }
         else if (children.Length > 2)
         {
-            var hs = new HigherSplit(children) { Parent = parent, Network = network };
+            var hs = new HigherSplit(children) { Parent = parent, Network = network, Position = position };
             parent.End = hs;
             parent.Branch.End = hs;
             return hs;
@@ -181,7 +184,7 @@ public static class HigherTopology
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="start"></param>
     /// <param name="end"></param>
@@ -194,7 +197,7 @@ public static class HigherTopology
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="hs"></param>
     /// <param name="idx"></param>

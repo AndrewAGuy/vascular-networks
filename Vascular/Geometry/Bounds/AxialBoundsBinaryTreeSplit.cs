@@ -11,17 +11,17 @@ namespace Vascular.Geometry.Bounds
     public class AxialBoundsBinaryTreeSplit<T> : AxialBoundsBinaryTreeNode<T> where T : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public AxialBoundsBinaryTreeNode<T> Left { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public AxialBoundsBinaryTreeNode<T> Right { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="elements"></param>
         public AxialBoundsBinaryTreeSplit(IEnumerable<T> elements) : base(elements.GetTotalBounds(), elements.Count())
@@ -70,6 +70,18 @@ namespace Vascular.Geometry.Bounds
                 this.Left.Query(query, action);
                 this.Right.Query(query, action);
             }
+        }
+
+        /// <inheritdoc/>
+        public override bool Query(AxialBounds query, Func<T, bool> action)
+        {
+            if (bounds.Intersects(query))
+            {
+                // This short circuits, so if LHS returns true we terminate up the chain
+                return this.Left.Query(query, action)
+                    || this.Right.Query(query, action);
+            }
+            return false;
         }
 
         /// <inheritdoc/>

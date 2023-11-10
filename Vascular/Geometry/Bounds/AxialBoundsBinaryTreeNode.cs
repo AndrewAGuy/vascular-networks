@@ -11,7 +11,7 @@ namespace Vascular.Geometry.Bounds
     public abstract class AxialBoundsBinaryTreeNode<T> : IAxialBoundsQueryable<T>, IAxialBoundable where T : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected AxialBounds bounds;
 
@@ -21,7 +21,7 @@ namespace Vascular.Geometry.Bounds
         public int Count { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <param name="c"></param>
@@ -39,6 +39,9 @@ namespace Vascular.Geometry.Bounds
 
         /// <inheritdoc/>
         public abstract void Query(AxialBounds query, Action<T> action);
+
+        /// <inheritdoc/>
+        public abstract bool Query(AxialBounds query, Func<T, bool> action);
 
         /// <summary>
         /// Recalculate the bounds if changes have been made.

@@ -13,7 +13,7 @@ namespace Vascular.Intersections.Segmental
         private readonly AxialBoundsBinaryTreeNode<Segment> tree;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="segments"></param>
         public SegmentTree(IEnumerable<Segment> segments)
@@ -22,7 +22,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -33,7 +33,7 @@ namespace Vascular.Intersections.Segmental
             return intersections;
         }
 
-        private void Test(List<SegmentIntersection> intersections, 
+        private void Test(List<SegmentIntersection> intersections,
             AxialBoundsBinaryTreeNode<Segment> node, Branch root)
         {
             node.Query(root, (branch, forbidden) =>
@@ -50,7 +50,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -60,7 +60,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override AxialBounds GetAxialBounds()
@@ -69,12 +69,23 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IEnumerator<Segment> GetEnumerator()
         {
             return tree.GetEnumerator();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public override bool Query(AxialBounds query, Func<Segment, bool> action)
+        {
+            return tree.Query(query, action);
         }
     }
 }

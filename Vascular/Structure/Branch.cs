@@ -19,7 +19,7 @@ namespace Vascular.Structure
         private List<Segment> segments = new(1);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch()
         {
@@ -109,7 +109,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<Segment> Segments => segments;
 
@@ -129,7 +129,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<INode> Transients
         {
@@ -143,7 +143,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public IReadOnlyList<INode> GetTransients()
@@ -157,44 +157,44 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [DataMember]
         public BranchNode Start { get; set; } = null;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch Parent => this.Start.Upstream;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [DataMember]
         public BranchNode End { get; set; } = null;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch[] Children => this.End.Downstream;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Network Network => this.End.Network;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Direction => this.End.Position - this.Start.Position;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 NormalizedDirection => this.Direction.Normalize();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double DirectLength => this.Direction.Length;
 
@@ -209,7 +209,7 @@ namespace Vascular.Structure
         public double Slenderness => this.Length / this.Radius;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsTerminal => this.End is Terminal;
 
@@ -239,7 +239,7 @@ namespace Vascular.Structure
 
         /// <summary>
         /// Defined as <c>R * pow(r, 4)</c>, is propagated upstream. Allows radii ratios to be set without knowing the actual values.
-        /// In this case, we always define <c>8 * mu / pi = 1</c> for efficiency, so is not the 'true' reduced resistance. 
+        /// In this case, we always define <c>8 * mu / pi = 1</c> for efficiency, so is not the 'true' reduced resistance.
         /// </summary>
         [DataMember]
         public double ReducedResistance { get; private set; } = 0.0;
@@ -250,7 +250,7 @@ namespace Vascular.Structure
         public double Resistance => this.Length * this.Network.ScaledViscosity / Math.Pow(radius, 4);
 
         /// <summary>
-        /// Rrecalculates the lengths of each <see cref="Segment"/> in the branch. 
+        /// Rrecalculates the lengths of each <see cref="Segment"/> in the branch.
         /// Does not update <see cref="Length"/> - for this, use <see cref="UpdatePhysicalLocal"/>.
         /// </summary>
         public void UpdateLengths()
@@ -378,7 +378,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// Updates each <see cref="Segment.Bounds"/> in <see cref="Segments"/>, extending using <paramref name="pad"/>, 
+        /// Updates each <see cref="Segment.Bounds"/> in <see cref="Segments"/>, extending using <paramref name="pad"/>,
         /// then <see cref="LocalBounds"/> from these.
         /// </summary>
         /// <param name="pad"></param>
@@ -437,7 +437,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -452,6 +452,28 @@ namespace Vascular.Structure
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public bool Query(AxialBounds query, Func<Segment, bool> action)
+        {
+            foreach (var s in segments)
+            {
+                if (s.Bounds.Intersects(query))
+                {
+                    if (action(s))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
 #if !NoDepthPathLength
         /// <summary>
         /// Returns the depth of the end node, so the <see cref="Network.Root"/> has depth 1.
@@ -460,7 +482,7 @@ namespace Vascular.Structure
 #endif
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -524,7 +546,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -534,7 +556,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -544,7 +566,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -669,7 +691,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public IEnumerator<Segment> GetEnumerator()
@@ -678,7 +700,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
@@ -729,7 +751,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch FirstSibling
         {
@@ -747,7 +769,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<Branch> Siblings
         {
@@ -764,7 +786,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int IndexInParent => Array.IndexOf(this.Start.Downstream, this);
     }

@@ -26,26 +26,33 @@ namespace Vascular.Intersections.Segmental
         public abstract IEnumerable<SegmentIntersection> Evaluate(Network network);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public abstract AxialBounds GetAxialBounds();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public abstract IEnumerator<Segment> GetEnumerator();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
         public abstract void Query(AxialBounds query, Action<Segment> action);
 
         /// <summary>
-        /// 
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        public abstract bool Query(AxialBounds query, Func<Segment, bool> action);
+
+        /// <summary>
+        ///
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()

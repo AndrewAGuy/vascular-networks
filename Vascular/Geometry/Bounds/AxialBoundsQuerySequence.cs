@@ -11,7 +11,7 @@ namespace Vascular.Geometry.Bounds
     public class AxialBoundsQuerySequence<T> : IAxialBoundsQueryable<T> where T : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="sequence"></param>
         public AxialBoundsQuerySequence(IEnumerable<T> sequence)
@@ -31,6 +31,22 @@ namespace Vascular.Geometry.Bounds
                     action(obj);
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public bool Query(AxialBounds query, Func<T, bool> action)
+        {
+            foreach (var obj in sequence)
+            {
+                if (query.Intersects(obj.GetAxialBounds()))
+                {
+                    if (action(obj))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <inheritdoc/>

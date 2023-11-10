@@ -45,7 +45,7 @@ namespace Vascular.Geometry.Bounds
         private readonly int minLevel = int.MinValue;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int Count { get; private set; }
 
@@ -62,7 +62,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="elements"></param>
         /// <param name="stride">The base stride. All boxes will be multiples of this.</param>
@@ -97,7 +97,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="element"></param>
         public void Add(T element)
@@ -166,7 +166,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void UpdateAxialBounds()
         {
@@ -214,6 +214,50 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <inheritdoc/>
+        public bool Query(AxialBounds query, Func<T, bool> action)
+        {
+            query = query.Copy().Trim(totalBounds);
+            foreach (var level in levels)
+            {
+                var stride = Stride(level);
+                var lower = query.Lower / stride;
+                var (li, lj, lk) = lower.Floor;
+                li -= lower.x == li ? 1 : 0;
+                lj -= lower.y == lj ? 1 : 0;
+                lk -= lower.z == lk ? 1 : 0;
+                var upper = query.Upper / stride;
+                var (ui, uj, uk) = upper.Ceiling;
+                ui += upper.x == ui ? 1 : 0;
+                uj += upper.y == uj ? 1 : 0;
+                uk += upper.z == uk ? 1 : 0;
+                for (var i = li; i < ui; ++i)
+                {
+                    for (var j = lj; j < uj; ++j)
+                    {
+                        for (var k = lk; k < uk; ++k)
+                        {
+                            var key = new Key(i, j, k, level);
+                            if (table.TryGetValue(key, out var elements))
+                            {
+                                foreach (var element in elements)
+                                {
+                                    if (query.Intersects(element.GetAxialBounds()))
+                                    {
+                                        if (action(element))
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             foreach (var list in table.Values)
@@ -232,7 +276,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// Returns a <see cref="Query"/> wrapper which prevents duplicate hits.
+        /// Returns a wrapper for query methods which prevents duplicate hits.
         /// Create one of these per thread, as the test set underneath is persisted.
         /// </summary>
         /// <param name="comp"></param>
@@ -261,6 +305,22 @@ namespace Vascular.Geometry.Bounds
                     {
                         action(obj);
                     }
+                });
+            }
+
+            public bool Query(AxialBounds query, Func<T, bool> action)
+            {
+                hit.Clear();
+                return table.Query(query, obj =>
+                {
+                    if (hit.Add(obj))
+                    {
+                        if (action(obj))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 });
             }
 

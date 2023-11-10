@@ -11,18 +11,20 @@ namespace Vascular.Intersections.Segmental
     public class SegmentList : SegmentRegion
     {
         private readonly List<Segment> list = new();
+        private readonly AxialBoundsQuerySequence<Segment> sequence;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="segments"></param>
         public SegmentList(IEnumerable<Segment> segments)
         {
             list.AddRange(segments);
+            sequence = new(list);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="segment"></param>
         public void Add(Segment segment)
@@ -31,7 +33,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -53,7 +55,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override AxialBounds GetAxialBounds()
@@ -62,7 +64,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -78,12 +80,23 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IEnumerator<Segment> GetEnumerator()
         {
             return list.GetEnumerator();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public override bool Query(AxialBounds query, Func<Segment, bool> action)
+        {
+            return sequence.Query(query, action);
         }
     }
 }

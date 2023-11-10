@@ -20,7 +20,7 @@ namespace Vascular.Structure
         private Source source;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Source Source
         {
@@ -40,7 +40,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch Root => source.Child?.Branch;
 
@@ -54,7 +54,7 @@ namespace Vascular.Structure
         private double viscosity = 4.0e-6;
         [DataMember]
         private double scaledViscosity = 4.0e-6 * 8.0 / Math.PI;
-        
+
         /// <summary>
         /// Typically set in kPa &#183; s.
         /// </summary>
@@ -83,7 +83,7 @@ namespace Vascular.Structure
         public double PressureOffset { get; set; } = 0.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [DataMember]
         public ISplittingFunction Splitting { get; set; } = new Murray() { Exponent = 3.0 };
@@ -101,7 +101,7 @@ namespace Vascular.Structure
         public bool Output { get; set; } = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [DataMember]
         public string Name { get; set; } = "";
@@ -110,10 +110,10 @@ namespace Vascular.Structure
         /// Used in smoothing.
         /// </summary>
         [DataMember]
-        public Vector3 InletDirection { get; set; } = null;       
+        public Vector3 InletDirection { get; set; } = null;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
@@ -185,7 +185,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
@@ -194,7 +194,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -204,7 +204,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -225,7 +225,45 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        public bool Query(AxialBounds query, Func<Branch, bool> action)
+        {
+            return BranchQuery(query, action, this.Root);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <param name="branch"></param>
+        public static bool BranchQuery(AxialBounds query, Func<Branch, bool> action, Branch branch)
+        {
+            if (query.Intersects(branch.LocalBounds))
+            {
+                if (action(branch))
+                {
+                    return true;
+                }
+            }
+            foreach (var child in branch.Children)
+            {
+                if (query.Intersects(child.GlobalBounds))
+                {
+                    if (BranchQuery(query, action, child))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -235,7 +273,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
@@ -262,7 +300,51 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        public bool Query(AxialBounds query, Func<Segment, bool> action)
+        {
+            return SegmentQuery(query, action, this.Root);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <param name="branch"></param>
+        public static bool SegmentQuery(AxialBounds query, Func<Segment, bool> action, Branch branch)
+        {
+            if (query.Intersects(branch.LocalBounds))
+            {
+                foreach (var s in branch.Segments)
+                {
+                    if (query.Intersects(s.Bounds))
+                    {
+                        if (action(s))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            foreach (var child in branch.Children)
+            {
+                if (query.Intersects(child.GlobalBounds))
+                {
+                    if (SegmentQuery(query, action, child))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         /// <returns></returns>
         public IEnumerator<Segment> GetEnumerator()
@@ -271,7 +353,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
@@ -280,7 +362,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         IEnumerator<Branch> IEnumerable<Branch>.GetEnumerator()
@@ -311,7 +393,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<Segment> Segments
         {
@@ -328,7 +410,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<BranchNode> BranchNodes
         {
@@ -343,7 +425,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<INode> Nodes
         {
@@ -358,7 +440,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<IMobileNode> MobileNodes
         {

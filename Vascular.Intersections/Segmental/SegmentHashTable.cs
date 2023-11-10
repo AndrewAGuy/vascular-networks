@@ -13,7 +13,7 @@ namespace Vascular.Intersections.Segmental
         private readonly AxialBoundsHashTable<Segment> segments;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="stride"></param>
@@ -24,7 +24,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -46,7 +46,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override AxialBounds GetAxialBounds()
@@ -55,7 +55,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IEnumerator<Segment> GetEnumerator()
@@ -64,13 +64,24 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="query"></param>
         /// <param name="action"></param>
         public override void Query(AxialBounds query, Action<Segment> action)
         {
             segments.Query(query, action);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public override bool Query(AxialBounds query, Func<Segment, bool> action)
+        {
+            return segments.Query(query, action);
         }
     }
 }
