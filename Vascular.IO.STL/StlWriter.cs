@@ -17,10 +17,9 @@ namespace Vascular.IO.STL
         /// <param name="stream"></param>
         /// <param name="header"></param>
         /// <param name="padChar"></param>
-        public StlWriter(Stream stream, string header = null, char padChar = ' ') : base(0)
+        public StlWriter(Stream stream, string header = "", char padChar = ' ') : base(0, stream)
         {
-            this.stream = new BinaryWriter(stream);
-            Begin(header ?? string.Empty, padChar);
+            Begin(header, padChar);
         }
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace Vascular.IO.STL
         /// <param name="header"></param>
         /// <param name="padChar"></param>
         /// <param name="zOrder"></param>
-        public static void ToFile(string path, Mesh mesh, string header = null, char padChar = ' ', bool zOrder = false)
+        public static void ToFile(string path, Mesh mesh, string header = "", char padChar = ' ', bool zOrder = false)
         {
             using var writer = new StlWriter(new FileStream(path, FileMode.Create, FileAccess.Write), header, padChar);
             writer.Write(mesh, zOrder);
@@ -56,7 +55,7 @@ namespace Vascular.IO.STL
         private bool disposed = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Dispose()
         {
@@ -65,7 +64,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -82,7 +81,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         ~StlWriter()
         {
@@ -97,7 +96,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="buffer"></param>
         public void Accept(StlBuffer buffer)

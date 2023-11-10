@@ -12,7 +12,7 @@ namespace Vascular.Geometry.Lattices
         private readonly Matrix3 inverse;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="length"></param>
         public BodyCentredCubicLattice(double length)
@@ -21,7 +21,7 @@ namespace Vascular.Geometry.Lattices
             var b1 = new Vector3(0, length, 0);
             var b2 = new Vector3(length / 2.0);
             basis = Matrix3.FromColumns(b0, b1, b2);
-            inverse = basis.Inverse();
+            inverse = basis.Inverse(0);
             voronoiCell = new VoronoiCell(Connectivity.BodyCentredCubic, basis);
         }
 

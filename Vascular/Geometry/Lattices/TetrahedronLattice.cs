@@ -13,7 +13,7 @@ namespace Vascular.Geometry.Lattices
         private readonly Matrix3 inverse;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum Connection
         {
@@ -28,7 +28,7 @@ namespace Vascular.Geometry.Lattices
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="length"></param>
         /// <param name="connection"></param>
@@ -41,7 +41,7 @@ namespace Vascular.Geometry.Lattices
                 b0.x, b1.x, b2.x,
                 b0.y, b1.y, b2.y,
                 b0.z, b1.z, b2.z);
-            inverse = this.Basis.Inverse();
+            inverse = this.Basis.Inverse(0);
             Vector3[] connections = null;
             switch (connection)
             {

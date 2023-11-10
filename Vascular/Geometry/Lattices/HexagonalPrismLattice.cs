@@ -13,26 +13,26 @@ namespace Vascular.Geometry.Lattices
         private readonly Matrix3 inverse;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum Connection
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             Triangle,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             HexagonalPrismFaces,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             HexagonalPrismFacesEdges
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="length"></param>
         /// <param name="height"></param>
@@ -43,7 +43,7 @@ namespace Vascular.Geometry.Lattices
             var b1 = new Vector3(0.5 * length, Math.Sqrt(3.0) / 2.0 * length, 0);
             var b2 = new Vector3(0, 0, height);
             this.Basis = Matrix3.FromColumns(b0, b1, b2);
-            inverse = this.Basis.Inverse();
+            inverse = this.Basis.Inverse(0);
             Vector3[] connections = null;
             switch (connection)
             {

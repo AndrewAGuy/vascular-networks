@@ -13,36 +13,42 @@ namespace Vascular.IO.STL
     public class StlBuffer
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected BinaryWriter stream;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected uint count = 0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public uint Count => count;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Stream Stream => stream.BaseStream;
 
         /// <summary>
-        /// Allocates a <see cref="MemoryStream"/> of <paramref name="chunk"/> length if <paramref name="chunk"/> is not 0.
+        /// Allocates a <see cref="MemoryStream"/> of <paramref name="chunk"/> length if <paramref name="chunk"/> is not 0,
+        /// otherwise takes the stream given in <paramref name="underlying"/>.
         /// </summary>
         /// <param name="chunk"></param>
-        public StlBuffer(int chunk = 1 << 20)
+        /// <param name="underlying"></param>
+        public StlBuffer(int chunk = 1 << 20, Stream? underlying = null)
         {
-            stream = chunk != 0 ? new BinaryWriter(new MemoryStream(chunk)) : null;
+            stream = chunk != 0
+                ? new BinaryWriter(new MemoryStream(chunk))
+                : underlying is not null
+                    ? new BinaryWriter(underlying)
+                    : BinaryWriter.Null;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         protected void Write(Vector3 v)
@@ -54,7 +60,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -72,7 +78,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -83,7 +89,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         public void Write(Triangle t)
@@ -92,7 +98,7 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="T"></param>
         public void Write(IEnumerable<Triangle> T)
