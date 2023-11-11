@@ -14,47 +14,47 @@ using Vascular.Structure;
 namespace Vascular.IO.Triangulation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record MeshChunks(int I, int J, int K);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkPrepared(int Id, TimeSpan TimeElapsed, int Sample, int Build, int Segments, int Triangles);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkSampled(int Id, TimeSpan TimeElapsed);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkExtracted(int Id, TimeSpan TimeElapsed, int Triangles);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkDecimating(int Id, object Data);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkDecimated(int Id, TimeSpan TimeElapsed, int Triangles);
-    
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record ChunkMerged(int Id, TimeSpan TimeElapsed);
-    
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record MeshCreated(TimeSpan TimeElapsed, int Triangles);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record MeshDecimated(TimeSpan TimeElapsed);
 
@@ -63,8 +63,8 @@ namespace Vascular.IO.Triangulation
     /// </summary>
     public class Triangulator
     {
-        private BodyCentredCubicLattice lattice;
-        private double stride;
+        private BodyCentredCubicLattice lattice = new(1);
+        private double stride = 1;
 
         /// <summary>
         /// The sampling stride.
@@ -83,12 +83,12 @@ namespace Vascular.IO.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int StridesPerChunk { get; set; } = 20;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int MaxConcurrentChunks { get; set; } = 8;
 
@@ -123,27 +123,27 @@ namespace Vascular.IO.Triangulation
         public double PointBoundsExtensionFactor { get; set; } = 4.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Action<Decimation> ConfigureChunkDecimation { get; set; } = d => { };
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Action<Decimation> ConfigureFinalDecimation { get; set; } = d => { };
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool ReportChunkDecimation { get; set; } = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool ReportFinalDecimation { get; set; } = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool Decimate { get; set; } = true;
 
@@ -172,9 +172,9 @@ namespace Vascular.IO.Triangulation
         }
 
         private readonly List<IAxialBoundsQueryable<Segment>> features = new();
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="feature"></param>
         /// <returns></returns>
@@ -184,10 +184,10 @@ namespace Vascular.IO.Triangulation
             return this;
         }
 
-        private IAxialBoundsQueryable<TriangleSurfaceTest> boundary;
-        
+        private IAxialBoundsQueryable<TriangleSurfaceTest>? boundary;
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <returns></returns>
@@ -210,12 +210,12 @@ namespace Vascular.IO.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="progress"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Mesh> Export(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        public async Task<Mesh> Export(IProgress<object>? progress = null, CancellationToken cancellationToken = default)
         {
             var decimation = new Decimation(new Mesh());
 
@@ -275,7 +275,7 @@ namespace Vascular.IO.Triangulation
         }
 
         private async Task GenerateChunk(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax,
-            Decimation exportDecimation, SemaphoreSlim semaphore, int id, IProgress<object> progress,
+            Decimation exportDecimation, SemaphoreSlim semaphore, int id, IProgress<object>? progress,
             CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -325,8 +325,8 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private Mesh ExtractMesh(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax, 
-            int id, Stopwatch stopwatch, IProgress<object> progress, CancellationToken cancellationToken)
+        private Mesh ExtractMesh(int iLo, int jLo, int kLo, int iMax, int jMax, int kMax,
+            int id, Stopwatch stopwatch, IProgress<object>? progress, CancellationToken cancellationToken)
         {
             // Not guaranteed to be spun up immediately
             cancellationToken.ThrowIfCancellationRequested();
@@ -376,7 +376,7 @@ namespace Vascular.IO.Triangulation
             return chunk;
         }
 
-        private void TryGenerate(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+        private void TryGenerate(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3,
             double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var b0 = f0 <= 0;
@@ -533,7 +533,7 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private void GenerateOne(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+        private void GenerateOne(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3,
             double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var p1 = GeneratePoint(v0, v1, f0, f1);
@@ -567,7 +567,7 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private void GenerateTwo(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3, 
+        private void GenerateTwo(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3,
             double f0, double f1, double f2, double f3, Mesh chunk)
         {
             var p02 = GeneratePoint(v0, v2, f0, f2);
@@ -606,7 +606,7 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private static (List<Vector3> construction, HashSet<Vector3> sample) 
+        private static (List<Vector3> construction, HashSet<Vector3> sample)
             GetPoints(int iLo, int iHi, int jLo, int jHi, int kLo, int kHi)
         {
             // Sublattice with integral transform (1,0,0) (0,1,0) (0,0,1) <-> (1,0,0) (0,1,0) (-1,-1,2)
@@ -647,7 +647,7 @@ namespace Vascular.IO.Triangulation
         }
 
         private Dictionary<Vector3, double> Sample(HashSet<Vector3> points, int id, int build, Stopwatch stopwatch,
-            IProgress<object> progress, CancellationToken cancellationToken)
+            IProgress<object>? progress, CancellationToken cancellationToken)
         {
             Func<Vector3, AxialBounds, double, double> conversion;
             Func<Vector3, AxialBounds, double> initialize;

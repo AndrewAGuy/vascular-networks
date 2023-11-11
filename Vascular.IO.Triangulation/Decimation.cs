@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,35 +11,35 @@ using Vascular.Geometry.Triangulation;
 namespace Vascular.IO.Triangulation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public record DecimationBegin(int BoundaryVertices, int Vertices);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public record DecimationStep(int Triangles, int Edges, int Remesh, int Recost, int Valid, Summary Error);
+    public record DecimationStep(int Triangles, int Edges, int Remesh, int Recost, int Valid, Summary? Error);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public record DecimationPass(int Triangles, int Edges, Summary Error);
+    public record DecimationPass(int Triangles, int Edges, Summary? Error);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum DecimationMode
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Full,
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Local,
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Greedy
     }
@@ -49,42 +50,42 @@ namespace Vascular.IO.Triangulation
     public class Decimation
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double MaxErrorSquared { get; set; } = 0.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double NormalToleranceSquare { get; set; } = 1.0e-12;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Mesh Mesh { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool ReportErrors { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public IEnumerable<int> SummaryMoments { get; set; }
+        public IEnumerable<int>? SummaryMoments { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public IEnumerable<double> SummaryOrders { get; set; }
+        public IEnumerable<double>? SummaryOrders { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<int, int> EdgesPerChunk { get; set; } = i => 1024;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int MaxConcurrentChunks { get; set; } = 1;
 
@@ -94,7 +95,7 @@ namespace Vascular.IO.Triangulation
         public bool DropErrors { get; set; } = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         public Decimation(Mesh mesh)
@@ -104,7 +105,7 @@ namespace Vascular.IO.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void ClearErrors()
         {
@@ -141,7 +142,7 @@ namespace Vascular.IO.Triangulation
             boundaryValid = true;
         }
 
-        private void Begin(IProgress<object> progress)
+        private void Begin(IProgress<object>? progress)
         {
             if (!boundaryValid)
             {
@@ -157,7 +158,7 @@ namespace Vascular.IO.Triangulation
         public bool ExtendBoundary { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         public void Merge(Decimation other)
@@ -179,24 +180,24 @@ namespace Vascular.IO.Triangulation
 
         private record Collapse(Vertex Kept, Vertex Lost, Remesh Remesh, List<Vertex> Fan, double Cost);
 
-        private Dictionary<Triangle, OriginalPoints> originalPoints;
-        private Dictionary<(Vertex kept, Vertex lost), Collapse> collapses;
-        private HashSet<(Vertex kept, Vertex lost)> remeshing;
-        private HashSet<(Vertex kept, Vertex lost)> recosting;
-        private HashSet<Vertex> boundaryVertices;
+        private Dictionary<Triangle, OriginalPoints> originalPoints = null!;
+        private Dictionary<(Vertex kept, Vertex lost), Collapse> collapses = null!;
+        private HashSet<(Vertex kept, Vertex lost)> remeshing = null!;
+        private HashSet<(Vertex kept, Vertex lost)> recosting = null!;
+        private HashSet<Vertex> boundaryVertices = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DecimationMode Mode { get; set; } = DecimationMode.Local;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="progress"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task Decimate(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        public async Task Decimate(IProgress<object>? progress = null, CancellationToken cancellationToken = default)
         {
             if (this.MaxErrorSquared <= 0.0)
             {
@@ -217,17 +218,17 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private Task<Summary> GetSummary()
+        private Task<Summary?> GetSummary()
         {
             if (this.ReportErrors)
             {
                 var errors = originalPoints.Values.Select(op => op.Error).ToArray();
-                return Task.Run(() => new Summary(errors, this.SummaryMoments, this.SummaryOrders));
+                return Task.Run(() => (Summary?)new Summary(errors, this.SummaryMoments, this.SummaryOrders));
             }
-            return Task.FromResult<Summary>(null);
+            return Task.FromResult<Summary?>(null);
         }
 
-        private async Task DecimateFull(IProgress<object> progress = null, CancellationToken cancellationToken = default)
+        private async Task DecimateFull(IProgress<object>? progress = null, CancellationToken cancellationToken = default)
         {
             while (remeshing.Count != 0 || recosting.Count != 0)
             {
@@ -283,7 +284,7 @@ namespace Vascular.IO.Triangulation
                     for (var j = begin; j < end; ++j)
                     {
                         var (kept, lost) = workingArray[j];
-                        if (TryRemesh(kept.EdgeTo(lost), kept, lost, out var remesh, out var fan))
+                        if (TryRemesh(kept.EdgeTo(lost)!, kept, lost, out var remesh, out var fan))
                         {
                             if (TryCollapse(kept, lost, remesh, fan, out var collapse))
                             {
@@ -457,7 +458,7 @@ namespace Vascular.IO.Triangulation
                     // Now test if any triangle on this edge borders a fan edge
                     foreach (var tri in edge.T)
                     {
-                        if (collapse.Fan.Contains(tri.Opposite(edge)))
+                        if (collapse.Fan.Contains(tri.Opposite(edge)!))
                         {
                             recosting.Add((fanVertex, other));
                             break;
@@ -467,7 +468,8 @@ namespace Vascular.IO.Triangulation
             }
         }
 
-        private bool TryCollapse(Vertex kept, Vertex lost, Remesh remesh, List<Vertex> fan, out Collapse collapse)
+        private bool TryCollapse(Vertex kept, Vertex lost, Remesh remesh, List<Vertex> fan,
+            [NotNullWhen(true)]out Collapse? collapse)
         {
             collapse = null;
             var oldAngleCost = 0.0;
@@ -488,7 +490,8 @@ namespace Vascular.IO.Triangulation
             return true;
         }
 
-        private bool TryRemesh(Edge edge, Vertex kept, Vertex lost, out Remesh remesh, out List<Vertex> fan)
+        private bool TryRemesh(Edge edge, Vertex kept, Vertex lost,
+            [NotNullWhen(true)]out Remesh? remesh, [NotNullWhen(true)]out List<Vertex>? fan)
         {
             remesh = null;
             fan = null;
@@ -514,7 +517,8 @@ namespace Vascular.IO.Triangulation
             return false;
         }
 
-        private bool TryCreateRemesh(Vertex kept, Vertex lost, out List<Vertex> fan, out VertexTriple[] remesh)
+        private bool TryCreateRemesh(Vertex kept, Vertex lost,
+            [NotNullWhen(true)]out List<Vertex>? fan, [NotNullWhen(true)]out VertexTriple[]? remesh)
         {
             if (boundaryVertices.Contains(lost))
             {
@@ -522,7 +526,7 @@ namespace Vascular.IO.Triangulation
                 remesh = null;
                 return false;
             }
-            fan = lost.FanFrom(kept);
+            fan = lost.FanFrom(kept)!;
             remesh = new VertexTriple[lost.T.Count - 2];
             var a = fan[0];
             for (var i = 1; i < fan.Count - 1; ++i)
@@ -547,7 +551,7 @@ namespace Vascular.IO.Triangulation
         public delegate double CombineCost(double oldValue, double newValue);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CombineCost CombineErrorCost { get; set; } = (o, n) => 0;
 
@@ -621,7 +625,7 @@ namespace Vascular.IO.Triangulation
         public Func<double, double> DihedralAngleCost { get; set; } = x => -x;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CombineCost CombineDihedralAngleCost { get; set; } = (o, n) => n - o;
 
@@ -640,7 +644,7 @@ namespace Vascular.IO.Triangulation
             }
             // First
             var edge = this.Mesh.E[new Edge(fan[0], fan[1])];
-            var T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
+            var T = edge.T.First!.Value.Contains(lost) ? edge.T.Last!.Value : edge.T.First.Value;
             var dot = T.N * remesh[0].Surface.Normal;
             if (dot < this.MinDihedralCosine)
             {
@@ -651,7 +655,7 @@ namespace Vascular.IO.Triangulation
             for (var i = 0; i < remesh.Length; ++i)
             {
                 edge = this.Mesh.E[new Edge(remesh[i].B, remesh[i].C)];
-                T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
+                T = edge.T.First!.Value.Contains(lost) ? edge.T.Last!.Value : edge.T.First.Value;
                 dot = T.N * remesh[i].Surface.Normal;
                 if (dot < this.MinDihedralCosine)
                 {
@@ -661,7 +665,7 @@ namespace Vascular.IO.Triangulation
             }
             // Last
             edge = this.Mesh.E[new Edge(fan[^1], fan[0])];
-            T = edge.T.First.Value.Contains(lost) ? edge.T.Last.Value : edge.T.First.Value;
+            T = edge.T.First!.Value.Contains(lost) ? edge.T.Last!.Value : edge.T.First.Value;
             dot = T.N * remesh[^1].Surface.Normal;
             if (dot < this.MinDihedralCosine)
             {
@@ -677,7 +681,7 @@ namespace Vascular.IO.Triangulation
             var oldTotal = 0.0;
             foreach (var t in lost.T)
             {
-                oldTotal += this.DihedralAngleCost(t.Opposite(lost).DihedralAngleCosine);
+                oldTotal += this.DihedralAngleCost(t.Opposite(lost)!.DihedralAngleCosine);
             }
             foreach (var e in lost.E)
             {
@@ -694,10 +698,10 @@ namespace Vascular.IO.Triangulation
         /// <summary>
         /// Allows penalizing for FEA by aiming for aspect ratio rather than minimum file size.
         /// </summary>
-        public Func<Vector3, Vector3, Vector3, double> ShapeCost { get; set; }
+        public Func<Vector3, Vector3, Vector3, double>? ShapeCost { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CombineCost CombineShapeCost { get; set; } = (o, n) => 0;
 
@@ -706,7 +710,7 @@ namespace Vascular.IO.Triangulation
             var oldTotal = 0.0;
             foreach (var t in lost.T)
             {
-                oldTotal += this.ShapeCost(t.A.P, t.B.P, t.C.P);
+                oldTotal += this.ShapeCost!(t.A.P, t.B.P, t.C.P);
             }
             return oldTotal;
         }
@@ -716,7 +720,7 @@ namespace Vascular.IO.Triangulation
             newTotal = 0.0;
             foreach (var t in remesh)
             {
-                var cost = this.ShapeCost(t.A.P, t.B.P, t.C.P);
+                var cost = this.ShapeCost!(t.A.P, t.B.P, t.C.P);
                 if (cost > this.MaxShapeCost)
                 {
                     return false;
@@ -726,7 +730,7 @@ namespace Vascular.IO.Triangulation
             return true;
         }
 
-        private async Task DecimateLocal(Action<Edge> action, IProgress<object> progress, CancellationToken cancellationToken)
+        private async Task DecimateLocal(Action<Edge> action, IProgress<object>? progress, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -750,10 +754,10 @@ namespace Vascular.IO.Triangulation
         private void TryCollapseGreedy(Edge edge)
         {
             var (S, E) = (edge.S, edge.E);
-            if (TryRemesh(S.EdgeTo(E), S, E, out var rA, out var fA) &&
+            if (TryRemesh(S.EdgeTo(E)!, S, E, out var rA, out var fA) &&
                 TryCollapse(S, E, rA, fA, out var cA))
             {
-                if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                if (TryRemesh(E.EdgeTo(S)!, E, S, out var rB, out var fB) &&
                     TryCollapse(E, S, rB, fB, out var cB))
                 {
                     ModifyMesh(cA.Cost < cB.Cost ? cA : cB);
@@ -765,7 +769,7 @@ namespace Vascular.IO.Triangulation
             }
             else
             {
-                if (TryRemesh(E.EdgeTo(S), E, S, out var rB, out var fB) &&
+                if (TryRemesh(E.EdgeTo(S)!, E, S, out var rB, out var fB) &&
                     TryCollapse(E, S, rB, fB, out var cB))
                 {
                     ModifyMesh(cB);
@@ -786,7 +790,7 @@ namespace Vascular.IO.Triangulation
         /// </summary>
         public int LocalIterations { get; set; } = 1;
 
-        private Collapse GetBest(Edge edge)
+        private Collapse? GetBest(Edge edge)
         {
             var collapse = GetBestLocal(edge);
             var iterations = 0;
@@ -811,30 +815,30 @@ namespace Vascular.IO.Triangulation
             return collapse;
         }
 
-        private Collapse GetBestLocal(Edge edge)
+        private Collapse? GetBestLocal(Edge edge)
         {
             var neighbours = new List<Edge>(edge.S.E.Count + edge.E.E.Count);
             neighbours.AddRange(edge.S.E);
             neighbours.AddRange(edge.E.E);
             neighbours.Remove(edge);
-            var permissible = neighbours.Select(e => GetCollapse(e)).Where(c => c != null);
+            var permissible = neighbours.Select(e => GetCollapse(e)).NotNull();
             return permissible.ArgMin(c => c.Cost, out var collapse, out var cost) ? collapse : null;
         }
 
-        private Collapse GetCollapse(Edge edge)
+        private Collapse? GetCollapse(Edge edge)
         {
             return GetCollapse(edge.S, edge.E) is Collapse a
                 ? GetCollapse(edge.E, edge.S) is Collapse b ? a.Cost < b.Cost ? a : b : a
                 : GetCollapse(edge.E, edge.S) is Collapse B ? B : null;
         }
 
-        private Collapse GetCollapse(Vertex kept, Vertex lost)
+        private Collapse? GetCollapse(Vertex kept, Vertex lost)
         {
             if (remeshing.Contains((kept, lost)))
             {
                 remeshing.Remove((kept, lost));
                 recosting.Remove((kept, lost));
-                if (!TryRemesh(kept.EdgeTo(lost), kept, lost, out var remesh, out var fan))
+                if (!TryRemesh(kept.EdgeTo(lost)!, kept, lost, out var remesh, out var fan))
                 {
                     collapses.Remove((kept, lost));
                     return null;
@@ -875,7 +879,7 @@ namespace Vascular.IO.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="finalConfiguration"></param>
         /// <param name="chunkConfiguration"></param>
@@ -887,7 +891,7 @@ namespace Vascular.IO.Triangulation
         public static async Task<Decimation> Decimate(
             Action<Decimation> finalConfiguration, Action<Decimation> chunkConfiguration,
             IEnumerable<Mesh> chunks, int maxConcurrency,
-            IProgress<object> progress = null, CancellationToken cancellationToken = default)
+            IProgress<object>? progress = null, CancellationToken cancellationToken = default)
         {
             using var semaphore = new SemaphoreSlim(1);
             var finalDecimation = new Decimation(new Mesh());

@@ -17,6 +17,23 @@ namespace Vascular
         ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> values) where T : class
+        {
+            foreach (var v in values)
+            {
+                if (v is T t)
+                {
+                    yield return t;
+                }
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="t"></param>
         /// <returns></returns>
         public static T TryClone<T>(this T t)

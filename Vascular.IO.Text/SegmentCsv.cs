@@ -39,7 +39,7 @@ namespace Vascular.IO.Text
         /// <param name="sepChar"></param>
         /// <param name="convert"></param>
         public static void Write(TextWriter writer, IEnumerable<Segment> segments,
-            char sepChar = ',', Func<double, string> convert = null)
+            char sepChar = ',', Func<double, string>? convert = null)
         {
             convert ??= Serialization.WriteDouble;
             foreach (var segment in segments)
@@ -67,7 +67,7 @@ namespace Vascular.IO.Text
         /// <param name="convert"></param>
         /// <returns></returns>
         public static IEnumerable<Segment> Read(TextReader reader, char sepChar = ',',
-            Func<string, double> convert = null)
+            Func<string, double>? convert = null)
         {
             convert ??= Serialization.ParseDouble;
             for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
@@ -79,10 +79,8 @@ namespace Vascular.IO.Text
                 {
                     var start = new Vector3(values[0], values[1], values[2]);
                     var end = new Vector3(values[3], values[4], values[5]);
-                    yield return new Segment()
+                    yield return new Segment(new Dummy() { Position = start }, new Dummy() { Position = end })
                     {
-                        Start = new Dummy() { Position = start },
-                        End = new Dummy() { Position = end },
                         Radius = values[6]
                     };
                 }
@@ -90,7 +88,7 @@ namespace Vascular.IO.Text
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="segments"></param>
@@ -107,11 +105,11 @@ namespace Vascular.IO.Text
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="props"></param>
         /// <returns></returns>
-        public static List<Func<Segment, string>> DefaultProperties(List<Func<Segment, string>> props = null)
+        public static List<Func<Segment, string>> DefaultProperties(List<Func<Segment, string>>? props = null)
         {
             props ??= new();
             props.AddRange(new Func<Segment, string>[]

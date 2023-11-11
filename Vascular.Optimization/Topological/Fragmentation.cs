@@ -80,13 +80,13 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public static Func<Transient, double> MeanRadius => t => (t.Parent.Radius + t.Child.Radius) * 0.5;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public static Func<Transient, double> BranchRadius => t => t.Child.Branch.Radius;
@@ -120,7 +120,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="random"></param>
         /// <param name="probability"></param>
@@ -131,7 +131,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="random"></param>
         /// <param name="probability"></param>
@@ -164,7 +164,7 @@ namespace Vascular.Optimization.Topological
                 for (var i = 0; i < splits; ++i)
                 {
                     var end = segment.End;
-                    var child = new Segment();
+                    var child = new Segment(null!, null!);
                     var transient = new Transient()
                     {
                         Parent = segment,
@@ -209,7 +209,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="br"></param>
         /// <param name="F"></param>

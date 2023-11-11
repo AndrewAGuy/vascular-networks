@@ -109,17 +109,9 @@ namespace Vascular.Optimization.Topological
 
                 // Rewire by segments first. Make sure that endpoints see new segment as parent,
                 // bifurcation sees them as children, and segment sees both start and end.
-                bf.Children[0] = new Segment()
-                {
-                    Start = bf,
-                    End = a
-                };
+                bf.Children[0] = new Segment(bf, a);
                 a.Parent = bf.Children[0];
-                bf.Children[1] = new Segment()
-                {
-                    Start = bf,
-                    End = b
-                };
+                bf.Children[1] = new Segment(bf, b);
                 b.Parent = bf.Children[1];
 
                 // Now create new branches
