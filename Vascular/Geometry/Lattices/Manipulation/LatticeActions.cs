@@ -462,7 +462,7 @@ FAIL:
         /// <param name="networks"></param>
         public static void MatchTerminals(Lattice lattice, params Network[] networks)
         {
-            var interiors = networks.Select(network => GetSingleInterior(network.Root!, lattice)).ToArray();
+            var interiors = networks.Select(network => GetSingleInterior(network.Root, lattice)).ToArray();
             MatchTerminals(interiors);
             foreach (var network in networks)
             {

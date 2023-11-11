@@ -49,12 +49,12 @@ namespace Vascular.Structure.Nodes
 
         /// <inheritdoc/>
         sealed public override double RootRadius =>
-            Math.Pow(this.ReducedResistance * this.Network!.ScaledViscosity * this.Flow * pressureInverted, 0.25);
+            Math.Pow(this.ReducedResistance * this.Network.ScaledViscosity * this.Flow * pressureInverted, 0.25);
 
 #if !NoEffectiveLength
         /// <inheritdoc/>
         sealed public override double Volume => Math.PI * this.EffectiveLength *
-            Math.Sqrt(this.ReducedResistance * this.Network!.ScaledViscosity * this.Flow * pressureInverted);
+            Math.Sqrt(this.ReducedResistance * this.Network.ScaledViscosity * this.Flow * pressureInverted);
 #endif
 
         /// <inheritdoc/>

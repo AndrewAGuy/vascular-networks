@@ -45,7 +45,7 @@ namespace Vascular.Structure.Nodes
 #endif
 
         /// <inheritdoc/>
-        public sealed override double Resistance => this.ReducedResistance * this.Network!.ScaledViscosity * radius4inv;
+        public sealed override double Resistance => this.ReducedResistance * this.Network.ScaledViscosity * radius4inv;
 
         /// <inheritdoc/>
         public override double Work => this.Resistance * Math.Pow(this.Flow, 2);

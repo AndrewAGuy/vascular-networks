@@ -27,7 +27,7 @@ namespace Vascular.Structure.Diagnostics
         /// <returns></returns>
         public int GetHashCode(Network obj)
         {
-            return GetHashCode(obj.Root!.End);
+            return GetHashCode(obj.Root.End);
         }
 
         private int GetHashCode(BranchNode node)
@@ -55,8 +55,8 @@ namespace Vascular.Structure.Diagnostics
 
         private bool CompareCanonicalized(Network x, Network y)
         {
-            var Bx = enumeratorX.Downstream(x.Root!).GetEnumerator();
-            var By = enumeratorY.Downstream(y.Root!).GetEnumerator();
+            var Bx = enumeratorX.Downstream(x.Root).GetEnumerator();
+            var By = enumeratorY.Downstream(y.Root).GetEnumerator();
             while (true)
             {
                 var mx = Bx.MoveNext();

@@ -422,7 +422,7 @@ namespace Vascular.Structure.Actions
         public static void Transfer(Network to, Network from)
         {
             var node = to.Source;
-            var seg = from.Source!.Child;
+            var seg = from.Source.Child;
             node!.Child = seg;
             seg!.Start = node;
             seg.Branch.Start = node;

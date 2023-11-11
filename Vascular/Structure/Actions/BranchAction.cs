@@ -101,8 +101,8 @@ namespace Vascular.Structure.Actions
         /// <returns></returns>
         public static BranchAction? TransferToClone(BranchAction action, Network clone)
         {
-            var a = Address.Navigate(clone.Root!, Address.Get(action.A));
-            var b = Address.Navigate(clone.Root!, Address.Get(action.B));
+            var a = Address.Navigate(clone.Root, Address.Get(action.A));
+            var b = Address.Navigate(clone.Root, Address.Get(action.B));
             return action switch
             {
                 SwapEnds => new SwapEnds(a, b),

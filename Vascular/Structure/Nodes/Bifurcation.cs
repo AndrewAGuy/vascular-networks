@@ -174,7 +174,7 @@ namespace Vascular.Structure.Nodes
 
         private void UpdatePhysicalDerived()
         {
-            (f0, f1) = this.Network!.Splitting.Fractions(this);
+            (f0, f1) = this.Network.Splitting.Fractions(this);
         }
 
         /// <inheritdoc/>

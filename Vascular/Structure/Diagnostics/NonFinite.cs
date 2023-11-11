@@ -20,7 +20,7 @@ namespace Vascular.Structure.Diagnostics
         public static IEnumerable<object> First(Network net)
         {
             var stack = new Stack<BranchNode>();
-            stack.Push(net.Source!);
+            stack.Push(net.Source);
             while (stack.Count > 0)
             {
                 var current = stack.Pop();

@@ -21,21 +21,21 @@ namespace Vascular.Structure.Nodes
 
         private Vector3 position = Vector3.INVALID;
 
-        private Segment? child = null;
-        private Branch? down = null;
+        private Segment child = null!;
+        private Branch down = null!;
         private readonly Segment[] children = new Segment[1];
         private readonly Branch[] downstream = new Branch[1];
 
         /// <summary>
         /// Updates <see cref="Children"/> and <see cref="Downstream"/> when set.
         /// </summary>
-        public Segment? Child
+        public Segment Child
         {
             get => child;
             set
             {
                 child = value;
-                children[0] = value!;
+                children[0] = value;
                 if (value != null)
                 {
                     down = value.Branch;
@@ -43,7 +43,7 @@ namespace Vascular.Structure.Nodes
                 }
                 else
                 {
-                    down = null;
+                    down = null!;
                     downstream[0] = null!;
                 }
             }

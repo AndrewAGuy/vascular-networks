@@ -69,7 +69,7 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        public Network? Network { get; set; } = null;
+        public Network Network { get; set; } = null!;
 
         /// <summary>
         /// The sum of downstream flows.

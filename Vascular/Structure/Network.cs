@@ -15,12 +15,12 @@ namespace Vascular.Structure
     /// </summary>
     public class Network : IAxialBoundsQueryable<Segment>, IAxialBoundsQueryable<Branch>
     {
-        private Source? source;
+        private Source source = null!;
 
         /// <summary>
         ///
         /// </summary>
-        public Source? Source
+        public Source Source
         {
             get => source;
             set
@@ -40,7 +40,7 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        public Branch? Root => source?.Child?.Branch;
+        public Branch Root => source.Child.Branch;
 
         /// <summary>
         /// The matching group this belongs to.
@@ -104,13 +104,13 @@ namespace Vascular.Structure
         /// <returns></returns>
         public Network Clone(Source? s = null)
         {
-            s ??= this.Source!.Clone();
+            s ??= this.Source.Clone();
             var n = new Network()
             {
                 Source = s,
                 Splitting = this.Splitting
             };
-            var r = CloneDownstream(n, this.Root!);
+            var r = CloneDownstream(n, this.Root);
             s.Child = r.Segments[0];
             r.Start = s;
             r.Segments[0].Start = s;
@@ -175,7 +175,7 @@ namespace Vascular.Structure
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
         {
-            return this.Root!.GlobalBounds;
+            return this.Root.GlobalBounds;
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Branch> action)
         {
-            BranchQuery(query, action, this.Root!);
+            BranchQuery(query, action, this.Root);
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public bool Query(AxialBounds query, Func<Branch, bool> action)
         {
-            return BranchQuery(query, action, this.Root!);
+            return BranchQuery(query, action, this.Root);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Segment> action)
         {
-            SegmentQuery(query, action, this.Root!);
+            SegmentQuery(query, action, this.Root);
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public bool Query(AxialBounds query, Func<Segment, bool> action)
         {
-            return SegmentQuery(query, action, this.Root!);
+            return SegmentQuery(query, action, this.Root);
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace Vascular.Structure
             get
             {
                 var stack = new Stack<Branch>();
-                stack.Push(this.Root!);
+                stack.Push(this.Root);
                 while (stack.Count > 0)
                 {
                     var current = stack.Pop();
@@ -401,7 +401,7 @@ namespace Vascular.Structure
         {
             get
             {
-                yield return this.Source!;
+                yield return this.Source;
                 foreach (var branch in this.Branches)
                 {
                     yield return branch.End;
@@ -416,7 +416,7 @@ namespace Vascular.Structure
         {
             get
             {
-                yield return this.Source!;
+                yield return this.Source;
                 foreach (var segment in this.Segments)
                 {
                     yield return segment.End;
@@ -450,7 +450,7 @@ namespace Vascular.Structure
             get
             {
                 var stack = new Stack<Branch>();
-                stack.Push(this.Root!);
+                stack.Push(this.Root);
                 while (stack.Count > 0)
                 {
                     var current = stack.Pop();
@@ -478,7 +478,7 @@ namespace Vascular.Structure
         /// <returns></returns>
         public async Task VisitAsync(Action<Branch> action, int splitDepth)
         {
-            await VisitAsync(this.Root!, action, splitDepth);
+            await VisitAsync(this.Root, action, splitDepth);
         }
 
         /// <summary>

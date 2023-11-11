@@ -177,7 +177,7 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        public Network? Network => this.End.Network;
+        public Network Network => this.End.Network;
 
         /// <summary>
         ///
@@ -240,7 +240,7 @@ namespace Vascular.Structure
         /// <summary>
         /// Assumes Hagen-Poiseuille flow.
         /// </summary>
-        public double Resistance => this.Length * this.Network!.ScaledViscosity / Math.Pow(radius, 4);
+        public double Resistance => this.Length * this.Network.ScaledViscosity / Math.Pow(radius, 4);
 
         /// <summary>
         /// Rrecalculates the lengths of each <see cref="Segment"/> in the branch.

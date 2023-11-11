@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Vascular.Geometry;
 
@@ -10,6 +11,7 @@ namespace Vascular.Structure.Nodes
     public class Transient : IMobileNode
     {
         /// <inheritdoc/>
+        [NotNull]
         public Segment? Parent { get; set; } = null;
 
         private Segment child = null!;
@@ -36,9 +38,9 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public void UpdatePhysicalAndPropagate()
         {
-            this.Parent!.UpdateLength();
+            this.Parent.UpdateLength();
             child.UpdateLength();
-            child.Branch!.UpdatePhysicalLocal();
+            child.Branch.UpdatePhysicalLocal();
             child.Branch.PropagatePhysicalUpstream();
         }
 
@@ -49,7 +51,7 @@ namespace Vascular.Structure.Nodes
         public double MinInnerLength()
         {
             return Math.Sqrt(Math.Min(
-                Vector3.DistanceSquared(this.Position, this.Parent!.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
                 Vector3.DistanceSquared(this.Position, this.Child.End.Position)
                 ));
         }
@@ -61,7 +63,7 @@ namespace Vascular.Structure.Nodes
         public double MaxInnerLength()
         {
             return Math.Sqrt(Math.Max(
-                Vector3.DistanceSquared(this.Position, this.Parent!.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
                 Vector3.DistanceSquared(this.Position, this.Child.End.Position)
                 ));
         }
@@ -72,7 +74,7 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public double OuterLength()
         {
-            return Vector3.Distance(this.Parent!.Start.Position, this.Child.End.Position);
+            return Vector3.Distance(this.Parent.Start.Position, this.Child.End.Position);
         }
     }
 }

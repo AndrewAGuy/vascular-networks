@@ -146,8 +146,8 @@ public static class HigherTopology
         pBf.UpdateDownstream();
         pBf.UpdateChildTopology();
 
-        var nRem = MakeNode(sRem, remS, hs.Network!, Vector3.INVALID);
-        var nSpl = MakeNode(sSpl, splitS, hs.Network!, Vector3.INVALID);
+        var nRem = MakeNode(sRem, remS, hs.Network, Vector3.INVALID);
+        var nSpl = MakeNode(sSpl, splitS, hs.Network, Vector3.INVALID);
 
         return (nRem, nSpl);
     }
@@ -208,7 +208,7 @@ public static class HigherTopology
     public static INode Remove(HigherSplit hs, int[] idx, bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
     {
         var (kept, lost) = hs.Children.SplitArrayStack(idx);
-        var newNode = MakeNode(hs.Parent!, kept, hs.Network!, Vector3.INVALID);
+        var newNode = MakeNode(hs.Parent!, kept, hs.Network, Vector3.INVALID);
         foreach (var L in lost)
         {
             if (markDownstream)
