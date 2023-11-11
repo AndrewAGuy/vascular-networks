@@ -9,7 +9,7 @@ using Vascular.Structure.Actions;
 namespace Vascular.Intersections.Segmental
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SegmentalRecorder : SegmentRecorder<Branch>
     {
@@ -36,7 +36,7 @@ namespace Vascular.Intersections.Segmental
         public bool CullIfSurrounded { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override int Count => intersecting.Count;
 
@@ -44,7 +44,7 @@ namespace Vascular.Intersections.Segmental
         private Dictionary<Segment, DoubleEntry> segments = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Reset()
         {
@@ -54,12 +54,12 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CubeGrayCode GrayCode { get; set; } = new CubeGrayCode();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Finish()
         {
@@ -83,7 +83,7 @@ namespace Vascular.Intersections.Segmental
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="i"></param>
         protected override void RecordSingle(SegmentIntersection i)
@@ -118,7 +118,7 @@ namespace Vascular.Intersections.Segmental
 
             if (!tryPush)
             {
-                Request(i.B, i.ClosestB, perturb);
+                Request(i.B, i.ClosestB!, perturb);
             }
             else
             {
@@ -182,7 +182,7 @@ namespace Vascular.Intersections.Segmental
                     // Test if perturbation requested opposes current
                     if (cur.Value * pert < 0 && this.CullIfSurrounded)
                     {
-                        culling.Add(mobile.Parent.Branch);
+                        culling.Add(mobile.Parent!.Branch);
                     }
                     else
                     {
@@ -196,7 +196,7 @@ namespace Vascular.Intersections.Segmental
             }
             else
             {
-                culling.Add(node.Parent.Branch);
+                culling.Add(node.Parent!.Branch);
             }
         }
 

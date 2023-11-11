@@ -14,26 +14,26 @@ namespace Vascular.Intersections.Collision
     public class CollisionEnforcer : Enforcer<SegmentIntersection, INode, CollisionRecorder>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum Mode
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             All,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             External,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             Internal
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Mode OperatingMode { get; set; } = Mode.External;
 
@@ -55,7 +55,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pad"></param>
         /// <returns></returns>
@@ -78,7 +78,7 @@ namespace Vascular.Intersections.Collision
 
         /// <summary>
         /// Given a maximum stress, use the highest pressure in the vessel alongside the inner radius
-        /// to compute the wall thickness such that the maximum hoop stress (assumed uniform) is 
+        /// to compute the wall thickness such that the maximum hoop stress (assumed uniform) is
         /// equal to this critical value, then makes the vessel behave as though it is this large.
         /// <para/>
         /// Uses the classical thin-walled cylinder theory. Make sure that units are correctly scaled!
@@ -100,7 +100,7 @@ namespace Vascular.Intersections.Collision
 
         /// <summary>
         /// Given a maximum stress, use the highest pressure in the vessel alongside the inner radius
-        /// to compute the outer radius such that the maximum hoop stress (at the inner surface) is 
+        /// to compute the outer radius such that the maximum hoop stress (at the inner surface) is
         /// equal to this critical value, then makes the vessel behave as though it is this large.
         /// <para/>
         /// Uses the classical thick-walled cylinder theory. Make sure that units are correctly scaled!
@@ -134,7 +134,7 @@ namespace Vascular.Intersections.Collision
 
         /// <summary>
         /// See <see cref="ThinWalledStressPadding(double)"/>, but returns the wall thickness instead
-        /// so it can be combined with other padding methods, e.g. 
+        /// so it can be combined with other padding methods, e.g.
         /// <see cref="ClampedPadding(double, Func{Branch, double})"/>
         /// </summary>
         /// <param name="sMax"></param>
@@ -151,7 +151,7 @@ namespace Vascular.Intersections.Collision
 
         /// <summary>
         /// See <see cref="ThickWalledStressPadding(double)"/>, but returns the wall thickness instead
-        /// so it can be combined with other padding methods, e.g. 
+        /// so it can be combined with other padding methods, e.g.
         /// <see cref="ClampedPadding(double, Func{Branch, double})"/>
         /// </summary>
         /// <param name="sMax"></param>
@@ -200,27 +200,27 @@ namespace Vascular.Intersections.Collision
         private readonly List<DisjointCollider> disjointColliders = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<Collider> ExternalColliders => externalColliders;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<InternalCollider> InternalColliders => internalColliders;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<MatchedCollider> MatchedColliders => matchedColliders;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyList<DisjointCollider> DisjointColliders => disjointColliders;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<Collider> Colliders
         {
@@ -238,7 +238,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// Creates an <see cref="InternalCollider"/> for each network in <paramref name="n"/>. 
+        /// Creates an <see cref="InternalCollider"/> for each network in <paramref name="n"/>.
         /// For each pair of distinct networks, tests if <see cref="Network.Partners"/> contains each other.
         /// Creates either a <see cref="MatchedCollider"/> or <see cref="DisjointCollider"/> based on this.
         /// Can disable this and force all to be treated as matched using <paramref name="noDisjoint"/>.
@@ -252,8 +252,9 @@ namespace Vascular.Intersections.Collision
                 internalColliders.Add(new InternalCollider(n[i]));
                 for (var j = i + 1; j < n.Length; ++j)
                 {
+                    var p = n[i].Partners;
                     if (noDisjoint ||
-                        n[i].Partners != null && n[i].Partners.Contains(n[j]))
+                        p != null && p.Contains(n[j]))
                     {
                         var c = new MatchedCollider(n[i], n[j]);
                         externalColliders.Add(c);
@@ -270,7 +271,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected override async Task Detect()
@@ -304,7 +305,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="toCull"></param>
         /// <param name="obj"></param>

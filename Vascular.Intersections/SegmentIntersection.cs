@@ -11,7 +11,7 @@ namespace Vascular.Intersections
     public class SegmentIntersection
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -46,12 +46,12 @@ namespace Vascular.Intersections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Segment A { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Segment B { get; private set; }
 
@@ -68,7 +68,7 @@ namespace Vascular.Intersections
         /// <summary>
         /// The mutual normal, pointing from A to B.
         /// </summary>
-        public Vector3 NormalAB { get; private set; }
+        public Vector3 NormalAB { get; private set; } = Vector3.INVALID;
 
         /// <summary>
         /// The square distance of the centrelines at closest approach.
@@ -83,12 +83,12 @@ namespace Vascular.Intersections
         /// <summary>
         /// The point in A of closest approach, defined as the intersection location. Used if <see cref="Indeterminate"/> is false.
         /// </summary>
-        public Vector3 ClosestA { get; private set; }
+        public Vector3? ClosestA { get; private set; }
 
         /// <summary>
         /// The point in B of closest approach, defined as the intersection location. Used if <see cref="Indeterminate"/> is false.
         /// </summary>
-        public Vector3 ClosestB { get; private set; }
+        public Vector3? ClosestB { get; private set; }
 
         /// <summary>
         /// The fraction along A at which the closest approach happens. Used if <see cref="Indeterminate"/> is false.

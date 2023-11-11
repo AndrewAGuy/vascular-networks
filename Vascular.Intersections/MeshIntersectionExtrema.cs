@@ -9,7 +9,7 @@ namespace Vascular.Intersections
     public class MeshIntersectionExtrema
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="ti"></param>
         public MeshIntersectionExtrema(TriangleIntersection ti)
@@ -32,14 +32,14 @@ namespace Vascular.Intersections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Segment Segment { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TriangleSurfaceTest LastIn { get; private set; }
+        public TriangleSurfaceTest? LastIn { get; private set; }
 
         /// <summary>
         /// The fraction along <see cref="Segment"/> at which <see cref="LastIn"/> is hit.
@@ -47,9 +47,9 @@ namespace Vascular.Intersections
         public double InFraction { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TriangleSurfaceTest FirstOut { get; private set; }
+        public TriangleSurfaceTest? FirstOut { get; private set; }
 
         /// <summary>
         /// The fraction along <see cref="Segment"/> at which <see cref="FirstOut"/> is hit.
@@ -57,7 +57,7 @@ namespace Vascular.Intersections
         public double OutFraction { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="ti"></param>
         public void Add(TriangleIntersection ti)

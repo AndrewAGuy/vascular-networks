@@ -13,12 +13,12 @@ namespace Vascular.Intersections.Implicit
     using ImplicitFunction = Func<Vector3, (double f, Vector3 g)>;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ImplicitEnforcer : Enforcer<ImplicitViolation, INode, ImplicitRecorder>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <param name="f"></param>
@@ -28,7 +28,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public List<ImplicitFunction> Functions { get; } = new();
 
@@ -47,7 +47,7 @@ namespace Vascular.Intersections.Implicit
                 }
                 return;
             }
-            Terminal.ForDownstream(obj.Parent.Branch, term =>
+            Terminal.ForDownstream(obj.Parent!.Branch, term =>
             {
                 if (term.Partners != null && this.CullMatched)
                 {
@@ -115,7 +115,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected override async Task Detect()
@@ -125,7 +125,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="func"></param>
         /// <param name="dx"></param>

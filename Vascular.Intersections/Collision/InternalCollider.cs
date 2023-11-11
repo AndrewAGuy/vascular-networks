@@ -14,7 +14,7 @@ namespace Vascular.Intersections.Collision
     public class InternalCollider : Collider
     {
         private readonly Network network;
-        private List<SegmentIntersection> intersections = null;
+        private List<SegmentIntersection> intersections = null!;
 
         /// <summary>
         /// If true, reduce the immune set to just the segments until divergence.
@@ -22,7 +22,7 @@ namespace Vascular.Intersections.Collision
         public bool ImmuneSetContraction { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="nRoot"></param>
         public InternalCollider(Network nRoot)
@@ -142,7 +142,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()
@@ -194,7 +194,7 @@ namespace Vascular.Intersections.Collision
 
         private static List<Segment> NonImmuneSegments(Branch from, BranchNode end)
         {
-            var S = end.Upstream.Segments;
+            var S = end.Upstream!.Segments;
             var segs = new List<Segment>(S.Count);
             var curSeg = S[S.Count - 1];
             while (true)
@@ -225,9 +225,9 @@ namespace Vascular.Intersections.Collision
         /// <param name="branchActionPredicate"></param>
         /// <returns></returns>
         public static Func<IEnumerable<BranchAction>> RedundancyRemoval(
-            Network network, Func<Branch, double> radius = null, bool immuneSetContraction = true,
-            Func<Terminal, Segment, bool> immediateCull = null,
-            Func<Branch, Branch, bool> branchActionPredicate = null)
+            Network network, Func<Branch, double>? radius = null, bool immuneSetContraction = true,
+            Func<Terminal, Segment, bool>? immediateCull = null,
+            Func<Branch, Branch, bool>? branchActionPredicate = null)
         {
             IEnumerable<BranchAction> generator()
             {
@@ -259,9 +259,9 @@ namespace Vascular.Intersections.Collision
                     cr.Finish();
                     foreach (var c in cr.Culling)
                     {
-                        yield return new RemoveBranch(c.Parent.Branch);
+                        yield return new RemoveBranch(c.Parent!.Branch);
                     }
-                    foreach (var a in cr.BranchActions)
+                    foreach (var a in cr.BranchActions!)
                     {
                         yield return a;
                     }

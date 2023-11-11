@@ -12,13 +12,13 @@ namespace Vascular.Intersections.Enforcement
     public abstract class Recorder<TIntersection, TPenalizing>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         protected abstract void RecordSingle(TIntersection t);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         public virtual void Record(TIntersection t)
@@ -28,7 +28,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public abstract void Finish();
 
@@ -47,15 +47,15 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// Trying to resolve things with moving only.
         /// </summary>
-        public virtual IEnumerable<GeometryAction> GeometryActions { get; protected set; }
+        public virtual IEnumerable<GeometryAction>? GeometryActions { get; protected set; }
 
         /// <summary>
         /// Trying to resolve things with topological changes such as end swaps and bifurcation moves.
         /// </summary>
-        public virtual IEnumerable<BranchAction> BranchActions { get; protected set; }
+        public virtual IEnumerable<BranchAction>? BranchActions { get; protected set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual IEnumerable<TPenalizing> Intersecting => intersecting;
 
@@ -65,17 +65,17 @@ namespace Vascular.Intersections.Enforcement
         public virtual IEnumerable<TPenalizing> Culling => culling;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected HashSet<TPenalizing> intersecting = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected HashSet<TPenalizing> culling = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual void Reset()
         {
@@ -86,7 +86,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="ts"></param>
         public virtual void Record(IEnumerable<TIntersection> ts)

@@ -4,23 +4,23 @@ using Vascular.Structure;
 namespace Vascular.Intersections.Implicit
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ImplicitViolation
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public INode Node { get; set; }
+        public INode Node { get; set; } = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Value { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Vector3 Gradient { get; set; }
+        public Vector3 Gradient { get; set; } = Vector3.INVALID;
     }
 }

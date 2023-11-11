@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Vascular.Intersections.Enforcement
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
@@ -16,7 +16,7 @@ namespace Vascular.Intersections.Enforcement
         /// <returns></returns>
         public static async Task IterateToEnd(this IEnumerable<IEnforcer> enforcers, int steps)
         {
-            IEnforcer firstPassing = null;
+            IEnforcer? firstPassing = null;
             while (true)
             {
                 foreach (var enforcer in enforcers)

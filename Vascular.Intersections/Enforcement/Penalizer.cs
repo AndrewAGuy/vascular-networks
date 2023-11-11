@@ -6,7 +6,7 @@ namespace Vascular.Intersections.Enforcement
     /// Tracks objects that are being penalized, and deciding when to cull.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Penalizer<T>
+    public class Penalizer<T> where T : notnull
     {
         /// <summary>
         /// Tracks the score and relevance of an object.
@@ -19,13 +19,13 @@ namespace Vascular.Intersections.Enforcement
             public int points;
 
             /// <summary>
-            /// Set to false after an iteration. During an iteration, set to true if freshly added or revisited. 
+            /// Set to false after an iteration. During an iteration, set to true if freshly added or revisited.
             /// If false after all violators tracked, <see cref="points"/> gets decreased.
             /// </summary>
             public bool active = true;
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             /// <param name="i"></param>
             public Entry(int i)
@@ -39,7 +39,7 @@ namespace Vascular.Intersections.Enforcement
         private readonly List<T> dropping = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IReadOnlyDictionary<T, Entry> Tracked => tracked;
 
@@ -104,7 +104,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// Updates <see cref="Violators"/> and <see cref="Dropped"/>. 
+        /// Updates <see cref="Violators"/> and <see cref="Dropped"/>.
         /// Must pass all objects for this iteration at once - there is no incremental update.
         /// </summary>
         /// <param name="P"></param>
@@ -161,7 +161,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Clear()
         {

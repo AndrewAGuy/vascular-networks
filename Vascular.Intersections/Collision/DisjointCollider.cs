@@ -10,10 +10,10 @@ namespace Vascular.Intersections.Collision
     {
         private readonly Network networkA;
         private readonly Network networkB;
-        private List<SegmentIntersection> intersections = null;
+        private List<SegmentIntersection> intersections = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="root1"></param>
         /// <param name="root2"></param>
@@ -63,7 +63,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()

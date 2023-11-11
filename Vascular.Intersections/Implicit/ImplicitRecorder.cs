@@ -12,19 +12,19 @@ namespace Vascular.Intersections.Implicit
     using ImplicitFunction = Func<Vector3, (double f, Vector3 g)>;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ImplicitRecorder : Recorder<ImplicitViolation, INode>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override int Count => intersecting.Count;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Func<INode, double> MinimumPerturbation { get; set; } = null;
+        public Func<INode, double>? MinimumPerturbation { get; set; } = null;
 
         /// <summary>
         /// For clamping to minimum perturbations.
@@ -32,7 +32,7 @@ namespace Vascular.Intersections.Implicit
         public IVector3Generator Generator { get; set; } = new CubeGrayCode();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="violations"></param>
         /// <param name="function"></param>
@@ -43,7 +43,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Finish()
         {
@@ -60,7 +60,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="violation"></param>
         protected override void RecordSingle(ImplicitViolation violation)
@@ -74,26 +74,26 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<ImplicitViolation, bool> ImmunityPredicate { get; set; } = v => false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double ImmediateCull { get; set; } = double.PositiveInfinity;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool CullIfSurrounded { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<ImplicitViolation, ImplicitFunction, Vector3> Perturbation { get; set; } = (iv, f) => -iv.Gradient;
 
-        private ImplicitFunction function;
+        private ImplicitFunction function = null!;
 
         private void RecordGeometry(ImplicitViolation violation)
         {
@@ -102,7 +102,7 @@ namespace Vascular.Intersections.Implicit
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Reset()
         {

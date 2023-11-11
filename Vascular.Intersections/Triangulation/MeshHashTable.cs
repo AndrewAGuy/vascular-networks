@@ -15,12 +15,12 @@ namespace Vascular.Intersections.Triangulation
     public class MeshHashTable : IIntersectionEvaluator<TriangleIntersection>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public AxialBoundsHashTable<TriangleSurfaceTest> Table { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="r"></param>
@@ -33,7 +33,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="stride"></param>
@@ -44,7 +44,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="table"></param>
         public MeshHashTable(AxialBoundsHashTable<TriangleSurfaceTest> table)
@@ -53,7 +53,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -67,7 +67,7 @@ namespace Vascular.Intersections.Triangulation
                     branch.Query(triangle.GetAxialBounds(), segment =>
                     {
                         var f = 0.0;
-                        Vector3 p = null;
+                        Vector3? p = null;
                         if (triangle.TestRay(segment.Start.Position, segment.End.Position, segment.Radius, ref f, ref p))
                         {
                             intersections.Add(new TriangleIntersection(segment, triangle, f));

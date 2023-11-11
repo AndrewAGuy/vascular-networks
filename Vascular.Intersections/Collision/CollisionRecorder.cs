@@ -15,17 +15,17 @@ namespace Vascular.Intersections.Collision
     public class CollisionRecorder : SegmentRecorder<INode>
     {
         /// <summary>
-        /// If not null, try to intercept record with immediate culling. 
+        /// If not null, try to intercept record with immediate culling.
         /// Can be used to prevent perturbing root vessels when terminals get in the way.
         /// </summary>
-        public Func<Terminal, Segment, bool> ImmediateCull { get; set; }
+        public Func<Terminal, Segment, bool>? ImmediateCull { get; set; }
 
         /// <summary>
-        /// If not null, attempts to intercept recording process by culling all downstream 
-        /// of the first segment. Will be called both ways without modifying the network, 
+        /// If not null, attempts to intercept recording process by culling all downstream
+        /// of the first segment. Will be called both ways without modifying the network,
         /// giving both sides the same chance to be culled.
         /// </summary>
-        public Func<Segment, Segment, bool> ImmediateCullDownstream { get; set; }
+        public Func<Segment, Segment, bool>? ImmediateCullDownstream { get; set; }
 
         /// <summary>
         /// If one node is stationary, assign all perturbation to the other.
@@ -38,7 +38,7 @@ namespace Vascular.Intersections.Collision
         public bool RecordTopology { get; set; } = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override int Count =>
             // All immediate cull nodes are also present in the stationary set
@@ -50,7 +50,7 @@ namespace Vascular.Intersections.Collision
         private HashSet<BranchAction> branchActions = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Reset()
         {
@@ -61,7 +61,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="i"></param>
         protected override void RecordSingle(SegmentIntersection i)
@@ -137,7 +137,7 @@ namespace Vascular.Intersections.Collision
                         Record(data.A.End, -data.NormalAB * facA);
                     }
                     // Make transient node in B
-                    Record(data.B, data.ClosestB + facB * data.NormalAB);
+                    Record(data.B, data.ClosestB! + facB * data.NormalAB);
                 }
             }
             else
@@ -154,14 +154,14 @@ namespace Vascular.Intersections.Collision
                     {
                         Record(data.B.End, data.NormalAB * facB);
                     }
-                    Record(data.A, data.ClosestA - facA * data.NormalAB);
+                    Record(data.A, data.ClosestA! - facA * data.NormalAB);
                 }
                 else
                 {
                     var facA = aCompFrac * aggressionFactor * data.Overlap;
                     var facB = bCompFrac * aggressionFactor * data.Overlap;
-                    Record(data.B, data.ClosestB + facB * data.NormalAB);
-                    Record(data.A, data.ClosestA - facA * data.NormalAB);
+                    Record(data.B, data.ClosestB! + facB * data.NormalAB);
+                    Record(data.A, data.ClosestA! - facA * data.NormalAB);
                 }
             }
         }
@@ -264,7 +264,7 @@ namespace Vascular.Intersections.Collision
         /// <summary>
         /// It's not always worth rewiring small vessels, and they might provide some desired redundancy.
         /// </summary>
-        public Func<Branch, Branch, bool> BranchActionPredicate { get; set; } =
+        public Func<Branch, Branch, bool>? BranchActionPredicate { get; set; } =
             (a, b) => Math.Min(a.Flow, b.Flow) > 4;
 
         private void CullDownstream(Segment s)
@@ -312,7 +312,7 @@ namespace Vascular.Intersections.Collision
             {
                 return false;
             }
-            if (this.BranchActionPredicate != null && 
+            if (this.BranchActionPredicate != null &&
                 !this.BranchActionPredicate(A, B))
             {
                 return false;
@@ -352,7 +352,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void Finish()
         {

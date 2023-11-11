@@ -10,13 +10,14 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Intersections.Enforcement
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="TIntersection"></typeparam>
     /// <typeparam name="TPenalizing"></typeparam>
     /// <typeparam name="TRecorder"></typeparam>
     public abstract class Enforcer<TIntersection, TPenalizing, TRecorder> : IEnforcer
         where TRecorder : Recorder<TIntersection, TPenalizing>, new()
+        where TPenalizing : notnull
     {
         /// <summary>
         /// See <see cref="IEnforcer"/>
@@ -66,7 +67,7 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// Function to call after propagating radii downstream. Allows for padding.
         /// </summary>
-        public virtual Func<Branch, double> RadiusModification { get; set; } = null;      
+        public virtual Func<Branch, double>? RadiusModification { get; set; } = null;
 
         /// <summary>
         /// To prevent edge cases where bounds testing declares everything ok. Not needed if using padding.
@@ -74,12 +75,12 @@ namespace Vascular.Intersections.Enforcement
         public virtual double BoundsPadding { get; set; } = 0.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual Penalizer<TPenalizing> Penalizer { get; set; } = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual TRecorder Recorder { get; set; } = new TRecorder();
 
@@ -89,12 +90,12 @@ namespace Vascular.Intersections.Enforcement
         protected SemaphoreSlim recorderSemaphore = new(1);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected readonly Network[] networks;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         public Enforcer(Network[] n)
@@ -109,25 +110,25 @@ namespace Vascular.Intersections.Enforcement
         /// <summary>
         /// When terminals are removed from the network, we might want to do something with them.
         /// </summary>
-        public Action<Terminal> TerminalCulled { get; set; }
+        public Action<Terminal>? TerminalCulled { get; set; }
 
         /// <summary>
         /// Executed after each iteration.
         /// </summary>
-        public Action AfterIteration { get; set; }
+        public Action? AfterIteration { get; set; }
 
         /// <summary>
         /// Executed before radius and bounds have been set.
         /// </summary>
-        public Action<Network> BeforePrepare { get; set; }
+        public Action<Network>? BeforePrepare { get; set; }
 
         /// <summary>
         /// Executed after radius and bounds have been set.
         /// </summary>
-        public Action<Network> AfterPrepare { get; set; }
+        public Action<Network>? AfterPrepare { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="steps"></param>
         /// <returns></returns>
@@ -159,7 +160,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected virtual void TryClear()
         {
@@ -170,7 +171,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected virtual Task TryChangeGeometry()
@@ -191,7 +192,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected virtual Task TryChangeTopology()
@@ -213,7 +214,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected virtual Task<IEnumerable<Terminal>> GetCulling()
@@ -237,7 +238,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="culling"></param>
         /// <returns></returns>
@@ -267,13 +268,13 @@ namespace Vascular.Intersections.Enforcement
                         {
                             c.Parent = null;
                             c.Culled = true;
-                            s.Child = null;
+                            s.Child = null!;
                         }
                     }
                     else
                     {
                         // Remove. We don't bother removing everything from the map immediately, it will fall out on its own.
-                        var tr = Topology.CullTerminal(c);
+                        var tr = Topology.CullTerminal(c)!;
                         if (this.PropagateTopology)
                         {
                             tr.Parent.Branch.PropagateLogicalUpstream();
@@ -312,7 +313,7 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected virtual Task Prepare()
@@ -334,20 +335,20 @@ namespace Vascular.Intersections.Enforcement
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         protected abstract Task Detect();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="toCull"></param>
         /// <param name="obj"></param>
         protected abstract void AddToCull(ICollection<Terminal> toCull, TPenalizing obj);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public virtual async Task Resolve()

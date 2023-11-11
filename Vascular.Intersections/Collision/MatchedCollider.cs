@@ -7,14 +7,14 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Intersections.Collision
 {
     /// <summary>
-    /// Tests for intersections allowing terminals which have non-empty 
+    /// Tests for intersections allowing terminals which have non-empty
     /// <see cref="Terminal.Partners"/> to have intersections at their matching points.
     /// </summary>
     public class MatchedCollider : Collider
     {
         private readonly Network networkA;
         private readonly Network networkB;
-        private List<SegmentIntersection> intersections = null;
+        private List<SegmentIntersection> intersections = null!;
         private readonly List<Branch> ignore = new();
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Vascular.Intersections.Collision
         public bool ImmuneSetContraction { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -89,7 +89,7 @@ namespace Vascular.Intersections.Collision
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override IReadOnlyList<SegmentIntersection> Evaluate()

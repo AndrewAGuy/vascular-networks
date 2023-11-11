@@ -15,12 +15,12 @@ namespace Vascular.Intersections.Triangulation
     public class MeshTree : IIntersectionEvaluator<TriangleIntersection>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public AxialBoundsBinaryTreeNode<TriangleSurfaceTest> Tree { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tree"></param>
         public MeshTree(AxialBoundsBinaryTreeNode<TriangleSurfaceTest> tree)
@@ -29,7 +29,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="r"></param>
@@ -41,7 +41,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         public MeshTree(IEnumerable<TriangleSurfaceTest> mesh)
@@ -50,7 +50,7 @@ namespace Vascular.Intersections.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -64,7 +64,7 @@ namespace Vascular.Intersections.Triangulation
             return intersections;
         }
 
-        private static void Test(List<TriangleIntersection> intersections, 
+        private static void Test(List<TriangleIntersection> intersections,
             AxialBoundsBinaryTreeNode<TriangleSurfaceTest> node, Branch root)
         {
             node.Query(root, (branch, triangle) =>
@@ -72,8 +72,8 @@ namespace Vascular.Intersections.Triangulation
                 branch.Query(triangle.GetAxialBounds(), segment =>
                 {
                     double fraction = 0;
-                    Vector3 position = null;
-                    if (triangle.TestRay(segment.Start.Position, segment.Direction, segment.Radius, 
+                    Vector3? position = null;
+                    if (triangle.TestRay(segment.Start.Position, segment.Direction, segment.Radius,
                         ref fraction, ref position))
                     {
                         intersections.Add(new TriangleIntersection(segment, triangle, fraction));
