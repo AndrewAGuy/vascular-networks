@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -25,6 +26,7 @@ namespace Vascular.Structure.Nodes
         private readonly Branch[] downstream = new Branch[2];
 
         /// <inheritdoc/>
+        [NotNull]
         public override Segment? Parent { get; set; } = null;
 
         /// <inheritdoc/>
@@ -61,7 +63,8 @@ namespace Vascular.Structure.Nodes
             + Math.Pow(f1, 4.0) / downstream[1].ReducedResistance);
 
         /// <inheritdoc/>
-        public override Branch? Upstream => this.Parent?.Branch;
+        [NotNull]
+        public override Branch? Upstream => this.Parent.Branch;
 
 #if !NoPressure
         private double pressure = 0.0;
@@ -72,7 +75,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void CalculatePressures()
         {
-            pressure = this.Upstream!.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
+            pressure = this.Upstream.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
             downstream[0].End.CalculatePressures();
             downstream[1].End.CalculatePressures();
         }
@@ -91,7 +94,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void CalculatePathLengthsAndDepths()
         {
-            depth = this.Upstream!.Start.Depth + 1;
+            depth = this.Upstream.Start.Depth + 1;
             pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
             downstream[0].End.CalculatePathLengthsAndDepths();
             downstream[1].End.CalculatePathLengthsAndDepths();
@@ -100,7 +103,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void CalculatePathLengthsAndOrder()
         {
-            pathLength = this.Upstream!.Start.PathLength + this.Upstream.Length;
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
             downstream[0].End.CalculatePathLengthsAndOrder();
             downstream[1].End.CalculatePathLengthsAndOrder();
             var d0 = downstream[0].Depth;
@@ -128,8 +131,8 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void SetChildRadii()
         {
-            downstream[0].Radius = this.Upstream!.Radius * f0;
-            downstream[1].Radius = this.Upstream!.Radius * f1;
+            downstream[0].Radius = this.Upstream.Radius * f0;
+            downstream[1].Radius = this.Upstream.Radius * f1;
         }
 
         /// <inheritdoc/>
@@ -169,7 +172,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void PropagateLogicalUpstream()
         {
-            this.Upstream!.PropagateLogicalUpstream();
+            this.Upstream.PropagateLogicalUpstream();
         }
 
         private void UpdatePhysicalDerived()
@@ -181,7 +184,7 @@ namespace Vascular.Structure.Nodes
         public override void PropagatePhysicalUpstream()
         {
             UpdatePhysicalDerived();
-            this.Upstream!.PropagatePhysicalUpstream();
+            this.Upstream.PropagatePhysicalUpstream();
         }
 
         /// <summary>
@@ -191,7 +194,7 @@ namespace Vascular.Structure.Nodes
         {
             children[0].UpdateLength();
             children[1].UpdateLength();
-            this.Parent!.UpdateLength();
+            this.Parent.UpdateLength();
         }
 
         /// <summary>
@@ -201,7 +204,7 @@ namespace Vascular.Structure.Nodes
         {
             downstream[0].UpdatePhysicalLocal();
             downstream[1].UpdatePhysicalLocal();
-            this.Upstream!.UpdatePhysicalLocal();
+            this.Upstream.UpdatePhysicalLocal();
         }
 
         /// <summary>
@@ -251,8 +254,8 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public double MinOuterLength()
         {
-            var p1 = Vector3.DistanceSquared(this.Upstream!.Start.Position, downstream[0].End.Position);
-            var p2 = Vector3.DistanceSquared(this.Upstream!.Start.Position, downstream[1].End.Position);
+            var p1 = Vector3.DistanceSquared(this.Upstream.Start.Position, downstream[0].End.Position);
+            var p2 = Vector3.DistanceSquared(this.Upstream.Start.Position, downstream[1].End.Position);
             var cc = Vector3.DistanceSquared(downstream[0].End.Position, downstream[1].End.Position);
             return Math.Sqrt(Math.Min(cc, Math.Min(p1, p2)));
         }
@@ -263,7 +266,7 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public double MinInnerLength()
         {
-            var p = Vector3.DistanceSquared(this.Position, this.Upstream!.Start.Position);
+            var p = Vector3.DistanceSquared(this.Position, this.Upstream.Start.Position);
             var c0 = Vector3.DistanceSquared(this.Position, downstream[0].End.Position);
             var c1 = Vector3.DistanceSquared(this.Position, downstream[1].End.Position);
             return Math.Sqrt(Math.Min(p, Math.Min(c0, c1)));
@@ -275,8 +278,8 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public double MaxOuterLength()
         {
-            var p1 = Vector3.DistanceSquared(this.Upstream!.Start.Position, downstream[0].End.Position);
-            var p2 = Vector3.DistanceSquared(this.Upstream!.Start.Position, downstream[1].End.Position);
+            var p1 = Vector3.DistanceSquared(this.Upstream.Start.Position, downstream[0].End.Position);
+            var p2 = Vector3.DistanceSquared(this.Upstream.Start.Position, downstream[1].End.Position);
             var cc = Vector3.DistanceSquared(downstream[0].End.Position, downstream[1].End.Position);
             return Math.Sqrt(Math.Max(cc, Math.Max(p1, p2)));
         }
@@ -287,7 +290,7 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public double MaxInnerLength()
         {
-            var p = Vector3.DistanceSquared(this.Position, this.Upstream!.Start.Position);
+            var p = Vector3.DistanceSquared(this.Position, this.Upstream.Start.Position);
             var c0 = Vector3.DistanceSquared(this.Position, downstream[0].End.Position);
             var c1 = Vector3.DistanceSquared(this.Position, downstream[1].End.Position);
             return Math.Sqrt(Math.Max(p, Math.Max(c0, c1)));
@@ -310,8 +313,8 @@ namespace Vascular.Structure.Nodes
         /// <returns></returns>
         public Vector3 WeightedMean(Func<Branch, double> weighting)
         {
-            var t = weighting(this.Upstream!);
-            var v = this.Upstream!.Start.Position * t;
+            var t = weighting(this.Upstream);
+            var v = this.Upstream.Start.Position * t;
             var w = weighting(downstream[0]);
             v += downstream[0].End.Position * w;
             t += w;

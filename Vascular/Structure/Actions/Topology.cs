@@ -62,7 +62,7 @@ namespace Vascular.Structure.Actions
         public static Segment RemoveTransient(Transient tran)
         {
             // Simple case of rewiring existing parent to existing child end.
-            var seg = tran.Parent!;
+            var seg = tran.Parent;
             var end = tran.Child.End;
             seg.End = end;
             end.Parent = seg;
@@ -85,13 +85,13 @@ namespace Vascular.Structure.Actions
                 return null;
             }
             // Will this kill the whole network?
-            var branch = term.Upstream!;
+            var branch = term.Upstream;
             if (branch.Start is not Bifurcation bifurc)
             {
                 throw new TopologyException("Branch to be culled does not start at bifurcation");
             }
             // Rewire sibling and parent into single branch, this turns 3 branches into 1.
-            var parent = bifurc.Parent!;
+            var parent = bifurc.Parent;
             var other = bifurc.Downstream[0] == branch ? bifurc.Children[1] : bifurc.Children[0];
             var tr = new Transient()
             {
@@ -123,7 +123,7 @@ namespace Vascular.Structure.Actions
             var tr = CullTerminal(term, nullParent);
             if (tr != null)
             {
-                tr.Parent!.Branch.PropagateLogicalUpstream();
+                tr.Parent.Branch.PropagateLogicalUpstream();
                 tr.UpdatePhysicalAndPropagate();
             }
             return tr;
@@ -205,7 +205,7 @@ namespace Vascular.Structure.Actions
                 Child = bifurc.Children[keptChild],
                 Parent = bifurc.Parent
             };
-            tr.Parent!.End = tr;
+            tr.Parent.End = tr;
             tr.Child.Start = tr;
             tr.Parent.Branch.End = tr.Child.Branch.End;
             tr.Parent.Branch.Reinitialize();
@@ -250,7 +250,7 @@ namespace Vascular.Structure.Actions
                     {
                         throw new TopologyException("Branch to be removed is root vessel");
                     }
-                    source.Child = null;
+                    source.Child = null!;
                     if (markDownstream)
                     {
                         Terminal.ForDownstream(branch, t =>
@@ -324,7 +324,7 @@ namespace Vascular.Structure.Actions
                     Child = bifurc.Children[keptChild],
                     Parent = bifurc.Parent
                 };
-                tr.Parent!.End = tr;
+                tr.Parent.End = tr;
                 tr.Child.Start = tr;
                 tr.Parent.Branch.End = tr.Child.Branch.End;
                 tr.Parent.Branch.Reinitialize();
@@ -423,8 +423,8 @@ namespace Vascular.Structure.Actions
         {
             var node = to.Source;
             var seg = from.Source.Child;
-            node!.Child = seg;
-            seg!.Start = node;
+            node.Child = seg;
+            seg.Start = node;
             seg.Branch.Start = node;
         }
     }

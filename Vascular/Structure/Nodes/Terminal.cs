@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -38,6 +39,7 @@ namespace Vascular.Structure.Nodes
         private static readonly Branch[] DOWNSTREAM = Array.Empty<Branch>();
 
         /// <inheritdoc/>
+        [NotNull]
         public override Segment? Parent { get; set; } = null;
 
         /// <inheritdoc/>
@@ -106,7 +108,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void CalculatePathLengthsAndDepths()
         {
-            depth = this.Upstream!.Start.Depth + 1;
+            depth = this.Upstream.Start.Depth + 1;
             pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         }
 
@@ -114,7 +116,7 @@ namespace Vascular.Structure.Nodes
         public override void CalculatePathLengthsAndOrder()
         {
             depth = 1;
-            pathLength = this.Upstream!.Start.PathLength + this.Upstream.Length;
+            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         }
 #endif
 
@@ -183,17 +185,18 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void PropagateLogicalUpstream()
         {
-            this.Upstream!.PropagateLogicalUpstream();
+            this.Upstream.PropagateLogicalUpstream();
         }
 
         /// <inheritdoc/>
         public override void PropagatePhysicalUpstream()
         {
-            this.Upstream!.PropagatePhysicalUpstream();
+            this.Upstream.PropagatePhysicalUpstream();
         }
 
         /// <inheritdoc/>
-        public override Branch? Upstream => this.Parent?.Branch;
+        [NotNull]
+        public override Branch? Upstream => this.Parent.Branch;
 
         /// <inheritdoc/>
         public override Branch[] Downstream => DOWNSTREAM;
@@ -252,7 +255,7 @@ namespace Vascular.Structure.Nodes
         /// <param name="other"></param>
         public void ReplaceWith(Terminal other)
         {
-            other.Parent = this.Parent!;
+            other.Parent = this.Parent;
             other.Parent.End = other;
             other.Parent.Branch.End = other;
             other.Network = this.Network;

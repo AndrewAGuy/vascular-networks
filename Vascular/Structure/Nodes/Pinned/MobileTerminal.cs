@@ -48,8 +48,8 @@ namespace Vascular.Structure.Nodes.Pinned
         /// </summary>
         public void UpdatePhysicalAndPropagate()
         {
-            this.Parent!.UpdateLength();
-            this.Upstream!.UpdatePhysicalLocal();
+            this.Parent.UpdateLength();
+            this.Upstream.UpdatePhysicalLocal();
             this.Upstream.PropagatePhysicalUpstream();
         }
 

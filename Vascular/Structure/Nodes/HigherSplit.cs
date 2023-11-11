@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.VisualBasic;
 using Vascular.Geometry;
@@ -62,6 +63,7 @@ public class HigherSplit : BranchNode, IMobileNode
     }
 
     /// <inheritdoc/>
+    [NotNull]
     public override Segment? Parent { get; set; } = null;
 
     /// <inheritdoc/>
@@ -74,7 +76,8 @@ public class HigherSplit : BranchNode, IMobileNode
     public override Branch[] Downstream => downstream;
 
     /// <inheritdoc/>
-    public override Branch? Upstream => this.Parent?.Branch;
+    [NotNull]
+    public override Branch? Upstream => this.Parent.Branch;
 
 #if !NoEffectiveLength
     /// <inheritdoc/>
@@ -101,7 +104,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePressures()
     {
-        pressure = this.Upstream!.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
+        pressure = this.Upstream.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
         foreach (var d in downstream)
         {
             d.End.CalculatePressures();
@@ -122,7 +125,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePathLengthsAndDepths()
     {
-        depth = this.Upstream!.Start.Depth + 1;
+        depth = this.Upstream.Start.Depth + 1;
         pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         foreach (var d in downstream)
         {
@@ -133,7 +136,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePathLengthsAndOrder()
     {
-        pathLength = this.Upstream!.Start.PathLength + this.Upstream.Length;
+        pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         foreach (var d in downstream)
         {
             d.End.CalculatePathLengthsAndOrder();
@@ -199,7 +202,7 @@ public class HigherSplit : BranchNode, IMobileNode
     {
         for (var i = 0; i < downstream.Length; ++i)
         {
-            downstream[i].Radius = this.Upstream!.Radius * fractions[i];
+            downstream[i].Radius = this.Upstream.Radius * fractions[i];
         }
     }
 
@@ -241,7 +244,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void PropagateLogicalUpstream()
     {
-        this.Upstream!.PropagateLogicalUpstream();
+        this.Upstream.PropagateLogicalUpstream();
     }
 
     private void UpdatePhysicalDerived()
@@ -253,7 +256,7 @@ public class HigherSplit : BranchNode, IMobileNode
     public override void PropagatePhysicalUpstream()
     {
         UpdatePhysicalDerived();
-        this.Upstream!.PropagatePhysicalUpstream();
+        this.Upstream.PropagatePhysicalUpstream();
     }
 
     /// <summary>
@@ -265,7 +268,7 @@ public class HigherSplit : BranchNode, IMobileNode
         {
             c.UpdateLength();
         }
-        this.Parent!.UpdateLength();
+        this.Parent.UpdateLength();
     }
 
     /// <summary>
@@ -277,7 +280,7 @@ public class HigherSplit : BranchNode, IMobileNode
         {
             d.UpdatePhysicalLocal();
         }
-        this.Upstream!.UpdatePhysicalLocal();
+        this.Upstream.UpdatePhysicalLocal();
     }
 
     /// <summary>
@@ -342,8 +345,8 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <returns></returns>
     public Vector3 WeightedMean(Func<Branch, double> weighting)
     {
-        var t = weighting(this.Upstream!);
-        var v = this.Upstream!.Start.Position * t;
+        var t = weighting(this.Upstream);
+        var v = this.Upstream.Start.Position * t;
         foreach (var d in downstream)
         {
             var w = weighting(d);
