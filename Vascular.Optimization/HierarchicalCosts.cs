@@ -41,22 +41,10 @@ namespace Vascular.Optimization
         /// <summary>
         ///
         /// </summary>
-        public HierarchicalCosts()
-        {
-            hierarchicalGradients = new();
-            fluidMechanicalWork = new FluidMechanicalWork(hierarchicalGradients);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
         /// <param name="network"></param>
         public HierarchicalCosts(Network network)
         {
-            hierarchicalGradients = new HierarchicalGradients()
-            {
-                Network = network
-            };
+            hierarchicalGradients = new HierarchicalGradients(network);
             fluidMechanicalWork = new FluidMechanicalWork(hierarchicalGradients);
         }
 
