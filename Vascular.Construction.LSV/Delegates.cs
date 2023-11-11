@@ -85,7 +85,7 @@ namespace Vascular.Construction.LSV
     public delegate IEnumerable<Vector3> InitialTerminalOrderingGenerator(IEnumerable<Vector3> V);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="S"></param>
     /// <param name="T"></param>
@@ -93,7 +93,7 @@ namespace Vascular.Construction.LSV
     public delegate bool InitialTerminalPredicate(Vector3 S, Vector3 T);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="S"></param>
     /// <param name="T"></param>
@@ -101,7 +101,7 @@ namespace Vascular.Construction.LSV
     public delegate double InitialTerminalCostFunction(Vector3 S, Vector3 T);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
@@ -166,7 +166,7 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
@@ -182,7 +182,7 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>

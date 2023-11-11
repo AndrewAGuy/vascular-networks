@@ -9,8 +9,8 @@ namespace Vascular.Construction.LSV
     /// </summary>
     public class LatticeSequence
     {
-        private LinkedListNode<LatticeState> currentNode;
-        private LatticeState state;
+        private LinkedListNode<LatticeState> currentNode = null!;
+        private LatticeState state = null!;
         private LinkedListNode<LatticeState> Current
         {
             get => currentNode;
@@ -22,35 +22,35 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEnumerable<LatticeState> Elements
         {
-            get => this.Current.List;
+            get => this.Current.List!;
             set
             {
                 if (value != null && value.Any())
                 {
                     this.Current = value is LinkedList<LatticeState> list
-                        ? list.First : new LinkedList<LatticeState>(value).First;
+                        ? list.First! : new LinkedList<LatticeState>(value).First!;
                 }
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public InitialTerminalOrderingGenerator InitialTerminalOrderingGenerator { get; set; }
+        public InitialTerminalOrderingGenerator? InitialTerminalOrderingGenerator { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public InitialTerminalPredicate InitialTerminalPredicate { get; set; }
+        public InitialTerminalPredicate? InitialTerminalPredicate { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public InitialTerminalCostFunction InitialTerminalCostFunction { get; set; }
+        public InitialTerminalCostFunction? InitialTerminalCostFunction { get; set; }
 
         private int generations;
         private int maxGenerations;
@@ -58,7 +58,7 @@ namespace Vascular.Construction.LSV
         /// <summary>
         /// Instead of registering at the <see cref="LatticeState"/> level, can register callbacks here.
         /// </summary>
-        public Action AfterIteration { get; set; }
+        public Action? AfterIteration { get; set; }
 
         /// <summary>
         /// The network already contains some branches.
@@ -78,8 +78,8 @@ namespace Vascular.Construction.LSV
         /// <returns></returns>
         public bool Begin(int iterations)
         {
-            var b = state.Begin(iterations, this.InitialTerminalPredicate,
-                this.InitialTerminalCostFunction, this.InitialTerminalOrderingGenerator);
+            var b = state.Begin(iterations, this.InitialTerminalPredicate!,
+                this.InitialTerminalCostFunction!, this.InitialTerminalOrderingGenerator!);
             if (b)
             {
                 Initialize();
@@ -123,20 +123,20 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Reset()
         {
-            var list = currentNode.List;
+            var list = currentNode.List!;
             foreach (var state in list)
             {
                 state.Clear();
             }
-            this.Current = list.First;
+            this.Current = list.First!;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="action"></param>
         public void Apply(Action<LatticeState> action)
@@ -178,7 +178,7 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool CanCoarsen { get; set; } = true;
 

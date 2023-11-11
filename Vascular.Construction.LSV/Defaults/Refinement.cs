@@ -39,7 +39,7 @@ namespace Vascular.Construction.LSV.Defaults
                 }
                 else
                 {
-                    foreach (var ut in element.SingleInterior)
+                    foreach (var ut in element.SingleInterior!)
                     {
                         var z = ut.Key;
                         var t = ut.Value;
@@ -93,7 +93,7 @@ namespace Vascular.Construction.LSV.Defaults
         /// </summary>
         /// <param name="elements"></param>
         /// <param name="iterations"></param>
-        public static void SetGenerationsByBasis(IEnumerable<LatticeState> elements, Func<Matrix3, Matrix3, int> iterations = null)
+        public static void SetGenerationsByBasis(IEnumerable<LatticeState> elements, Func<Matrix3, Matrix3, int>? iterations = null)
         {
             iterations ??= GenerationsFromDeterminant();
             var e = elements.GetEnumerator();
@@ -143,7 +143,7 @@ namespace Vascular.Construction.LSV.Defaults
 
         /// <summary>
         /// Sets the flow rate for new terminals, and sets an interior filter which uniformly sets the flow rate
-        /// of each existing terminal such that the total flow associated with the lattice point is equal to this. 
+        /// of each existing terminal such that the total flow associated with the lattice point is equal to this.
         /// Does not account for proximity between existing terminals.
         /// </summary>
         /// <param name="Q0"></param>
@@ -164,7 +164,7 @@ namespace Vascular.Construction.LSV.Defaults
         }
 
         /// <summary>
-        /// Sets flow rate of terminals in the interior filter such that the total flow between all terminals 
+        /// Sets flow rate of terminals in the interior filter such that the total flow between all terminals
         /// associated with a lattice point is equal to the rate given by <see cref="LatticeState.TerminalFlowFunction"/>,
         /// with flow being uniformly distributed across the terminals.
         /// Similar to <see cref="SetFlowByDeterminant(double, LatticeState)"/>, except that the terminal flow is not
@@ -184,7 +184,7 @@ namespace Vascular.Construction.LSV.Defaults
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <returns></returns>
@@ -233,7 +233,7 @@ namespace Vascular.Construction.LSV.Defaults
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="includeCentre"></param>

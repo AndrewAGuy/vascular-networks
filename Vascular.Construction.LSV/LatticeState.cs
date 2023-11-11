@@ -18,43 +18,44 @@ namespace Vascular.Construction.LSV
     public class LatticeState
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public LatticeState(Network network, Lattice lattice)
+        public LatticeState(Network network, Lattice lattice, ExteriorPredicate exteriorPredicate)
         {
             this.Network = network;
             this.Lattice = lattice;
             this.Connections = lattice.VoronoiCell.Connections;
             this.ClosestBasisFunction = this.Lattice.ClosestVectorBasis;
+            this.ExteriorPredicate = exteriorPredicate;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Network Network { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Lattice Lattice { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public SingleMap SingleInterior { get; private set; }
+        public SingleMap? SingleInterior { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public MultipleMap MultipleInterior { get; private set; }
+        public MultipleMap? MultipleInterior { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public MultipleMap Exterior { get; private set; }
+        public MultipleMap Exterior { get; private set; } = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3[] Connections { get; private set; }
 
@@ -79,107 +80,107 @@ namespace Vascular.Construction.LSV
         public bool ReintroduceUp { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public ExteriorOrderingGenerator ExteriorOrderingGenerator { get; set; }
+        public ExteriorOrderingGenerator? ExteriorOrderingGenerator { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public ExteriorPredicate ExteriorPredicate { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TerminalFlowFunction TerminalFlowFunction { get; set; }
+        public TerminalFlowFunction TerminalFlowFunction { get; set; } = (z, x) => 1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public TerminalConstructor TerminalConstructor { get; set; } = (x, Q) => new Terminal(x, Q);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TerminalPairPredicate TerminalPairPredicate { get; set; }
+        public TerminalPairPredicate TerminalPairPredicate { get; set; } = (T, t) => true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TerminalPairCostFunction TerminalPairCostFunction { get; set; }
+        public TerminalPairCostFunction TerminalPairCostFunction { get; set; } = (T, t) => 0;
 
         /// <summary>
         /// Defaults to taking the parent of the end node.
         /// </summary>
-        public BifurcationSegmentSelector BifurcationSegmentSelector { get; set; } = (b, t) => b.End.Parent;
+        public BifurcationSegmentSelector BifurcationSegmentSelector { get; set; } = (b, t) => b.End.Parent!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public BifurcationPositionFunction BifurcationPositionFunction { get; set; }
+        public BifurcationPositionFunction BifurcationPositionFunction { get; set; } = Defaults.Spread.FlowWeightedPosition;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TerminalPairBuildAction TerminalPairBuildAction { get; set; }
+        public TerminalPairBuildAction? TerminalPairBuildAction { get; set; }
 
         /// <summary>
         /// Called before each iteration.
         /// </summary>
-        public Action BeforeSpreadAction { get; set; }
+        public Action? BeforeSpreadAction { get; set; }
 
         /// <summary>
         /// Called before leaving this lattice for a previously unvisited fine lattice.
         /// </summary>
-        public Action BeforeRefineAction { get; set; }
+        public Action? BeforeRefineAction { get; set; }
 
         /// <summary>
         /// Called before leaving this lattice for a more coarse one.
         /// </summary>
-        public Action BeforeCoarsenAction { get; set; }
+        public Action? BeforeCoarsenAction { get; set; }
 
         /// <summary>
         /// Called before leaving this lattice for a more fine one, which has already been visited.
         /// </summary>
-        public Action BeforeReRefineAction { get; set; }
+        public Action? BeforeReRefineAction { get; set; }
 
         /// <summary>
         /// Called after each iteration.
         /// </summary>
-        public Action AfterSpreadAction { get; set; }
+        public Action? AfterSpreadAction { get; set; }
 
         /// <summary>
         /// Called when entered into from a more coarse lattice.
         /// </summary>
-        public Action AfterRefineAction { get; set; }
+        public Action? AfterRefineAction { get; set; }
 
         /// <summary>
         /// Called when entered into from a more fine lattice.
         /// </summary>
-        public Action AfterCoarsenAction { get; set; }
+        public Action? AfterCoarsenAction { get; set; }
 
         /// <summary>
         /// Called when entered into multiple times.
         /// </summary>
-        public Action AfterReRefineAction { get; set; }
+        public Action? AfterReRefineAction { get; set; }
 
         /// <summary>
         /// Called before <see cref="AfterRefineAction"/>, <see cref="AfterReRefineAction"/>, <see cref="AfterCoarsenAction"/>.
         /// </summary>
-        public Action OnEntry { get; set; }
+        public Action? OnEntry { get; set; }
 
         /// <summary>
         /// Called before <see cref="BeforeRefineAction"/>, <see cref="BeforeReRefineAction"/>, <see cref="BeforeCoarsenAction"/>.
         /// </summary>
-        public Action OnExit { get; set; }
+        public Action? OnExit { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public ClosestBasisFunction ClosestBasisFunction { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public InteriorMode InteriorMode { get; set; } = InteriorMode.Default;
 
@@ -196,10 +197,10 @@ namespace Vascular.Construction.LSV
         /// <summary>
         /// If non-null and interior is multiple, filters elements after acquisition.
         /// </summary>
-        public InteriorFilter InteriorFilter { get; set; }
+        public InteriorFilter? InteriorFilter { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="iterations"></param>
         /// <param name="predicate"></param>
@@ -259,7 +260,7 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Initialize()
         {
@@ -293,7 +294,7 @@ namespace Vascular.Construction.LSV
         {
             if (this.InteriorFilter != null)
             {
-                foreach (var (z, T) in this.MultipleInterior)
+                foreach (var (z, T) in this.MultipleInterior!)
                 {
                     var x = this.Lattice.ToSpace(z);
                     this.InteriorFilter(z, x, T);
@@ -313,21 +314,21 @@ namespace Vascular.Construction.LSV
         {
             this.SingleInterior = null;
             this.MultipleInterior = null;
-            this.Exterior = null;
+            this.Exterior = null!;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Propagate()
         {
             this.Exterior = this.MultipleInterior != null
                 ? LatticeActions.PropagateExterior<List<Terminal>>(this.MultipleInterior, this.Connections, this.Exterior.Keys)
-                : LatticeActions.PropagateExterior<List<Terminal>>(this.SingleInterior, this.Connections, this.Exterior.Keys);
+                : LatticeActions.PropagateExterior<List<Terminal>>(this.SingleInterior!, this.Connections, this.Exterior.Keys);
         }
 
         /// <summary>
-        /// Enter into this lattice from a more refined lattice. 
+        /// Enter into this lattice from a more refined lattice.
         /// Results in a multiple map interior unless reduced by specifying <see cref="InteriorMode.Single"/>.
         /// Can be entered into without having been visited before, in which case maintains the exterior from
         /// the more refined lattice, but ignores the reintroduction step.
@@ -340,9 +341,9 @@ namespace Vascular.Construction.LSV
             var newMulitple = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
             this.Exterior = new MultipleMap(newMulitple.Count * this.Connections.Length);
 
-            Action<Vector3> addExterior = null;
-            Func<Vector3, bool> inInterior = null;
-            IEnumerable<Vector3> oldInterior = null;
+            Action<Vector3> addExterior = null!;
+            Func<Vector3, bool> inInterior = null!;
+            IEnumerable<Vector3>? oldInterior = null;
             if (this.InteriorMode == InteriorMode.Single)
             {
                 this.SingleInterior = LatticeActions.Reduce(newMulitple, this.ReductionFunction);
@@ -350,7 +351,7 @@ namespace Vascular.Construction.LSV
 
                 addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, z, this.Connections);
                 inInterior = z => this.SingleInterior.ContainsKey(z);
-                oldInterior = (IEnumerable<Vector3>)oldSingle?.Keys ?? oldMultiple?.Keys;
+                oldInterior = (IEnumerable<Vector3>?)oldSingle?.Keys ?? oldMultiple?.Keys;
             }
             else
             {
@@ -360,7 +361,7 @@ namespace Vascular.Construction.LSV
 
                 addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, z, this.Connections);
                 inInterior = z => this.MultipleInterior.ContainsKey(z);
-                oldInterior = (IEnumerable<Vector3>)oldMultiple?.Keys ?? oldSingle?.Keys;
+                oldInterior = (IEnumerable<Vector3>?)oldMultiple?.Keys ?? oldSingle?.Keys;
             }
 
             foreach (var zf in fine.Exterior.Keys)
@@ -390,9 +391,9 @@ namespace Vascular.Construction.LSV
         {
             var (oldSingle, oldMultiple) = (this.SingleInterior, this.MultipleInterior);
 
-            ICollection<Vector3> oldInterior = null;
-            ICollection<Vector3> newInterior = null;
-            Action<Vector3> addExterior = null;
+            ICollection<Vector3> oldInterior = null!;
+            ICollection<Vector3> newInterior = null!;
+            Action<Vector3> addExterior = null!;
             switch (this.InteriorMode)
             {
                 default:
@@ -411,9 +412,9 @@ namespace Vascular.Construction.LSV
                     this.SingleInterior = LatticeActions.Reduce(
                         LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction),
                         this.ReductionFunction);
-                PREPARE_SINGLE:
+PREPARE_SINGLE:
                     this.MultipleInterior = null;
-                    oldInterior = (ICollection<Vector3>)oldSingle?.Keys ?? oldMultiple?.Keys;
+                    oldInterior = ((ICollection<Vector3>)oldSingle?.Keys! ?? oldMultiple?.Keys) ?? new List<Vector3>();
                     newInterior = this.SingleInterior.Keys;
                     addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, z, this.Connections);
                     break;
@@ -422,7 +423,7 @@ namespace Vascular.Construction.LSV
                     this.MultipleInterior = LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction);
                     this.SingleInterior = null;
                     TryFilterInterior();
-                    oldInterior = (ICollection<Vector3>)oldMultiple?.Keys ?? oldSingle?.Keys;
+                    oldInterior = ((ICollection<Vector3>)oldMultiple?.Keys! ?? oldSingle?.Keys) ?? new List<Vector3>();
                     newInterior = this.MultipleInterior.Keys;
                     addExterior = z => LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.MultipleInterior, z, this.Connections);
                     break;
@@ -474,7 +475,7 @@ namespace Vascular.Construction.LSV
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="exterior"></param>
         public void AddExterior(Vector3 exterior)
@@ -485,7 +486,7 @@ namespace Vascular.Construction.LSV
             }
             else
             {
-                LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior, exterior, this.Connections);
+                LatticeActions.AddExterior<List<Terminal>>(this.Exterior, this.SingleInterior!, exterior, this.Connections);
             }
         }
 
@@ -497,7 +498,7 @@ namespace Vascular.Construction.LSV
             this.BeforeSpreadAction?.Invoke();
             var add = this.MultipleInterior != null
                 ? new Action<Vector3, Terminal>((z, t) => this.MultipleInterior[z] = new List<Terminal>(1) { t })
-                : new Action<Vector3, Terminal>((z, t) => this.SingleInterior[z] = t);
+                : new Action<Vector3, Terminal>((z, t) => this.SingleInterior![z] = t);
 
             var exterior = this.ExteriorOrderingGenerator?.Invoke(this.Exterior) ?? this.Exterior;
             foreach (var kv in exterior)

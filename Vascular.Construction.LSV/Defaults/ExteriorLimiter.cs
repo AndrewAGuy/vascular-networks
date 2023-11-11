@@ -5,7 +5,7 @@ using Vascular.Geometry;
 namespace Vascular.Construction.LSV.Defaults
 {
     /// <summary>
-    /// Some schemes, particularly when running trimming actions as a <see cref="LatticeState.AfterSpreadAction"/>, 
+    /// Some schemes, particularly when running trimming actions as a <see cref="LatticeState.AfterSpreadAction"/>,
     /// can cause an infinite loop in which neighbouring exterior vectors with invalid candidate interior connections
     /// are added and immediately removed. This causes the exterior to propagate back and forth between them.
     /// <para/>
@@ -16,7 +16,7 @@ namespace Vascular.Construction.LSV.Defaults
     public class ExteriorLimiter
     {
         /// <summary>
-        /// Clears the tracked positions. Run this on <see cref="LatticeState.AfterCoarsenAction"/>, 
+        /// Clears the tracked positions. Run this on <see cref="LatticeState.AfterCoarsenAction"/>,
         /// <see cref="LatticeState.AfterRefineAction"/>, <see cref="LatticeState.AfterReRefineAction"/>.
         /// </summary>
         public Action OnEntry { get; }
@@ -27,14 +27,14 @@ namespace Vascular.Construction.LSV.Defaults
         public ExteriorPredicate Predicate { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="limit"></param>
         /// <param name="capacity">The initial map capacity.</param>
         public ExteriorLimiter(int limit, int capacity = 2048)
         {
             var visited = new Dictionary<Vector3, int>(capacity);
-            this.OnEntry = () => visited.Clear();            
+            this.OnEntry = () => visited.Clear();
             this.Predicate = (z, x) =>
             {
                 if (visited.TryGetValue(z, out var n))

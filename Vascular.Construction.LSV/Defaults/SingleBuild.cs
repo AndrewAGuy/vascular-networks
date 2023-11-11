@@ -13,31 +13,31 @@ namespace Vascular.Construction.LSV.Defaults
     public class SingleBuild
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Action BeforeSpread { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public TerminalPairPredicate Predicate { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public TerminalPairBuildAction OnBuild { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Action AfterSpread { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="state"></param>
         /// <param name="toIntegral"></param>
-        public SingleBuild(LatticeState state, ClosestBasisFunction toIntegral = null)
+        public SingleBuild(LatticeState state, ClosestBasisFunction? toIntegral = null)
         {
             toIntegral ??= state.ClosestBasisFunction;
             var built = new HashSet<Terminal>();

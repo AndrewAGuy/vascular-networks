@@ -4,8 +4,4 @@
     <ProjectReference Include="..\Vascular\Vascular.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
 </Project>
