@@ -50,7 +50,7 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
-        public override void SetCache(Network n)
+        public override void SetCache(Network? n)
         {
             if (n is not null)
             {

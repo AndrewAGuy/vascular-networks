@@ -29,7 +29,7 @@ namespace Vascular.Optimization.Hierarchical
         private readonly Func<HierarchicalCost[], double> combiner;
         private readonly Func<HierarchicalCost[], double[]> gradient;
 
-        private double[] gradients;
+        private double[] gradients = null!;
         private readonly HierarchicalGradients cache;
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Vascular.Optimization.Hierarchical
         /// overall cost with respect to each component cost.
         /// </summary>
         /// <param name="n"></param>
-        public override void SetCache(Network n)
+        public override void SetCache(Network? n)
         {
             if (n is not null)
             {

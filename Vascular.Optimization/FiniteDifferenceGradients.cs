@@ -85,7 +85,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Volume(IMobileNode node, double probeLength)
         {
-            var source = node.Parent.Branch.Network.Source;
+            var source = node.Parent!.Branch.Network.Source;
             return Gradient(node, probeLength, () => source.Volume);
         }
 
@@ -131,10 +131,10 @@ namespace Vascular.Optimization
         {
             var grad = Gradient(branch, probeFlow, () =>
             {
-                el.Propagate(branch.Parent);
+                el.Propagate(branch.Parent!);
                 return el.Value;
             });
-            el.Propagate(branch.Parent);
+            el.Propagate(branch.Parent!);
             return grad;
         }
 
@@ -146,7 +146,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Work(IMobileNode node, double probeLength)
         {
-            var source = node.Parent.Branch.Network.Source;
+            var source = node.Parent!.Branch.Network.Source;
             return Gradient(node, probeLength, () => source.Work);
         }
 
@@ -170,7 +170,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Resistance(IMobileNode node, double probeLength)
         {
-            var source = node.Parent.Branch.Network.Source;
+            var source = node.Parent!.Branch.Network.Source;
             return Gradient(node, probeLength, () => source.Resistance);
         }
 

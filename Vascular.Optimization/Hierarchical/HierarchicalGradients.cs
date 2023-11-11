@@ -14,6 +14,15 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
+        /// <param name="n"></param>
+        public HierarchicalGradients(Network n)
+        {
+            this.Network = n;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         public Dictionary<Bifurcation, BifurcationGradients> Local { get; } = new Dictionary<Bifurcation, BifurcationGradients>();
 
         /// <summary>

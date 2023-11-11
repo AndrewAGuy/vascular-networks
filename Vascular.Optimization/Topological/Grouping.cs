@@ -79,7 +79,7 @@ namespace Vascular.Optimization.Topological
                 }
                 foreach (var node in endpoints)
                 {
-                    stack.Push(node.Upstream);
+                    stack.Push(node.Upstream!);
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace Vascular.Optimization.Topological
                 .ToHashSet();
             foreach (var e in endpoints)
             {
-                foreach (var u in e.Upstream.UpstreamTo(parent))
+                foreach (var u in e.Upstream!.UpstreamTo(parent))
                 {
                     branches.Add(u);
                 }
@@ -182,7 +182,7 @@ namespace Vascular.Optimization.Topological
                     }
                 }
             }
-            return branches;
+            return branches!;
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace Vascular.Optimization.Topological
             // Making an action will invalidate the cost cache for this grouping
             // So for all valid actions with negative cost impact, pick the smallest
             return branches.Pairs()
-                .SelectMany(p => BranchPairActions(p.a, p.b))
+                .SelectMany(p => BranchPairActions(p.a!, p.b!))
                 .Where(a => a.IsPermissible());
         }
 
@@ -307,7 +307,7 @@ namespace Vascular.Optimization.Topological
         /// <returns></returns>
         [Obsolete]
         public static double EstimateCostChange(BranchAction action, HierarchicalCosts costs,
-            Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
+            Func<BranchNode, BranchNode, BranchNode, Vector3>? placement = null)
         {
             switch (action)
             {
@@ -330,8 +330,8 @@ namespace Vascular.Optimization.Topological
         /// <param name="placement"></param>
         /// <returns></returns>
         [Obsolete]
-        public static (BranchAction a, double dC) OptimalAction(IEnumerable<BranchAction> actions, HierarchicalCosts costs,
-            Func<BranchNode, BranchNode, BranchNode, Vector3> placement = null)
+        public static (BranchAction? a, double dC) OptimalAction(IEnumerable<BranchAction> actions, HierarchicalCosts costs,
+            Func<BranchNode, BranchNode, BranchNode, Vector3>? placement = null)
         {
             return actions.ArgMin(a => EstimateCostChange(a, costs, placement), out var optimal, out var dC)
                 ? (optimal, dC)
@@ -348,7 +348,7 @@ namespace Vascular.Optimization.Topological
             return branches
                 .Select(b => new PromoteNode(b.End))
                 .Where(p => p.IsPermissible())
-                .Select(p => p.Action);
+                .Select(p => p.Action)!;
         }
 
         /// <summary>

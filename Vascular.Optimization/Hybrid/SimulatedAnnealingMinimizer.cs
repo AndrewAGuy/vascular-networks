@@ -6,18 +6,29 @@ using Vascular.Structure;
 namespace Vascular.Optimization.Hybrid
 {
     /// <summary>
-    /// Implementation of simulated annealing with restarts. 
+    /// Implementation of simulated annealing with restarts.
     /// </summary>
     public class SimulatedAnnealingMinimizer
     {
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="c"></param>
+        public SimulatedAnnealingMinimizer(Action<Network> p, Func<Network, double> c)
+        {
+            this.Perturb = p;
+            this.Cost = c;
+        }
+
+        /// <summary>
         /// Given initial temperature and iteration (0-indexed), returns the block temperature.
         /// </summary>
-        public Func<double, int, double> Temperature { get; set; } = 
+        public Func<double, int, double> Temperature { get; set; } =
             (t0, k) => t0 * Math.Min(1.0, 1.0 / Math.Log(k + 1));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int IterationsPerBlock { get; set; } = 1000;
 
@@ -33,32 +44,32 @@ namespace Vascular.Optimization.Hybrid
             (dC, T, r) => r.NextDouble() < Math.Exp(-dC / T);
 
         /// <summary>
-        /// Acts on a clone of the current network, 
+        /// Acts on a clone of the current network,
         /// </summary>
         public Action<Network> Perturb { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Network, bool> Admissible { get; set; } = n => true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Random Random { get; set; } = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Network, double> Cost { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double InitialTemperature { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <param name="p0"></param>
@@ -102,7 +113,7 @@ namespace Vascular.Optimization.Hybrid
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="initial"></param>
         /// <param name="blocks"></param>

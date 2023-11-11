@@ -56,7 +56,7 @@ namespace Vascular.Optimization.Topological
         /// <summary>
         /// Small terminal vessels are an issue as it can lead to tiny (or even zero) values of <see cref="Branch.ReducedResistance"/> in their
         /// upstream branches. This has lead to floating point issues in <see cref="Bifurcation.ReducedResistance"/> through a 0/0 error,
-        /// and might also have the potential for overflow. 
+        /// and might also have the potential for overflow.
         /// <para/>
         /// While one option is to have <see cref="Terminal.ReducedResistance"/> return a small non-zero value, an alternative viewpoint is that
         /// these terminals should not exist at all as something else has decided that their parent vessels should consume the terminal site.
@@ -64,7 +64,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="network"></param>
         /// <param name="Lmin"></param>
         /// <param name="onCull"></param>
-        public static void RemoveShortTerminals(Network network, double Lmin, Action<Terminal> onCull = null)
+        public static void RemoveShortTerminals(Network network, double Lmin, Action<Terminal>? onCull = null)
         {
             onCull ??= t => { };
             var removing = network.Terminals.Where(t => t.Upstream.Length <= Lmin).ToList();
@@ -84,7 +84,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="enumerator"></param>
         /// <param name="Lmin"></param>
         /// <param name="onCull"></param>
-        public static void RemoveShortTerminals(Branch branch, BranchEnumerator enumerator, double Lmin, Action<Terminal> onCull = null)
+        public static void RemoveShortTerminals(Branch branch, BranchEnumerator enumerator, double Lmin, Action<Terminal>? onCull = null)
         {
             onCull ??= t => { };
             var removing = enumerator.Terminals(branch)
@@ -103,7 +103,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="flowRatio"></param>
         /// <param name="rqRatio"></param>
         /// <returns></returns>
-        public static BranchAction BifurcationRatio(Branch branch, double flowRatio, double rqRatio)
+        public static BranchAction? BifurcationRatio(Branch branch, double flowRatio, double rqRatio)
         {
             if (branch.End is not Bifurcation bifurcation)
             {
@@ -271,7 +271,7 @@ namespace Vascular.Optimization.Topological
         /// If <paramref name="expand"/>, each terminal gets a chance to return multiple branches, e.g. iterating
         /// upstream a given number of times using <see cref="BranchNode.EnumerateUpstream(int)"/>.
         /// <para/>
-        /// This can return many equivalent and invalid actions, so filter by calling 
+        /// This can return many equivalent and invalid actions, so filter by calling
         /// <see cref="Enumerable.Distinct{TSource}(IEnumerable{TSource})"/> and <see cref="TopologyAction.IsPermissible"/>.
         /// </summary>
         /// <param name="root"></param>
@@ -282,7 +282,7 @@ namespace Vascular.Optimization.Topological
         /// <returns></returns>
         public static IEnumerable<BranchAction> TerminalActions(Branch root,
             ClosestBasisFunction toIntegral, Vector3[] connections,
-            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
+            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>>? expand = null)
         {
             var interior = LatticeActions.GetMultipleInterior<List<Terminal>>(root, toIntegral);
             return TerminalActions(interior, toIntegral, connections, tryLocal, expand);
@@ -303,7 +303,7 @@ namespace Vascular.Optimization.Topological
         /// <returns></returns>
         public static IEnumerable<BranchAction> TerminalActions(
             Dictionary<Vector3, ICollection<Terminal>> interior, ClosestBasisFunction toIntegral, Vector3[] connections,
-            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>> expand = null)
+            bool tryLocal = false, Func<Terminal, IEnumerable<Branch>>? expand = null)
         {
             foreach (var (index, terminals) in interior)
             {

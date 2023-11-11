@@ -35,7 +35,7 @@ namespace Vascular.Optimization.Hierarchical
         ///
         /// </summary>
         /// <param name="network"></param>
-        public abstract void SetCache(Network network = null);
+        public abstract void SetCache(Network? network = null);
 
         /// <summary>
         ///

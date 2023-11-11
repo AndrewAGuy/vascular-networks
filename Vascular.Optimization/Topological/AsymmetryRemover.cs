@@ -16,7 +16,7 @@ namespace Vascular.Optimization.Topological
         private double qRatio = double.PositiveInfinity;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double RadiusRatio
         {
@@ -37,7 +37,7 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double FlowRatio
         {
@@ -57,19 +57,19 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool ActDownwards { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool ActUpwards { get; set; } = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Action<Terminal> OnCull { get; set; }
+        public Action<Terminal>? OnCull { get; set; }
 
         /// <summary>
         /// Visits the network in a down-up fashion, attempting to remove the low-flow side

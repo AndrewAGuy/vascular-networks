@@ -29,7 +29,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static Func<double, double> ClampedRatio(double ratio, 
+        public static Func<double, double> ClampedRatio(double ratio,
             double min = 0.0, double max = double.PositiveInfinity)
         {
             return Q => (Q * ratio).Clamp(min, max);
@@ -44,7 +44,7 @@ namespace Vascular.Optimization.Topological
         /// <param name="maxLength"></param>
         /// <returns></returns>
         public static IEnumerable<BranchAction> FlowRatio(IEnumerable<Branch> branches,
-            Func<double, double> maxFlow, Func<double, double> maxLength = null)
+            Func<double, double> maxFlow, Func<double, double>? maxLength = null)
         {
             maxLength ??= Q => double.PositiveInfinity;
             // Order by flow, then work upwards
