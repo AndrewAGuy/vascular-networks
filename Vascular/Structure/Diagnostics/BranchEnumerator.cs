@@ -74,7 +74,7 @@ namespace Vascular.Structure.Diagnostics
                 }
                 foreach (var transient in branch.Transients)
                 {
-                    yield return transient as IMobileNode;
+                    yield return (transient as IMobileNode)!;
                 }
             }
         }

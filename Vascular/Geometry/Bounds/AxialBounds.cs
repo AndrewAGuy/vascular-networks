@@ -7,7 +7,6 @@ namespace Vascular.Geometry.Bounds
     /// <summary>
     /// Represents an axially aligned bounding box.
     /// </summary>
-    [DataContract]
     public class AxialBounds : IAxialBoundable
     {
         /// <summary>
@@ -20,7 +19,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         public AxialBounds(Vector3 v)
@@ -30,7 +29,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="u"></param>
@@ -74,7 +73,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         public AxialBounds(Segment s) : this(s.Start.Position, s.End.Position, s.Radius)
@@ -83,7 +82,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds Copy()
@@ -92,24 +91,22 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public static AxialBounds Infinite => new(new Vector3(double.NegativeInfinity), new Vector3(double.PositiveInfinity));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public Vector3 Upper { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public Vector3 Lower { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Range => this.Upper - this.Lower;
 
@@ -146,7 +143,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -179,7 +176,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -195,7 +192,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -206,7 +203,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <param name="v"></param>
@@ -217,7 +214,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <param name="b"></param>
@@ -228,7 +225,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="d"></param>
         /// <returns></returns>
@@ -244,7 +241,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -256,7 +253,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
@@ -281,7 +278,7 @@ namespace Vascular.Geometry.Bounds
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>

@@ -6,16 +6,13 @@ namespace Vascular.Geometry.Lattices.Transformed
     /// A lattice whose basis has been scaled, useful for subdivision.
     /// Uses integral scaling, so returns a superlattice.
     /// </summary>
-    [DataContract]
     public class RefinedLattice : Lattice
     {
-        [DataMember]
         private readonly double refinement;
-        [DataMember]
         private readonly Lattice lattice;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="refinement"></param>

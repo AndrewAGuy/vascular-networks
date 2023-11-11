@@ -11,7 +11,7 @@ namespace Vascular.Structure.Actions
         private readonly Terminal t;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         public CullTerminal(Terminal t)
@@ -20,9 +20,9 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Action<Terminal> OnCull { get; set; }
+        public Action<Terminal>? OnCull { get; set; }
 
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
@@ -32,7 +32,7 @@ namespace Vascular.Structure.Actions
             {
                 if (propagateLogical)
                 {
-                    T.Parent.Branch.PropagateLogicalUpstream();
+                    T.Parent!.Branch.PropagateLogicalUpstream();
                     if (propagatePhysical)
                     {
                         T.UpdatePhysicalAndPropagate();
@@ -44,7 +44,7 @@ namespace Vascular.Structure.Actions
         /// <inheritdoc/>
         public override bool IsPermissible()
         {
-            return t.Parent != null && !(t.Upstream.Start is Source);
+            return t.Parent != null && (t.Upstream!.Start is not Source);
         }
     }
 }

@@ -3,26 +3,24 @@
 namespace Vascular.Geometry
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [DataContract]
     public class Plane3
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public double x = 0.0, y = 0.0, z = 0.0, d = 0.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Plane3()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="direction"></param>
         /// <param name="distance"></param>
@@ -36,7 +34,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="point"></param>
         public Plane3(Vector3 point)

@@ -11,7 +11,7 @@ namespace Vascular.Geometry.Graphs
         where TEdge : Edge<TVertex, TEdge>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -21,15 +21,16 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Edge()
         {
-
+            S = null!;
+            E = null!;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public TVertex S, E;
 
@@ -48,15 +49,23 @@ namespace Vascular.Geometry.Graphs
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public TVertex OtherSafe(TVertex v)
+        public TVertex? OtherSafe(TVertex v)
         {
             return v == S ? E : v == E ? S : null;
         }
 
         private class UndirectedComparer : IEqualityComparer<TEdge>
         {
-            public bool Equals(TEdge x, TEdge y)
+            public bool Equals(TEdge? x, TEdge? y)
             {
+                if (x is null)
+                {
+                    return y is null;
+                }
+                if (y is null)
+                {
+                    return false;
+                }
                 return x.E == y.E && x.S == y.S
                     || x.E == y.S && x.S == y.E;
             }
@@ -69,8 +78,16 @@ namespace Vascular.Geometry.Graphs
 
         private class DirectedComparer : IEqualityComparer<TEdge>
         {
-            public bool Equals(TEdge x, TEdge y)
+            public bool Equals(TEdge? x, TEdge? y)
             {
+                if (x is null)
+                {
+                    return y is null;
+                }
+                if (y is null)
+                {
+                    return false;
+                }
                 return x.S == y.S && x.E == y.E;
             }
 
@@ -81,12 +98,12 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public static IEqualityComparer<TEdge> Undirected => new UndirectedComparer();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public static IEqualityComparer<TEdge> Directed => new DirectedComparer();
     }

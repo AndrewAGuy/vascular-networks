@@ -6,7 +6,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure.Diagnostics
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Address
     {
@@ -19,16 +19,16 @@ namespace Vascular.Structure.Diagnostics
         /// <param name="current"></param>
         /// <param name="upstream"></param>
         /// <returns></returns>
-        public static List<int> Get(Branch current, Branch upstream = null)
+        public static List<int> Get(Branch current, Branch? upstream = null)
         {
             var addr = new List<int>();
-            while (current.Start is not Source
+            while (current!.Start is not Source
                 && current != upstream)
             {
                 var s = current.Start;
                 var i = Array.IndexOf(s.Downstream, current);
                 addr.Add(i);
-                current = s.Upstream;
+                current = s.Upstream!;
             }
             addr.Reverse();
             return addr;
@@ -47,8 +47,8 @@ namespace Vascular.Structure.Diagnostics
         {
             var gca = Branch.CommonAncestorSafe(start, end);
             // First go up start -> gca
-            var diff = start == gca 
-                ? 0 
+            var diff = start == gca
+                ? 0
                 : start.UpstreamTo(gca).Count() + 1;
             var addr = Enumerable.Repeat(int.MinValue, diff).ToList();
             // Now go gca -> end
@@ -68,7 +68,7 @@ namespace Vascular.Structure.Diagnostics
             for (var i = 0; i < address.Count; i++)
             {
                 from = address[i] < 0
-                    ? from.Parent
+                    ? from.Parent!
                     : from.Children[address[i]];
             }
             return from;

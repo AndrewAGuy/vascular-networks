@@ -8,40 +8,36 @@ namespace Vascular
     /// <summary>
     /// Summary statistics, including moments and orders (quantiles).
     /// </summary>
-    [DataContract]
     public class Summary
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public double Mean { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public double Variance { get; }
 
         /// <summary>
-        /// Defined as <c>Expectation[pow(X - mean, n)] / pow(std, n)</c> 
+        /// Defined as <c>Expectation[pow(X - mean, n)] / pow(std, n)</c>
         /// </summary>
-        [DataMember]
-        public double[] StandardizedMoments { get; }
+        public double[]? StandardizedMoments { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public double[] OrderStatistics { get; }
+        public double[]? OrderStatistics { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="values"></param>
         /// <param name="standardizedMoments"></param>
         /// <param name="orders"></param>
-        public Summary(IEnumerable<double> values, IEnumerable<int> standardizedMoments = null, IEnumerable<double> orders = null)
+        public Summary(IEnumerable<double> values,
+            IEnumerable<int>? standardizedMoments = null, IEnumerable<double>? orders = null)
         {
             this.Mean = values.Average();
             this.Variance = values.Average(x => x * x) - Math.Pow(this.Mean, 2);

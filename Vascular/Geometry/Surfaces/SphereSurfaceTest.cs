@@ -13,7 +13,7 @@ namespace Vascular.Geometry.Surfaces
         private readonly AxialBounds bounds;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <param name="r"></param>
@@ -25,7 +25,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -35,11 +35,11 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public (double d, Vector3 n) DistanceAndNormalToSurface(Vector3 v)
+        public (double d, Vector3? n) DistanceAndNormalToSurface(Vector3 v)
         {
             var dir = v - position;
             var dist = dir.Length;
@@ -49,7 +49,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="d"></param>
@@ -63,17 +63,17 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Position => position;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Radius => radius;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()

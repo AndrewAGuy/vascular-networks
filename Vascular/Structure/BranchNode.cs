@@ -8,14 +8,9 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure
 {
     /// <summary>
-    /// A specialization of <see cref="INode"/> that links <see cref="Branch"/> instances. 
+    /// A specialization of <see cref="INode"/> that links <see cref="Branch"/> instances.
     /// These are responsible for propagating data up and down the tree.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(RadiusSource))]
-    [KnownType(typeof(PressureSource))]
-    [KnownType(typeof(Bifurcation))]
-    [KnownType(typeof(Terminal))]
     public abstract class BranchNode : INode
     {
 #if !NoPressure
@@ -53,7 +48,7 @@ namespace Vascular.Structure
 #endif
 
         /// <inheritdoc/>
-        public abstract Segment Parent { get; set; }
+        public abstract Segment? Parent { get; set; }
 
         /// <inheritdoc/>
         public abstract Segment[] Children { get; }
@@ -62,20 +57,19 @@ namespace Vascular.Structure
         public abstract Vector3 Position { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public abstract Branch Upstream { get; }
+        public abstract Branch? Upstream { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public abstract Branch[] Downstream { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public Network Network { get; set; } = null;
+        public Network? Network { get; set; } = null;
 
         /// <summary>
         /// The sum of downstream flows.
@@ -180,7 +174,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="S"></param>
         public virtual void SetChildren(Segment[] S)
@@ -192,7 +186,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual void UpdateDownstream()
         {
@@ -203,7 +197,7 @@ namespace Vascular.Structure
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual void UpdateChildTopology()
         {

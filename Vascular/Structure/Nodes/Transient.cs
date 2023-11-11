@@ -7,15 +7,12 @@ namespace Vascular.Structure.Nodes
     /// <summary>
     /// Links segments in a branch.
     /// </summary>
-    [DataContract]
     public class Transient : IMobileNode
     {
         /// <inheritdoc/>
-        [DataMember]
-        public Segment Parent { get; set; } = null;
+        public Segment? Parent { get; set; } = null;
 
-        [DataMember]
-        private Segment child = null;
+        private Segment child = null!;
 
         /// <summary>
         /// Access to the child branch. Updates <see cref="Children"/> when set.
@@ -31,53 +28,51 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <inheritdoc/>
-        [DataMember]
-        public Segment[] Children { get; } = new Segment[1] { null };
+        public Segment[] Children { get; } = new Segment[1];
 
         /// <inheritdoc/>
-        [DataMember]
-        public Vector3 Position { get; set; } = null;
+        public Vector3 Position { get; set; } = Vector3.INVALID;
 
         /// <inheritdoc/>
         public void UpdatePhysicalAndPropagate()
         {
-            this.Parent.UpdateLength();
+            this.Parent!.UpdateLength();
             child.UpdateLength();
-            child.Branch.UpdatePhysicalLocal();
+            child.Branch!.UpdatePhysicalLocal();
             child.Branch.PropagatePhysicalUpstream();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double MinInnerLength()
         {
             return Math.Sqrt(Math.Min(
-                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Parent!.Start.Position),
                 Vector3.DistanceSquared(this.Position, this.Child.End.Position)
                 ));
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double MaxInnerLength()
         {
             return Math.Sqrt(Math.Max(
-                Vector3.DistanceSquared(this.Position, this.Parent.Start.Position),
+                Vector3.DistanceSquared(this.Position, this.Parent!.Start.Position),
                 Vector3.DistanceSquared(this.Position, this.Child.End.Position)
                 ));
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double OuterLength()
         {
-            return Vector3.Distance(this.Parent.Start.Position, this.Child.End.Position);
+            return Vector3.Distance(this.Parent!.Start.Position, this.Child.End.Position);
         }
     }
 }

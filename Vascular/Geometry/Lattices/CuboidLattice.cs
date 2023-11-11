@@ -5,44 +5,40 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// A lattice with different lengths in each axis.
     /// </summary>
-    [DataContract]
     public class CuboidLattice : Lattice
     {
-        [DataMember]
         private readonly double lengthX, lengthY, lengthZ;
-
-        [DataMember]
         private readonly double inverseX, inverseY, inverseZ;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum Connection
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             SquareEdges,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             SquareEdgesVertices,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             CubeFaces,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             CubeFacesEdges,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             CubeFacesEdgesVertices
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lengthX"></param>
         /// <param name="lengthZ"></param>
@@ -57,25 +53,15 @@ namespace Vascular.Geometry.Lattices
             inverseY = 1.0 / this.lengthY;
             inverseZ = 1.0 / this.lengthZ;
             this.Basis = Matrix3.Diagonal(lengthX, lengthY, lengthZ);
-            Vector3[] connections = null;
-            switch (connection)
+            Vector3[] connections = connection switch
             {
-                case Connection.SquareEdges:
-                    connections = Connectivity.SquareEdges;
-                    break;
-                case Connection.SquareEdgesVertices:
-                    connections = Connectivity.SquareEdgesVertices;
-                    break;
-                case Connection.CubeFaces:
-                    connections = Connectivity.CubeFaces;
-                    break;
-                case Connection.CubeFacesEdges:
-                    connections = Connectivity.CubeFacesEdges;
-                    break;
-                case Connection.CubeFacesEdgesVertices:
-                    connections = Connectivity.CubeFacesEdgesVertices;
-                    break;
-            }
+                Connection.SquareEdges => Connectivity.SquareEdges,
+                Connection.SquareEdgesVertices => Connectivity.SquareEdgesVertices,
+                Connection.CubeFaces => Connectivity.CubeFaces,
+                Connection.CubeFacesEdges => Connectivity.CubeFacesEdges,
+                Connection.CubeFacesEdgesVertices => Connectivity.CubeFacesEdgesVertices,
+                _ => throw new PhysicalValueException()
+            };
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 

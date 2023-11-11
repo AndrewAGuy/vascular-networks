@@ -12,12 +12,12 @@ namespace Vascular.Geometry.Surfaces
     public record RayIntersection<T>(T Object, double Fraction);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class SurfaceExtensions
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -33,7 +33,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(bounds, triangle =>
             {
                 var fraction = 0.0;
-                Vector3 hitPoint = null;
+                Vector3? hitPoint = null;
                 if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
                 {
                     intersections.Add(new RayIntersection<TriangleSurfaceTest>(triangle, fraction));
@@ -43,7 +43,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -58,7 +58,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(bounds, triangle =>
             {
                 var fraction = 0.0;
-                Vector3 hitPoint = null;
+                Vector3? hitPoint = null;
                 if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
                 {
                     ++intersections;
@@ -68,7 +68,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -84,7 +84,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(bounds, triangle =>
             {
                 var fraction = 0.0;
-                Vector3 hitPoint = null;
+                Vector3? hitPoint = null;
                 if (triangle.TestRay(point, direction, rayTolerance, ref fraction, ref hitPoint))
                 {
                     if (triangle.Normal * direction > 0)
@@ -101,7 +101,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -117,7 +117,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(rayBounds, t =>
             {
                 double hitFraction = 0;
-                Vector3 hitPoint = null;
+                Vector3? hitPoint = null;
                 if (t.TestRay(point, testDirection, rayTolerance, ref hitFraction, ref hitPoint))
                 {
                     hits.Add(Math.Round(hitFraction, fractionRounding, MidpointRounding.ToPositiveInfinity));
@@ -127,7 +127,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -151,7 +151,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -166,7 +166,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(rayBounds, t =>
             {
                 double f = 0;
-                Vector3 p = null;
+                Vector3? p = null;
                 if (t.TestRay(point, testDirection, tol, ref f, ref p))
                 {
                     count++;
@@ -176,7 +176,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -199,7 +199,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -214,7 +214,7 @@ namespace Vascular.Geometry.Surfaces
             surface.Query(rayBounds, triangle =>
             {
                 var hitFraction = 0.0;
-                var hitPoint = (Vector3)null;
+                var hitPoint = (Vector3?)null;
                 if (triangle.TestRay(point, testDirection, 0.0, ref hitFraction, ref hitPoint))
                 {
                     if (hitFraction < minFraction)
@@ -228,7 +228,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <param name="point"></param>
@@ -250,7 +250,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
@@ -270,7 +270,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <returns></returns>
@@ -290,7 +290,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="surface"></param>
         /// <returns></returns>

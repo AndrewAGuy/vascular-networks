@@ -10,7 +10,7 @@ namespace Vascular.Structure.Nodes.Pinned
     public class MobileTerminal : Terminal, IMobileNode
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="Q"></param>
@@ -48,13 +48,13 @@ namespace Vascular.Structure.Nodes.Pinned
         /// </summary>
         public void UpdatePhysicalAndPropagate()
         {
-            this.Parent.UpdateLength();
-            this.Upstream.UpdatePhysicalLocal();
+            this.Parent!.UpdateLength();
+            this.Upstream!.UpdatePhysicalLocal();
             this.Upstream.PropagatePhysicalUpstream();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override Terminal Clone()

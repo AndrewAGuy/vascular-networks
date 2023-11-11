@@ -10,7 +10,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
     using MultipleMap = Dictionary<Vector3, ICollection<Terminal>>;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="v"></param>
     /// <returns></returns>
@@ -78,7 +78,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         /// <summary>
         /// Given an old exterior and a new interior, any vectors in the old exterior that have been added to
         /// the interior are candidates for propagation. Any vectors that are connected to these and exterior
-        /// to the new interior are returned, along with their candidate connections. The old exterior, new 
+        /// to the new interior are returned, along with their candidate connections. The old exterior, new
         /// interior vectors will always be present in this.
         /// </summary>
         /// <typeparam name="TCollection"></typeparam>
@@ -301,7 +301,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// Given a lattice and network, add all terminals to a single map. 
+        /// Given a lattice and network, add all terminals to a single map.
         /// Overwrites happen in the order of visiting.
         /// </summary>
         /// <param name="root"></param>
@@ -434,9 +434,13 @@ namespace Vascular.Geometry.Lattices.Manipulation
 
                 for (var n = 1; n < interiors.Length; ++n)
                 {
-                    if (!interiors[n].TryGetValue(i.Key, out T[n]))
+                    if (!interiors[n].TryGetValue(i.Key, out var t))
                     {
                         goto FAIL;
+                    }
+                    else
+                    {
+                        T[n] = t;
                     }
                 }
 
@@ -445,7 +449,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
                     t.Partners = T;
                 }
 
-            FAIL:
+FAIL:
                 continue;
             }
         }
@@ -458,7 +462,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         /// <param name="networks"></param>
         public static void MatchTerminals(Lattice lattice, params Network[] networks)
         {
-            var interiors = networks.Select(network => GetSingleInterior(network.Root, lattice)).ToArray();
+            var interiors = networks.Select(network => GetSingleInterior(network.Root!, lattice)).ToArray();
             MatchTerminals(interiors);
             foreach (var network in networks)
             {
@@ -586,7 +590,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <returns></returns>
@@ -596,7 +600,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="walker"></param>
         /// <returns></returns>

@@ -5,10 +5,8 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// A pair of cubic lattices with a half cell offset.
     /// </summary>
-    [DataContract]
     public class BodyCentredCubicLattice : Lattice
     {
-        [DataMember]
         private readonly Matrix3 inverse;
 
         /// <summary>

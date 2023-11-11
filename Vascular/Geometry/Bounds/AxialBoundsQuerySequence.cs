@@ -14,7 +14,7 @@ namespace Vascular.Geometry.Bounds
         ///
         /// </summary>
         /// <param name="sequence"></param>
-        public AxialBoundsQuerySequence(IEnumerable<T> sequence)
+        public AxialBoundsQuerySequence(IEnumerable<T>? sequence)
         {
             this.sequence = sequence ?? Array.Empty<T>();
         }

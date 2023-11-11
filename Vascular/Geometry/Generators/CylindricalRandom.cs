@@ -8,17 +8,17 @@ namespace Vascular.Geometry.Generators
     public class CylindricalRandom : IVector3Generator
     {
         private readonly Random random;
-        private readonly Func<double, double> radius;
-        private readonly Func<double, double> height;
+        private readonly Func<double, double>? radius;
+        private readonly Func<double, double>? height;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="random"></param>
         /// <param name="radius"></param>
         /// <param name="height"></param>
-        public CylindricalRandom(Random random, Func<double, double> radius = null, 
-            Func<double, double> height = null)
+        public CylindricalRandom(Random random, Func<double, double>? radius = null,
+            Func<double, double>? height = null)
         {
             this.random = random;
             this.radius = radius;

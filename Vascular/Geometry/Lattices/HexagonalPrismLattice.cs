@@ -6,10 +6,8 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// A lattice with a triangular pattern in plane and columns out of plane.
     /// </summary>
-    [DataContract]
     public class HexagonalPrismLattice : Lattice
     {
-        [DataMember]
         private readonly Matrix3 inverse;
 
         /// <summary>
@@ -44,19 +42,13 @@ namespace Vascular.Geometry.Lattices
             var b2 = new Vector3(0, 0, height);
             this.Basis = Matrix3.FromColumns(b0, b1, b2);
             inverse = this.Basis.Inverse(0);
-            Vector3[] connections = null;
-            switch (connection)
+            Vector3[] connections = connection switch
             {
-                case Connection.Triangle:
-                    connections = Connectivity.Triangle;
-                    break;
-                case Connection.HexagonalPrismFaces:
-                    connections = Connectivity.HexagonalPrismFaces;
-                    break;
-                case Connection.HexagonalPrismFacesEdges:
-                    connections = Connectivity.HexagonalPrismFacesEdges;
-                    break;
-            }
+                Connection.Triangle => Connectivity.Triangle,
+                Connection.HexagonalPrismFaces => Connectivity.HexagonalPrismFaces,
+                Connection.HexagonalPrismFacesEdges => Connectivity.HexagonalPrismFacesEdges,
+                _ => throw new PhysicalValueException()
+            };
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 

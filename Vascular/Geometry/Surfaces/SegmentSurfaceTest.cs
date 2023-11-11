@@ -18,12 +18,12 @@ namespace Vascular.Geometry.Surfaces
         private readonly AxialBounds bounds;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Segment Segment { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         public SegmentSurfaceTest(Segment s)
@@ -40,7 +40,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
@@ -52,11 +52,11 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public (double d, Vector3 n) DistanceAndNormalToSurface(Vector3 x)
+        public (double d, Vector3? n) DistanceAndNormalToSurface(Vector3 x)
         {
             var lineFactor = x * multiplier - offset;
             var linePoint = lineFactor >= 1.0 ? end : lineFactor <= 0.0 ? start : start + lineFactor * direction;

@@ -3,19 +3,19 @@
 namespace Vascular.Structure.Diagnostics
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="root"></param>
         /// <param name="random"></param>
         /// <param name="weighting"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public static Branch SampleDownstream(this Branch root, Random random,
+        public static Branch? SampleDownstream(this Branch root, Random random,
             Func<Branch, double> weighting, Func<Branch, bool> predicate)
         {
             while (true)

@@ -6,10 +6,8 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// A tetrahedral lattice.
     /// </summary>
-    [DataContract]
     public class TetrahedronLattice : Lattice
     {
-        [DataMember]
         private readonly Matrix3 inverse;
 
         /// <summary>
@@ -42,16 +40,12 @@ namespace Vascular.Geometry.Lattices
                 b0.y, b1.y, b2.y,
                 b0.z, b1.z, b2.z);
             inverse = this.Basis.Inverse(0);
-            Vector3[] connections = null;
-            switch (connection)
+            Vector3[] connections = connection switch
             {
-                case Connection.Triangle:
-                    connections = Connectivity.Triangle;
-                    break;
-                case Connection.Tetrahedron:
-                    connections = Connectivity.Tetrahedron;
-                    break;
-            }
+                Connection.Triangle => Connectivity.Triangle,
+                Connection.Tetrahedron => Connectivity.Tetrahedron,
+                _ => throw new PhysicalValueException()
+            };
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 

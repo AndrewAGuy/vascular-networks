@@ -10,29 +10,29 @@ namespace Vascular.Structure.Diagnostics
     public class TerminalPositionComparer : IEqualityComparer<Terminal>, IComparer<Terminal>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public int Compare(Terminal x, Terminal y)
+        public int Compare(Terminal? x, Terminal? y)
         {
-            return x.Position.CompareTo(y.Position);
+            return x!.Position.CompareTo(y!.Position);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool Equals(Terminal x, Terminal y)
+        public bool Equals(Terminal? x, Terminal? y)
         {
-            return x.Position.Equals(y.Position);
+            return x!.Position.Equals(y!.Position);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>

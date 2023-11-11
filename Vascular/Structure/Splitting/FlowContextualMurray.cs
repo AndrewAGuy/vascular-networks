@@ -8,27 +8,24 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// Murray's law where the exponent depends on flow rate.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(ClampedMurray))]
-    [KnownType(typeof(ExponentialMurray))]
     public abstract class FlowContextualMurray : ISplittingFunction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>
         public abstract double Exponent(double Q);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>
         public abstract double ExponentGradient(double Q);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -55,7 +52,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -98,7 +95,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -116,7 +113,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="fracs"></param>
@@ -139,7 +136,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="dfi_dRj"></param>
@@ -157,7 +154,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="dfi_dQj"></param>
@@ -245,7 +242,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -256,7 +253,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -269,7 +266,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>

@@ -6,21 +6,20 @@ namespace Vascular.Geometry.Generators
     /// <summary>
     /// Generates vectors around the corners of a cube. Not random, but useful for generating normals.
     /// </summary>
-    [DataContract]
     public class CubeGrayCode : IVector3Generator
     {
-        private static readonly Vector3[] DIRECTIONS = new Vector3[8] {
-            new Vector3(+1, +1, +1),
-            new Vector3(-1, +1, +1),
-            new Vector3(-1, +1, -1),
-            new Vector3(-1, -1, -1),
-            new Vector3(-1, -1, +1),
-            new Vector3(+1, -1, +1),
-            new Vector3(+1, -1, -1),
-            new Vector3(+1, +1, -1),
-            };
+        private static readonly Vector3[] DIRECTIONS = new Vector3[8]
+        {
+            new(+1, +1, +1),
+            new(-1, +1, +1),
+            new(-1, +1, -1),
+            new(-1, -1, -1),
+            new(-1, -1, +1),
+            new(+1, -1, +1),
+            new(+1, -1, -1),
+            new(+1, +1, -1),
+        };
 
-        [DataMember]
         private uint index = uint.MaxValue;
 
         /// <inheritdoc/>
@@ -30,7 +29,7 @@ namespace Vascular.Geometry.Generators
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <param name="tol2"></param>

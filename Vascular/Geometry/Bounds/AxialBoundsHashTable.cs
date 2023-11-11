@@ -12,7 +12,7 @@ namespace Vascular.Geometry.Bounds
     /// <typeparam name="T"></typeparam>
     public class AxialBoundsHashTable<T> : IEnumerable<T>, IAxialBoundsQueryable<T>, IAxialBoundable where T : IAxialBoundable
     {
-        private struct Key : IEquatable<Key>
+        private readonly struct Key : IEquatable<Key>
         {
             public Key(int _x, int _y, int _z, int _w)
             {
@@ -26,7 +26,7 @@ namespace Vascular.Geometry.Bounds
                 return x == o.x && y == o.y && z == o.z && w == o.w;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Key o && Equals(o);
             }
@@ -280,7 +280,7 @@ namespace Vascular.Geometry.Bounds
         /// Create one of these per thread, as the test set underneath is persisted.
         /// </summary>
         /// <param name="comp"></param>
-        public IAxialBoundsQueryable<T> Deduplicated(IEqualityComparer<T> comp = null)
+        public IAxialBoundsQueryable<T> Deduplicated(IEqualityComparer<T>? comp = null)
         {
             return new DeduplicatedQuery(this, comp);
         }
@@ -290,7 +290,7 @@ namespace Vascular.Geometry.Bounds
             private readonly AxialBoundsHashTable<T> table;
             private readonly HashSet<T> hit;
 
-            public DeduplicatedQuery(AxialBoundsHashTable<T> table, IEqualityComparer<T> comp = null)
+            public DeduplicatedQuery(AxialBoundsHashTable<T> table, IEqualityComparer<T>? comp = null)
             {
                 this.table = table;
                 hit = comp is null ? new() : new(comp);

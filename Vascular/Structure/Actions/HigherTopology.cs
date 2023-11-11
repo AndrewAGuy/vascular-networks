@@ -24,7 +24,7 @@ public static class HigherTopology
         // We collapse the given branch, putting its children into the same grouping as its siblings.
         // We therefore need to swap out the end node held by the parent,
         // and the higher split will handle the references held by its children.
-        var parentB = br.Parent;
+        var parentB = br.Parent!;
         var parentS = parentB.Segments[^1];
 
         var N = br.Start.Downstream.Length - 1 + br.Children.Length;
@@ -59,13 +59,13 @@ public static class HigherTopology
     public static (BranchNode remaining, BranchNode leaving) SplitToChild(HigherSplit hs, int[] indices)
     {
         // TODO: add in size checks here
-        var pSeg = hs.Parent;
-        var pBr = hs.Upstream;
+        var pSeg = hs.Parent!;
+        var pBr = hs.Upstream!;
         var (splitS, remS) = hs.Children.SplitArrayStack(indices);
 
         // Generate new child and attaching segment
-        var sSeg = new Segment();
-        BranchNode leaving = null;
+        var sSeg = new Segment(null!, null!);
+        BranchNode leaving = null!;
         if (splitS.Length == 2)
         {
             // TODO: Make this a similar function to higher split
@@ -92,7 +92,7 @@ public static class HigherTopology
         }
 
         // We have complete child endpoint, dangling segment and no branch.
-        BranchNode remaining = null;
+        BranchNode remaining = null!;
         if (remS.Length == 1)
         {
             var bfRem = new Bifurcation() { Network = hs.Network, Parent = pSeg };
@@ -130,15 +130,15 @@ public static class HigherTopology
     /// <returns></returns>
     public static (BranchNode remaining, BranchNode leaving) SplitToSibling(HigherSplit hs, int[] indices)
     {
-        var pSeg = hs.Parent;
-        var pBr = hs.Upstream;
+        var pSeg = hs.Parent!;
+        var pBr = hs.Upstream!;
         var (splitS, remS) = hs.Children.SplitArrayStack(indices);
         var pBf = new Bifurcation() { Parent = pSeg, Network = hs.Network };
         pSeg.End = pBf;
         pBr.End = pBf;
 
-        var sRem = new Segment() { Start = pBf };
-        var sSpl = new Segment() { Start = pBf };
+        var sRem = new Segment(pBf, null!);
+        var sSpl = new Segment(pBf, null!);
         var brRem = new Branch(sRem) { Start = pBf };
         var brSpl = new Branch(sSpl) { Start = pBf };
         pBf.Children[0] = sRem;
@@ -146,8 +146,8 @@ public static class HigherTopology
         pBf.UpdateDownstream();
         pBf.UpdateChildTopology();
 
-        var nRem = MakeNode(sRem, remS, hs.Network);
-        var nSpl = MakeNode(sSpl, splitS, hs.Network);
+        var nRem = MakeNode(sRem, remS, hs.Network!, Vector3.INVALID);
+        var nSpl = MakeNode(sSpl, splitS, hs.Network!, Vector3.INVALID);
 
         return (nRem, nSpl);
     }
@@ -161,7 +161,7 @@ public static class HigherTopology
     /// <param name="position"></param>
     /// <returns></returns>
     /// <exception cref="TopologyException"></exception>
-    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network, Vector3 position = null)
+    public static BranchNode MakeNode(Segment parent, Segment[] children, Network network, Vector3 position)
     {
         if (children.Length == 2)
         {
@@ -189,9 +189,9 @@ public static class HigherTopology
     /// <param name="start"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    public static (Branch, Segment) MakeBranch(BranchNode start = null, BranchNode end = null)
+    public static (Branch, Segment) MakeBranch(BranchNode start, BranchNode end)
     {
-        var s = new Segment() { Start = start, End = end };
+        var s = new Segment(start, end);
         var b = new Branch(s) { Start = start, End = end };
         return (b, s);
     }
@@ -208,7 +208,7 @@ public static class HigherTopology
     public static INode Remove(HigherSplit hs, int[] idx, bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
     {
         var (kept, lost) = hs.Children.SplitArrayStack(idx);
-        var newNode = MakeNode(hs.Parent, kept, hs.Network);
+        var newNode = MakeNode(hs.Parent!, kept, hs.Network!, Vector3.INVALID);
         foreach (var L in lost)
         {
             if (markDownstream)
@@ -224,10 +224,10 @@ public static class HigherTopology
             }
             if (nullLost)
             {
-                L.Start = null;
-                L.Branch.Start = null;
-                L.Branch.End.Parent = null;
-                L.Branch.End = null;
+                L.Start = null!;
+                L.Branch.Start = null!;
+                L.Branch.End.Parent = null!;
+                L.Branch.End = null!;
             }
         }
         if (nullLost)

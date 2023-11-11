@@ -5,35 +5,32 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// The most basic type of lattice.
     /// </summary>
-    [DataContract]
     public class CubeLattice : Lattice
     {
-        [DataMember]
         private readonly double length;
-        [DataMember]
         private readonly double inverse;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum Connection
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             Faces,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             FacesEdges,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             FacesEdgesVertices
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="length"></param>
         /// <param name="connection"></param>
@@ -42,19 +39,13 @@ namespace Vascular.Geometry.Lattices
             this.length = length;
             inverse = 1.0 / length;
             this.Basis = Matrix3.Diagonal(length);
-            Vector3[] connections = null;
-            switch (connection)
+            Vector3[] connections = connection switch
             {
-                case Connection.Faces:
-                    connections = Connectivity.CubeFaces;
-                    break;
-                case Connection.FacesEdges:
-                    connections = Connectivity.CubeFacesEdges;
-                    break;
-                case Connection.FacesEdgesVertices:
-                    connections = Connectivity.CubeFacesEdgesVertices;
-                    break;
-            }
+                Connection.Faces => Connectivity.CubeFaces,
+                Connection.FacesEdges => Connectivity.CubeFacesEdges,
+                Connection.FacesEdgesVertices => Connectivity.CubeFacesEdgesVertices,
+                _ => throw new PhysicalValueException()
+            };
             voronoiCell = new VoronoiCell(connections, this.Basis);
         }
 

@@ -6,17 +6,15 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// A simple type of <see cref="FlowContextualMurray"/> where the exponent decreases linearly with bifurcation depth in a balanced tree.
     /// </summary>
-    [DataContract]
     public class ExponentialMurray : FlowContextualMurray
     {
         /// <summary>
         /// Exponent calculated as <c>a * exp(-b * Q) + c</c>
         /// </summary>
-        [DataMember]
         protected double a, b, c;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q_min"></param>
         /// <param name="e_max"></param>
@@ -127,7 +125,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>
@@ -137,7 +135,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>

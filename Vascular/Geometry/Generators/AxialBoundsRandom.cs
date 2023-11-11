@@ -13,11 +13,11 @@ namespace Vascular.Geometry.Generators
         private readonly Vector3 range;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bounds"></param>
         /// <param name="random"></param>
-        public AxialBoundsRandom(AxialBounds bounds, Random random = null)
+        public AxialBoundsRandom(AxialBounds bounds, Random? random = null)
         {
             this.random = random ?? new();
             lower = bounds.Lower;
@@ -25,7 +25,7 @@ namespace Vascular.Geometry.Generators
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public Vector3 NextVector3()

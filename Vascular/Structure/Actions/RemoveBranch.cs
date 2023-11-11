@@ -9,7 +9,7 @@ namespace Vascular.Structure.Actions
     public class RemoveBranch : BranchAction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         public RemoveBranch(Branch a) : base(a, a)
@@ -17,9 +17,9 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Action<Terminal> OnCull { get; set; }
+        public Action<Terminal>? OnCull { get; set; }
 
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
@@ -28,7 +28,7 @@ namespace Vascular.Structure.Actions
             {
                 Terminal.ForDownstream(a, this.OnCull);
             }
-            var transient = Topology.RemoveBranch(a, true, true, false, true);
+            var transient = Topology.RemoveBranch(a, true, true, false, true)!;
             if (propagateLogical)
             {
                 transient.Child.Branch.PropagateLogicalUpstream();
@@ -42,7 +42,7 @@ namespace Vascular.Structure.Actions
         /// <inheritdoc/>
         public override bool Update()
         {
-            a = a.CurrentTopologicallyValid;
+            a = a.CurrentTopologicallyValid!;
             return a != null;
         }
 
@@ -72,7 +72,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is RemoveBranch r && a == r.a;
         }

@@ -44,8 +44,8 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// How far along the direction <paramref name="dir"/> from <paramref name="clamp"/> 
-        /// do we go to get to the closest point to <paramref name="target"/>. 
+        /// How far along the direction <paramref name="dir"/> from <paramref name="clamp"/>
+        /// do we go to get to the closest point to <paramref name="target"/>.
         /// </summary>
         /// <param name="clamp"></param>
         /// <param name="dir"></param>
@@ -177,7 +177,7 @@ namespace Vascular.Geometry
         /// <param name="e"></param>
         /// <param name="t2"></param>
         /// <returns></returns>
-        public static Vector3 RealSymmetricEigenvector(Matrix3 A, double e, double t2 = 1e-12)
+        public static Vector3? RealSymmetricEigenvector(Matrix3 A, double e, double t2 = 1e-12)
         {
             // Gets eigenvector associated with eigenvalue e
             // Need 2 independent columns

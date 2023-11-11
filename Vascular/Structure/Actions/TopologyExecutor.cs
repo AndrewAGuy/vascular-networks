@@ -9,7 +9,7 @@ namespace Vascular.Structure.Actions
     /// </summary>
     public class TopologyExecutor
     {
-        private IEnumerable<BranchAction> actions;
+        private IEnumerable<BranchAction> actions = null!;
 
         /// <summary>
         /// Higher values are executed first.
@@ -24,12 +24,12 @@ namespace Vascular.Structure.Actions
         /// <summary>
         /// If present, overrides <see cref="Priority"/>. Lower values are better.
         /// </summary>
-        public Func<BranchAction, double> Cost { get; set; }
+        public Func<BranchAction, double>? Cost { get; set; }
 
         /// <summary>
         /// If present, overrides <see cref="Permissible"/>.
         /// </summary>
-        public Func<BranchAction, bool> Predicate { get; set; }
+        public Func<BranchAction, bool>? Predicate { get; set; }
 
         /// <summary>
         /// Propagate topological derived properties upstream on making changes.
@@ -54,12 +54,12 @@ namespace Vascular.Structure.Actions
         /// <summary>
         /// Executed before an action is taken. May be used for rapid updates of cached data if needed.
         /// </summary>
-        public Action<BranchAction> BeforeExecute { get; set; }
+        public Action<BranchAction>? BeforeExecute { get; set; }
 
         /// <summary>
         /// Executed after an action is taken. May be used for rapid updates of cached data if needed.
         /// </summary>
-        public Action<BranchAction> AfterExecute { get; set; }
+        public Action<BranchAction>? AfterExecute { get; set; }
 
         private bool Iterate(Func<BranchAction, double> cost, Func<BranchAction, bool> predicate)
         {
@@ -78,7 +78,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="actions"></param>
         /// <returns>The number of steps taken.</returns>
@@ -156,7 +156,7 @@ namespace Vascular.Structure.Actions
             {
                 this.BeforeExecute?.Invoke(action);
                 action.Execute(this.PropagateLogical, this.PropagatePhysical);
-                if (!this.IsAcceptable())
+                if (!this.IsAcceptable!())
                 {
                     failed++;
                     action.Reverse(this.PropagateLogical, this.PropagatePhysical);
@@ -182,7 +182,7 @@ namespace Vascular.Structure.Actions
         /// is not supported in this mode - most costs would improve by removing branches though, so it would be
         /// unlikely to ever need reverting.
         /// </summary>
-        public Func<bool> IsAcceptable { get; set; }
+        public Func<bool>? IsAcceptable { get; set; }
 
         /// <summary>
         /// Sets <see cref="ContinuationPredicate"/> to return false after <paramref name="n"/> iterations.

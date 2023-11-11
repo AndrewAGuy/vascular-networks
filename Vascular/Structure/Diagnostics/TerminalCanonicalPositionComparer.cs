@@ -10,29 +10,29 @@ namespace Vascular.Structure.Diagnostics
     public class TerminalCanonicalPositionComparer : IEqualityComparer<Terminal>, IComparer<Terminal>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public int Compare(Terminal x, Terminal y)
+        public int Compare(Terminal? x, Terminal? y)
         {
-            return x.CanonicalPosition.CompareTo(y.CanonicalPosition);
+            return x!.CanonicalPosition.CompareTo(y!.CanonicalPosition);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool Equals(Terminal x, Terminal y)
+        public bool Equals(Terminal? x, Terminal? y)
         {
-            return x.CanonicalPosition.Equals(y.CanonicalPosition);
+            return x!.CanonicalPosition.Equals(y!.CanonicalPosition);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>

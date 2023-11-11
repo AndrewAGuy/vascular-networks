@@ -6,16 +6,6 @@ namespace Vascular.Geometry.Lattices
     /// <summary>
     /// The base type for all lattices. Defines a mapping between integral vectors and real space.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(BodyCentredCubicLattice))]
-    [KnownType(typeof(CubeLattice))]
-    [KnownType(typeof(CuboidLattice))]
-    [KnownType(typeof(HexagonalPrismLattice))]
-    [KnownType(typeof(TetrahedronLattice))]
-    [KnownType(typeof(OffsetLattice))]
-    [KnownType(typeof(RefinedLattice))]
-    [KnownType(typeof(RotatedLattice))]
-    [KnownType(typeof(RotatedOffsetLattice))]
     public abstract class Lattice
     {
         /// <summary>
@@ -40,25 +30,22 @@ namespace Vascular.Geometry.Lattices
         public abstract Vector3 ClosestVectorBasis(Vector3 v);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        protected Matrix3 basis;
+        protected Matrix3 basis = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         protected double determinant;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        protected VoronoiCell voronoiCell;
+        protected VoronoiCell voronoiCell = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Matrix3 Basis
         {
@@ -71,12 +58,12 @@ namespace Vascular.Geometry.Lattices
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Determinant => determinant;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public VoronoiCell VoronoiCell => voronoiCell;
 

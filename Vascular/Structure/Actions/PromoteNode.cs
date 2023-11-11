@@ -8,7 +8,7 @@ namespace Vascular.Structure.Actions
     public class PromoteNode : TopologyAction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="promoting"></param>
         public PromoteNode(BranchNode promoting)
@@ -19,16 +19,16 @@ namespace Vascular.Structure.Actions
         }
 
         private readonly BranchNode promoted;
-        private readonly BranchNode demoted;
-        private readonly MoveBifurcation action;
+        private readonly BranchNode? demoted;
+        private readonly MoveBifurcation? action;
         private bool executed = false;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public MoveBifurcation Action => action;
+        public MoveBifurcation? Action => action;
 
-        private MoveBifurcation Make()
+        private MoveBifurcation? Make()
         {
             // Promoting a branch: the branch to be promoted is raised one level to the root.
             // To do this, move the sibling branch to bifurcate from the current parent's sibling
@@ -50,18 +50,18 @@ namespace Vascular.Structure.Actions
         /// <summary>
         /// Only access this after the forwards action has been executed.
         /// </summary>
-        public PromoteNode Inverse =>
+        public PromoteNode? Inverse =>
             // Promotion was achieved by moving 2 -> 1, so now we undo this by promoting 1,
             // which will move 2 -> 3. Only access after making move though, as we create a
             // bifurcation move request which needs the structure created by execution.
-            executed ? new PromoteNode(demoted) : null;
+            executed ? new PromoteNode(demoted!) : null;
 
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
             if (!executed)
             {
-                action.Execute(propagateLogical, propagatePhysical);
+                action!.Execute(propagateLogical, propagatePhysical);
                 executed = true;
             }
         }

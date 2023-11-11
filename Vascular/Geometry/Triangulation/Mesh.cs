@@ -8,31 +8,27 @@ using Vascular.Geometry.Bounds;
 namespace Vascular.Geometry.Triangulation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [DataContract]
     public class Mesh : IAxialBoundable, IEnumerable<Triangle>, IEnumerable<Edge>, IEnumerable<Vertex>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public LinkedList<Triangle> T = new LinkedList<Triangle>();
+        public LinkedList<Triangle> T = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public Dictionary<Edge, Edge> E = new Dictionary<Edge, Edge>();
+        public Dictionary<Edge, Edge> E = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public Dictionary<Vector3, Vertex> V = new Dictionary<Vector3, Vertex>();
+        public Dictionary<Vector3, Vertex> V = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
@@ -47,17 +43,17 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        public Vertex GetVertex(Vector3 p)
+        public Vertex? GetVertex(Vector3 p)
         {
             return V.TryGetValue(p, out var v) ? v : null;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <param name="p"></param>
@@ -69,7 +65,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -87,7 +83,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <param name="p"></param>
@@ -101,7 +97,7 @@ namespace Vascular.Geometry.Triangulation
                 r.Add(t);
                 if (!e.T.Contains(t))
                 {
-                    c.Add(t.Opposite(e.S).CorrectWindingIn(t));
+                    c.Add(t.Opposite(e.S)!.CorrectWindingIn(t));
                 }
             }
             foreach (var t in e.E.T)
@@ -109,7 +105,7 @@ namespace Vascular.Geometry.Triangulation
                 r.Add(t);
                 if (!e.T.Contains(t))
                 {
-                    c.Add(t.Opposite(e.E).CorrectWindingIn(t));
+                    c.Add(t.Opposite(e.E)!.CorrectWindingIn(t));
                 }
             }
             // Remove the triangles
@@ -125,7 +121,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         public void Merge(Mesh other)
@@ -149,7 +145,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -200,7 +196,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         public void RemoveTriangle(Triangle t)
@@ -257,7 +253,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         public void RemoveVertex(Vertex v)
@@ -275,12 +271,12 @@ namespace Vascular.Geometry.Triangulation
         public int EulerCharacteristic => V.Count - E.Count + T.Count;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Genus => 1 - 0.5 * this.EulerCharacteristic;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool VerifyEdgeCounts
         {
@@ -298,7 +294,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsClosed
         {
@@ -316,7 +312,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool HasBoundary
         {
@@ -334,7 +330,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsOneSided
         {
@@ -352,7 +348,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
@@ -371,7 +367,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public Mesh Copy()
@@ -401,7 +397,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>
@@ -416,7 +412,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="dir"></param>
         /// <param name="max"></param>
@@ -448,7 +444,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public Mesh ReverseNormals()
@@ -459,29 +455,6 @@ namespace Vascular.Geometry.Triangulation
                 m.AddTriangle(t.A.P, t.C.P, t.B.P);
             }
             return m;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void SetGroupNormals()
-        {
-            foreach (var v in V.Values)
-            {
-                v.SetGroupNormal();
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="weighting"></param>
-        public void SetGroupNormals(Func<Triangle, Vertex, double> weighting)
-        {
-            foreach (var v in V.Values)
-            {
-                v.SetGroupNormal(weighting);
-            }
         }
 
         /// <inheritdoc/>
@@ -509,12 +482,12 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public Edge GetEdge(Vector3 a, Vector3 b)
+        public Edge? GetEdge(Vector3 a, Vector3 b)
         {
             return
                 GetVertex(a) is not Vertex A ||
@@ -524,13 +497,13 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <param name="c"></param>
         /// <returns></returns>
-        public Triangle GetTriangle(Vector3 a, Vector3 b, Vector3 c)
+        public Triangle? GetTriangle(Vector3 a, Vector3 b, Vector3 c)
         {
             if (GetVertex(a) is not Vertex A ||
                 GetVertex(b) is not Vertex B ||

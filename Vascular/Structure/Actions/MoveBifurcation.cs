@@ -22,7 +22,7 @@ namespace Vascular.Structure.Actions
         /// Where to place the newly created bifurcation. If null, uses <see cref="Bifurcation.WeightedMean(Func{Branch, double})"/>
         /// with unit weighting.
         /// </summary>
-        public Func<Bifurcation, Vector3> Position { get; set; } = null;
+        public Func<Bifurcation, Vector3>? Position { get; set; } = null;
 
         /// <inheritdoc/>
         public override void Execute(bool propagateLogical, bool propagatePhysical)
@@ -33,7 +33,7 @@ namespace Vascular.Structure.Actions
             {
                 if (propagateLogical)
                 {
-                    t.Parent.Branch.PropagateLogicalUpstream();
+                    t!.Parent!.Branch.PropagateLogicalUpstream();
                     n.UpdateLogicalAndPropagate();
                     n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
                     if (propagatePhysical)
@@ -54,12 +54,12 @@ namespace Vascular.Structure.Actions
         {
             return !a.IsStrictAncestorOf(b) // Creates a loop
                 && !a.IsSiblingOf(b)        // Waste of time
-                && !b.IsParentOf(a)         // 
+                && !b.IsParentOf(a)         //
                 && b.IsRooted;              // Cannot merge onto a culled section
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is MoveBifurcation other && a == other.a && b == other.b;
         }
@@ -70,9 +70,9 @@ namespace Vascular.Structure.Actions
             return HashCode.Combine(a, b);
         }
 
-        private Branch sibling;
+        private Branch? sibling;
         private int index;
-        private Vector3 position;
+        private Vector3 position = Vector3.INVALID;
 
         private void GetReverseData()
         {
@@ -87,8 +87,8 @@ namespace Vascular.Structure.Actions
             // Need to reconstruct exactly as it was. We have created 2 new branches and lost 2 old.
 
             // Start by removing the bifurcation: moved branch points to same end node, but is not actually valid.
-            var tr = Topology.RemoveBranch(a.CurrentTopologicallyValid, true, false, false, false);
-            tr.Parent.Branch.Reset();
+            var tr = Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
+            tr.Parent!.Branch.Reset();
 
             var bf = new Bifurcation()
             {
@@ -97,7 +97,7 @@ namespace Vascular.Structure.Actions
             };
 
             // Sibling was consumed by parent, rewire to end at bifurcation and reset
-            var p = sibling.CurrentTopologicallyValid;
+            var p = sibling!.CurrentTopologicallyValid!;
             p.End = bf;
             p.Reset();
 

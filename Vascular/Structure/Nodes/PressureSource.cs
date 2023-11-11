@@ -9,14 +9,12 @@ namespace Vascular.Structure.Nodes
     /// Used in the old implementations of CCO (see Schreiner DOI: 10.1109/10.243413, Karch DOI 10.1016/S0010-4825(98)00045-6)
     /// but engineering approaches may prefer to use <see cref="RadiusSource"/>.
     /// </summary>
-    [DataContract]
     public class PressureSource : Source
     {
-        [DataMember]
         private double pressure, pressureInverted;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="p"></param>
@@ -26,7 +24,7 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public void SetPressure(double p)
@@ -51,12 +49,12 @@ namespace Vascular.Structure.Nodes
 
         /// <inheritdoc/>
         sealed public override double RootRadius =>
-            Math.Pow(this.ReducedResistance * this.Network.ScaledViscosity * this.Flow * pressureInverted, 0.25);
+            Math.Pow(this.ReducedResistance * this.Network!.ScaledViscosity * this.Flow * pressureInverted, 0.25);
 
 #if !NoEffectiveLength
         /// <inheritdoc/>
         sealed public override double Volume => Math.PI * this.EffectiveLength *
-            Math.Sqrt(this.ReducedResistance * this.Network.ScaledViscosity * this.Flow * pressureInverted);
+            Math.Sqrt(this.ReducedResistance * this.Network!.ScaledViscosity * this.Flow * pressureInverted);
 #endif
 
         /// <inheritdoc/>
@@ -66,7 +64,7 @@ namespace Vascular.Structure.Nodes
         public override double Resistance => pressure / this.Flow;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public RadiusSource ConvertToRadiusSource()

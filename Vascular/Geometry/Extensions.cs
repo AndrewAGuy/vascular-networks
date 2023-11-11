@@ -5,12 +5,12 @@ using Vascular.Geometry.Generators;
 namespace Vascular.Geometry
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="V"></param>
         /// <returns></returns>
@@ -47,7 +47,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="x0"></param>
@@ -55,8 +55,8 @@ namespace Vascular.Geometry
         /// <param name="t2"></param>
         /// <param name="generator"></param>
         /// <returns></returns>
-        public static Vector3 ClampOutsideBall(this Vector3 x, Vector3 x0, double r, 
-            double t2 = 1e-12, IVector3Generator generator = null)
+        public static Vector3 ClampOutsideBall(this Vector3 x, Vector3 x0, double r,
+            double t2 = 1e-12, IVector3Generator? generator = null)
         {
             var d = x - x0;
             var d2 = d.LengthSquared;

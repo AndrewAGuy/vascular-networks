@@ -6,7 +6,7 @@ namespace Vascular.Structure.Diagnostics
     /// Optimization and collision resolution have been known to cause NaNs without proper care.
     /// In particular, normalizing branches with small lengths or reduced resistances at bifurcations
     /// attached to very small terminal vessels can cause NaN directly, or through generating Infs that
-    /// then are divided/subtracted by another Inf. By testing for non-finite rather than NaN, we can 
+    /// then are divided/subtracted by another Inf. By testing for non-finite rather than NaN, we can
     /// catch future NaNs one step earlier.
     /// </summary>
     public static class NonFinite
@@ -20,7 +20,7 @@ namespace Vascular.Structure.Diagnostics
         public static IEnumerable<object> First(Network net)
         {
             var stack = new Stack<BranchNode>();
-            stack.Push(net.Source);
+            stack.Push(net.Source!);
             while (stack.Count > 0)
             {
                 var current = stack.Pop();
@@ -55,7 +55,7 @@ namespace Vascular.Structure.Diagnostics
             var last = new HashSet<object>();
             foreach (var t in net.Terminals)
             {
-                var u = t.Upstream;
+                var u = t.Upstream!;
                 if (TestNode(t))
                 {
                     last.Add(t);

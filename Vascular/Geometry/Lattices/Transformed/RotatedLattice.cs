@@ -5,18 +5,14 @@ namespace Vascular.Geometry.Lattices.Transformed
     /// <summary>
     /// Lattice with rotation. Does not verify that the rotation is a rotation.
     /// </summary>
-    [DataContract]
     public class RotatedLattice : Lattice
     {
-        [DataMember]
         private readonly Lattice lattice;
-        [DataMember]
         private readonly Matrix3 rotation;
-        [DataMember]
         private readonly Matrix3 inverse;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="rotation"></param>

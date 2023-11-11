@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using Vascular.Geometry.Bounds;
@@ -6,15 +7,13 @@ using Vascular.Geometry.Bounds;
 namespace Vascular.Geometry
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [DataContract]
     public class Vector3 : IEquatable<Vector3>, IComparable<Vector3>, IFormattable, IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public double x = 0.0, y = 0.0, z = 0.0;
 
         /// <summary>
@@ -23,6 +22,11 @@ namespace Vascular.Geometry
         public Vector3()
         {
         }
+
+        /// <summary>
+        /// To replace null.
+        /// </summary>
+        public static readonly Vector3 INVALID = new (double.NaN);
 
         /// <summary>
         /// A static all-zero vector. Please do not modify.
@@ -45,7 +49,7 @@ namespace Vascular.Geometry
         public static readonly Vector3 UNIT_Z = new(0, 0, 1);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -66,7 +70,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         public Vector3(Vector3 v) : this(v.x, v.y, v.z)
@@ -74,7 +78,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -84,7 +88,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -95,7 +99,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -106,7 +110,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -117,7 +121,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -128,7 +132,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -164,7 +168,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -173,7 +177,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
@@ -186,7 +190,7 @@ namespace Vascular.Geometry
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Vector3 v && Equals(v);
         }
@@ -196,8 +200,12 @@ namespace Vascular.Geometry
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public int CompareTo(Vector3 v)
+        public int CompareTo(Vector3? v)
         {
+            if (v is null)
+            {
+                return 1;
+            }
             return x > v.x ? +1 : x < v.x ? -1 : y > v.y ? +1 : y < v.y ? -1 : z > v.z ? +1 : z < v.z ? -1 : 0;
         }
 
@@ -206,12 +214,16 @@ namespace Vascular.Geometry
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public bool Equals(Vector3 v)
+        public bool Equals(Vector3? v)
         {
+            if (v is null)
+            {
+                return false;
+            }
             return v.x == x && v.y == y && v.z == z;
         }
 
-        private static readonly string[] DEFAULT_FORMAT = new string[] { "", " ", "", null };
+        private static readonly string?[] DEFAULT_FORMAT = new string?[] { "", " ", "", null };
 
         /// <summary>
         /// See <paramref name="format"/> for format string specification.
@@ -227,7 +239,7 @@ namespace Vascular.Geometry
         /// </param>
         /// <param name="formatProvider"></param>
         /// <returns></returns>
-        public string ToString(string format, IFormatProvider formatProvider)
+        public string ToString(string? format, IFormatProvider? formatProvider)
         {
             var t = format?.Split(':') ?? DEFAULT_FORMAT;
             if (t.Length < 4)
@@ -246,7 +258,7 @@ namespace Vascular.Geometry
         /// <param name="v"></param>
         /// <param name="c"></param>
         /// <returns></returns>
-        public static bool TryParse(string s, out Vector3 v, char c = ' ')
+        public static bool TryParse(string s, [NotNullWhen(true)]out Vector3? v, char c = ' ')
         {
             var t = s.Split(c).Where(w => !string.IsNullOrWhiteSpace(w)).ToList();
             if (t.Count != 3 ||
@@ -271,17 +283,17 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public (int i, int j, int k) Ceiling => ((int)Math.Ceiling(x), (int)Math.Ceiling(y), (int)Math.Ceiling(z));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public (int i, int j, int k) Floor => ((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="midpointRounding"></param>
         /// <returns></returns>
@@ -306,7 +318,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="decimals"></param>
         /// <param name="midpointRounding"></param>
@@ -317,12 +329,12 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Max => Math.Max(Math.Max(x, y), z);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Min => Math.Min(Math.Min(x, y), z);
 
@@ -392,7 +404,7 @@ namespace Vascular.Geometry
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        public Vector3 NormalizeSafe(double t = 1.0e-12)
+        public Vector3? NormalizeSafe(double t = 1.0e-12)
         {
             var m = this.Length;
             return m > t ? this / m : null;
@@ -410,7 +422,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
@@ -422,7 +434,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
@@ -438,7 +450,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double[] ToArray()
@@ -458,7 +470,7 @@ namespace Vascular.Geometry
         public bool IsFinite => double.IsFinite(x) && double.IsFinite(y) && double.IsFinite(z);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Copy()
         {
@@ -477,7 +489,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <param name="tol"></param>

@@ -8,14 +8,14 @@ namespace Vascular.Geometry.Generators
     public class SphericalRandom : IVector3Generator
     {
         private readonly Random random;
-        private readonly Func<double, double> radius;
+        private readonly Func<double, double>? radius;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="random"></param>
         /// <param name="radius"></param>
-        public SphericalRandom(Random random, Func<double, double> radius = null)
+        public SphericalRandom(Random random, Func<double, double>? radius = null)
         {
             this.random = random;
             this.radius = radius;

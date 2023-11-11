@@ -13,7 +13,7 @@ namespace Vascular.Geometry.Graphs
         where TEdge : Edge<TVertex, TEdge>, new()
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Graph()
         {
@@ -21,29 +21,29 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="nv"></param>
         /// <param name="ne"></param>
         /// <param name="eq"></param>
-        public Graph(int nv, int ne, IEqualityComparer<TEdge> eq = null)
+        public Graph(int nv, int ne, IEqualityComparer<TEdge>? eq = null)
         {
             V = new(nv);
             E = new(ne, eq ?? Edge<TVertex, TEdge>.Undirected);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<Vector3, TVertex> V = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Dictionary<TEdge, TEdge> E = new(Edge<TVertex, TEdge>.Undirected);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
@@ -61,7 +61,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <param name="p"></param>
@@ -73,7 +73,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
@@ -90,7 +90,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -108,7 +108,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         public void RemoveEdge(TEdge e)
@@ -129,7 +129,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         public void RemoveVertex(TVertex v)

@@ -5,20 +5,15 @@ namespace Vascular.Geometry.Lattices.Transformed
     /// <summary>
     /// Arbitrary affine transform.
     /// </summary>
-    [DataContract]
     public class RotatedOffsetLattice : Lattice
     {
-        [DataMember]
         private readonly Lattice lattice;
-        [DataMember]
         private readonly Matrix3 rotation;
-        [DataMember]
         private readonly Matrix3 inverse;
-        [DataMember]
         private readonly Vector3 offset;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="rotation"></param>

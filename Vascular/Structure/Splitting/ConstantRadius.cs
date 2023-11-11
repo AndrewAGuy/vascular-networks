@@ -7,11 +7,10 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// A constant radius splitting law, for systems made of one type of pipe. Will cause a deviation from expected flow rates.
     /// </summary>
-    [DataContract]
     public class ConstantRadius : ISplittingFunction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -24,7 +23,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -37,7 +36,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rs1"></param>
         /// <param name="q1"></param>
@@ -50,7 +49,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="fracs"></param>
@@ -63,7 +62,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="dfi_dRj"></param>
@@ -79,7 +78,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="dfi_dQj"></param>
@@ -95,7 +94,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -105,7 +104,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -115,7 +114,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>

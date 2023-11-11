@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,17 +9,17 @@ using System.Threading.Tasks;
 namespace Vascular
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
         /// <param name="random"></param>
-        public static void Permute<T>(this IList<T> list, Random random = null)
+        public static void Permute<T>(this IList<T> list, Random? random = null)
         {
             random ??= new Random();
             for (var i = list.Count - 1; i > 0; i--)
@@ -37,7 +38,7 @@ namespace Vascular
         /// <param name="list"></param>
         /// <param name="random"></param>
         /// <returns></returns>
-        public static IEnumerable<T> Permutation<T>(this IList<T> list, Random random = null)
+        public static IEnumerable<T> Permutation<T>(this IList<T> list, Random? random = null)
         {
             random ??= new Random();
             list = list.ToArray();
@@ -71,7 +72,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
@@ -147,7 +148,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="val"></param>
         /// <param name="min"></param>
@@ -159,7 +160,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="val"></param>
         /// <param name="min"></param>
@@ -171,7 +172,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="val"></param>
@@ -184,7 +185,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="V"></param>
         /// <returns></returns>
@@ -199,7 +200,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="V"></param>
         /// <returns></returns>
@@ -214,7 +215,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -230,7 +231,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="v"></param>
@@ -247,7 +248,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="comparer"></param>
@@ -264,7 +265,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="comparer"></param>
@@ -281,7 +282,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
@@ -436,7 +437,7 @@ namespace Vascular
         /// <param name="key"></param>
         /// <param name="def"></param>
         /// <returns></returns>
-        public static TReturn ValueOrDefault<TKey, TValue, TReturn>(this IDictionary<TKey, TValue> dict, TKey key, TReturn def = default)
+        public static TReturn ValueOrDefault<TKey, TValue, TReturn>(this IDictionary<TKey, TValue> dict, TKey key, TReturn def)
         {
             return dict.TryGetValue(key, out var val) && val is TReturn t ? t : def;
         }
@@ -555,7 +556,7 @@ namespace Vascular
         /// <returns><c>True</c> if a suitable element was found.</returns>
         public static bool MinSuitable<T>(this IEnumerable<T> ts, Func<T, double> f, Func<T, bool> p, out T m, out double v)
         {
-            m = default;
+            m = default!;
             v = double.PositiveInfinity;
             var e = ts.GetEnumerator();
             while (e.MoveNext())
@@ -588,7 +589,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// Finds the value <paramref name="m"/> in <paramref name="ts"/> that minimizes <paramref name="f"/>, 
+        /// Finds the value <paramref name="m"/> in <paramref name="ts"/> that minimizes <paramref name="f"/>,
         /// returning the object and <paramref name="v"/>=<paramref name="f"/>(<paramref name="m"/>).
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -618,7 +619,7 @@ namespace Vascular
             }
             else
             {
-                m = default;
+                m = default!;
                 v = double.PositiveInfinity;
                 return false;
             }
@@ -649,7 +650,7 @@ namespace Vascular
         {
             // Patches async stream reading.
             // From the docs for ReadAsync:
-            // "The result value can be less than the number of bytes allocated in the buffer if that many bytes are not currently available, 
+            // "The result value can be less than the number of bytes allocated in the buffer if that many bytes are not currently available,
             // or it can be 0 (zero) if the end of the stream has been reached."
             // That there is no version that only returns less if EOF reached is ridiculous.
             var total = 0;

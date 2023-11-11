@@ -7,11 +7,10 @@ namespace Vascular.Geometry.Triangulation
     /// <summary>
     /// Undirected edge.
     /// </summary>
-    [DataContract]
     public class Edge : IEquatable<Edge>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -21,45 +20,43 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public Vertex S, E;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        public LinkedList<Triangle> T;
+        public LinkedList<Triangle> T = null!; // We test with empty edge, no point creating and destroying list.
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Direction => E.P - S.P;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Length => Vector3.Distance(S.P, E.P);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public bool IsConcave()
         {
-            var t1n = T.First.Value.N;
-            var t2p = T.Last.Value.Opposite(this);
+            var t1n = T.First!.Value.N;
+            var t2p = T.Last!.Value.Opposite(this)!;
             return t1n * (t2p.P - S.P) > 0;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsDegenerate => S == E;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public Vector3 GetNormal()
@@ -73,7 +70,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public bool CheckNormalConsistency()
@@ -90,31 +87,31 @@ namespace Vascular.Geometry.Triangulation
             // If so, the winding direction of this edge will be opposite in each triangle
             // If vector from start to other vertex has positive component of n x d, then positively wound
             var d = this.Direction;
-            var t1 = T.First.Value;
-            var v1 = t1.Opposite(this).P - S.P;
+            var t1 = T.First!.Value;
+            var v1 = t1.Opposite(this)!.P - S.P;
             var nd1 = t1.N ^ d;
             var p1 = v1 * nd1 > 0.0;
-            var t2 = T.Last.Value;
-            var v2 = t2.Opposite(this).P - S.P;
+            var t2 = T.Last!.Value;
+            var v2 = t2.Opposite(this)!.P - S.P;
             var nd2 = t2.N ^ d;
             var p2 = v2 * nd2 > 0.0;
             return p1 != p2;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
         public Edge CorrectWindingIn(Triangle t)
         {
-            return t.N * (this.Direction ^ (t.Opposite(this).P - S.P)) > 0 ? this : this.Reverse;
+            return t.N * (this.Direction ^ (t.Opposite(this)!.P - S.P)) > 0 ? this : this.Reverse;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Edge Reverse => new Edge(E, S);
+        public Edge Reverse => new(E, S);
 
         /// <summary>
         /// Use when certain that <paramref name="v"/> is either <see cref="S"/> or <see cref="E"/>.
@@ -131,7 +128,7 @@ namespace Vascular.Geometry.Triangulation
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public Vertex OtherSafe(Vertex v)
+        public Vertex? OtherSafe(Vertex v)
         {
             return v == S ? E : v == E ? S : null;
         }
@@ -144,7 +141,7 @@ namespace Vascular.Geometry.Triangulation
         /// <returns></returns>
         public Triangle Other(Triangle t)
         {
-            return T.First.Value == t ? T.Last.Value : T.First.Value;
+            return T.First!.Value == t ? T.Last!.Value : T.First.Value;
         }
 
         /// <summary>
@@ -152,15 +149,15 @@ namespace Vascular.Geometry.Triangulation
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        public Triangle OtherSafe(Triangle t)
+        public Triangle? OtherSafe(Triangle t)
         {
             if (T.Count == 2)
             {
-                if (T.First.Value == t)
+                if (T.First!.Value == t)
                 {
-                    return T.Last.Value;
+                    return T.Last!.Value;
                 }
-                else if (T.Last.Value == t)
+                else if (T.Last!.Value == t)
                 {
                     return T.First.Value;
                 }
@@ -169,13 +166,17 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <inheritdoc/>
-        public bool Equals(Edge o)
+        public bool Equals(Edge? o)
         {
+            if (o is null)
+            {
+                return false;
+            }
             return E == o.E && S == o.S || E == o.S && S == o.E;
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Edge e && Equals(e);
         }
@@ -207,22 +208,8 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Plane3 Midplane
-        {
-            get
-            {
-                var ed = this.Direction;
-                var mn = T.First.Value.N + T.Last.Value.N;
-                var pn = (ed ^ mn).Normalize();
-                return new Plane3(pn, pn * S.P);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double DihedralAngleCosine => T.First.Value.N * T.Last.Value.N;
+        public double DihedralAngleCosine => T.First!.Value.N * T.Last!.Value.N;
     }
 }

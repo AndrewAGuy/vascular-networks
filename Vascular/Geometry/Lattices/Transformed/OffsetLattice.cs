@@ -5,16 +5,13 @@ namespace Vascular.Geometry.Lattices.Transformed
     /// <summary>
     /// Not technically a lattice, but useful and behaves similarly.
     /// </summary>
-    [DataContract]
     public class OffsetLattice : Lattice
     {
-        [DataMember]
         private readonly Lattice lattice;
-        [DataMember]
         private readonly Vector3 offset;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="offset"></param>

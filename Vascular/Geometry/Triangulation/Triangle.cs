@@ -7,11 +7,10 @@ namespace Vascular.Geometry.Triangulation
     /// <summary>
     /// Wound A-B-C, hence naming edge CA rather than AC.
     /// </summary>
-    [DataContract]
     public class Triangle : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -26,31 +25,27 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public Vertex A, B, C;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public Edge AB, BC, CA;
 
         /// <summary>
         /// Normal.
         /// </summary>
-        [DataMember]
         public Vector3 N;
 
         /// <summary>
         /// For removing from the mesh.
         /// </summary>
-        [DataMember]
-        public LinkedListNode<Triangle> Node;
+        public LinkedListNode<Triangle> Node = null!;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         public void EdgeNeighbours(ICollection<Triangle> n)
@@ -79,27 +74,27 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public Edge Opposite(Vertex v)
+        public Edge? Opposite(Vertex v)
         {
             return v == A ? BC : v == B ? CA : v == C ? AB : null;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        public Vertex Opposite(Edge e)
+        public Vertex? Opposite(Edge e)
         {
             return ReferenceEquals(e, AB) ? C : ReferenceEquals(e, BC) ? A : ReferenceEquals(e, CA) ? B : null;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds Bounds()
@@ -108,12 +103,12 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsDegenerate => A == B || B == C || C == A;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -123,7 +118,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
@@ -133,7 +128,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
@@ -143,7 +138,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="dir"></param>
         /// <returns></returns>
@@ -156,7 +151,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pos"></param>
         /// <returns></returns>
@@ -169,7 +164,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()

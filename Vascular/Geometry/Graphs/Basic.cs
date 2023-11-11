@@ -3,20 +3,20 @@
 namespace Vascular.Geometry.Graphs
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="TE"></typeparam>
     public class Vertex<TE> : Vertex<Vertex<TE>, TE> where TE : Edge<Vertex<TE>, TE>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vertex()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public Vertex(Vector3 p) : base(p)
@@ -25,20 +25,20 @@ namespace Vascular.Geometry.Graphs
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     public class Edge<TV> : Edge<TV, Edge<TV>> where TV : Vertex<TV, Edge<TV>>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Edge()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -48,19 +48,19 @@ namespace Vascular.Geometry.Graphs
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Vertex : Vertex<Vertex, Edge>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vertex()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public Vertex(Vector3 p) : base(p)
@@ -69,19 +69,19 @@ namespace Vascular.Geometry.Graphs
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Edge : Edge<Vertex, Edge>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Edge()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -91,20 +91,20 @@ namespace Vascular.Geometry.Graphs
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class DataVertex<T> : Vertex<DataVertex<T>, Edge<DataVertex<T>>>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DataVertex()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public DataVertex(Vector3 p) : base(p)
@@ -112,26 +112,26 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public T Data { get; set; }
+        public T Data { get; set; } = default!;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class DataEdge<T> : Edge<Vertex<DataEdge<T>>, DataEdge<T>>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DataEdge()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -140,27 +140,27 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public T Data { get; set; }
+        public T Data { get; set; } = default!;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     public class DataVertex<TV, TE> : Vertex<DataVertex<TV, TE>, DataEdge<TV, TE>>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DataVertex()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public DataVertex(Vector3 p) : base(p)
@@ -168,27 +168,27 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TV Data { get; set; }
+        public TV Data { get; set; } = default!;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="TV"></typeparam>
     /// <typeparam name="TE"></typeparam>
     public class DataEdge<TV, TE> : Edge<DataVertex<TV, TE>, DataEdge<TV, TE>>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DataEdge()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="e"></param>
@@ -197,18 +197,18 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public TE Data { get; set; }
+        public TE Data { get; set; } = default!;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Graph : Graph<Vertex, Edge>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Graph()
         {
@@ -216,17 +216,17 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="nv"></param>
         /// <param name="ne"></param>
         /// <param name="eq"></param>
-        public Graph(int nv, int ne, IEqualityComparer<Edge> eq = null) : base(nv, ne, eq)
+        public Graph(int nv, int ne, IEqualityComparer<Edge>? eq = null) : base(nv, ne, eq)
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TV"></typeparam>
         /// <typeparam name="TE"></typeparam>
@@ -237,7 +237,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -247,7 +247,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -257,7 +257,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TE"></typeparam>
         /// <returns></returns>
@@ -267,7 +267,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TV"></typeparam>
         /// <returns></returns>

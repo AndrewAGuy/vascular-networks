@@ -6,13 +6,12 @@ using System.Runtime.Serialization;
 namespace Vascular.Geometry.Triangulation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [DataContract]
     public class Vertex
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public Vertex(Vector3 p)
@@ -23,89 +22,17 @@ namespace Vascular.Geometry.Triangulation
         /// <summary>
         /// Position.
         /// </summary>
-        [DataMember]
         public Vector3 P;
 
         /// <summary>
         /// Edges.
         /// </summary>
-        [DataMember]
-        public LinkedList<Edge> E = new LinkedList<Edge>();
+        public LinkedList<Edge> E = new();
 
         /// <summary>
         /// Triangles.
         /// </summary>
-        [DataMember]
-        public LinkedList<Triangle> T = new LinkedList<Triangle>();
-
-        /// <summary>
-        /// Normal.
-        /// </summary>
-        [DataMember]
-        public Vector3 N;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="weighting"></param>
-        /// <returns></returns>
-        public Vector3 SetGroupNormal(Func<Triangle, Vertex, double> weighting)
-        {
-            var v = new Vector3();
-            var w = 0.0;
-            foreach (var t in T)
-            {
-                var wt = weighting(t, this);
-                v += t.N * wt;
-                w += wt;
-            }
-            return N = (v / w).Normalize();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static double AngleWeighting(Triangle t, Vertex v)
-        {
-            double a, b, c;
-            if (v == t.A)
-            {
-                a = t.AB.Length;
-                b = t.CA.Length;
-                c = t.BC.Length;
-            }
-            else if (v == t.B)
-            {
-                a = t.AB.Length;
-                b = t.BC.Length;
-                c = t.CA.Length;
-            }
-            else if (v == t.C)
-            {
-                a = t.BC.Length;
-                b = t.CA.Length;
-                c = t.AB.Length;
-            }
-            else
-            {
-                return 0;
-            }
-            var x = (a * a + b * b - c * c) / (2 * a * b);
-            x = x.Clamp(-1, 1);
-            return Math.Acos(x);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Vector3 SetGroupNormal()
-        {
-            return SetGroupNormal(AngleWeighting);
-        }
+        public LinkedList<Triangle> T = new();
 
         /// <summary>
         /// The vertices attached to this in order.
@@ -114,8 +41,8 @@ namespace Vascular.Geometry.Triangulation
         {
             get
             {
-                var currentTriangle = T.First.Value;
-                var outerEdge = currentTriangle.Opposite(this).CorrectWindingIn(currentTriangle);
+                var currentTriangle = T.First!.Value;
+                var outerEdge = currentTriangle.Opposite(this)!.CorrectWindingIn(currentTriangle);
                 var path = new List<Vertex>(E.Count);
                 var first = outerEdge.S;
                 path.Add(first);
@@ -124,8 +51,8 @@ namespace Vascular.Geometry.Triangulation
                 {
                     var secondLast = path[^2];
                     var edgeInner = currentTriangle.Opposite(secondLast);
-                    var nextTriangle = edgeInner.Other(currentTriangle);
-                    outerEdge = nextTriangle.Opposite(this).CorrectWindingIn(nextTriangle);
+                    var nextTriangle = edgeInner!.Other(currentTriangle);
+                    outerEdge = nextTriangle.Opposite(this)!.CorrectWindingIn(nextTriangle);
                     if (outerEdge.E == first)
                     {
                         break;
@@ -140,7 +67,7 @@ namespace Vascular.Geometry.Triangulation
         /// <summary>
         /// If a boundary vertex, the vertices attached to this as an open arc.
         /// </summary>
-        public List<Vertex> BoundaryFan
+        public List<Vertex>? BoundaryFan
         {
             get
             {
@@ -150,21 +77,21 @@ namespace Vascular.Geometry.Triangulation
                 {
                     return null;
                 }
-                var ew0 = e[0].CorrectWindingIn(e[0].T.First.Value);
-                var ew1 = e[1].CorrectWindingIn(e[1].T.First.Value);
+                var ew0 = e[0].CorrectWindingIn(e[0].T.First!.Value);
+                var ew1 = e[1].CorrectWindingIn(e[1].T.First!.Value);
                 var b0 = ew0.S == this;
                 var b1 = ew1.S == this;
                 var P = new List<Vertex>(E.Count);
-                Triangle TC = null;
+                Triangle TC = null!;
                 if (b0 && !b1)
                 {
                     P.Add(ew0.E);
-                    TC = e[0].T.First.Value;
+                    TC = e[0].T.First!.Value;
                 }
                 else if (b1 && !b0)
                 {
                     P.Add(ew1.E);
-                    TC = e[1].T.First.Value;
+                    TC = e[1].T.First!.Value;
                 }
                 else
                 {
@@ -175,7 +102,7 @@ namespace Vascular.Geometry.Triangulation
                 // Get opposite edge in triangle, then wind it (it will point towards this)
                 while (true)
                 {
-                    var EO = TC.Opposite(P[^1]);
+                    var EO = TC.Opposite(P[^1])!;
                     if (EO.T.Count == 1)
                     {
                         P.Add(EO.CorrectWindingIn(TC).S);
@@ -205,11 +132,11 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public List<Vertex> FanFrom(Vertex start)
+        public List<Vertex>? FanFrom(Vertex start)
         {
             if (EdgeTo(start) is not Edge edge)
             {
@@ -218,11 +145,11 @@ namespace Vascular.Geometry.Triangulation
             var fan = new List<Vertex>(E.Count) { start };
             Triangle currentTriangle;
             var lastVertex = start;
-            if (edge.CorrectWindingIn(edge.T.First.Value).E == start)
+            if (edge.CorrectWindingIn(edge.T.First!.Value).E == start)
             {
                 currentTriangle = edge.T.First.Value;
             }
-            else if (edge.CorrectWindingIn(edge.T.Last.Value).E == start)
+            else if (edge.CorrectWindingIn(edge.T.Last!.Value).E == start)
             {
                 currentTriangle = edge.T.Last.Value;
             }
@@ -232,7 +159,7 @@ namespace Vascular.Geometry.Triangulation
             }
             while (true)
             {
-                var oppositeEdge = currentTriangle.Opposite(lastVertex);
+                var oppositeEdge = currentTriangle.Opposite(lastVertex)!;
                 var nextTriangle = oppositeEdge.Other(currentTriangle);
                 var nextVertex = oppositeEdge.CorrectWindingIn(nextTriangle).E;
                 if (nextVertex == start)
@@ -246,11 +173,11 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public Edge EdgeTo(Vertex other)
+        public Edge? EdgeTo(Vertex other)
         {
             foreach (var e in E)
             {
@@ -263,7 +190,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -273,7 +200,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsInterior
         {
@@ -291,7 +218,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool VerifyEdgeCounts
         {
@@ -309,7 +236,7 @@ namespace Vascular.Geometry.Triangulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="u"></param>
         /// <param name="v"></param>

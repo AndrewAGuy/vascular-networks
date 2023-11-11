@@ -9,17 +9,17 @@ using Vascular.Geometry.Bounds;
 namespace Vascular.Structure.Nodes;
 
 /// <summary>
-/// 
+///
 /// </summary>
 public class HigherSplit : BranchNode, IMobileNode
 {
-    private Branch[] downstream;
-    private Segment[] children;
+    private Branch[] downstream = null!;
+    private Segment[] children = null!;
 
-    private double[] fractions;
+    private double[] fractions = null!;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public HigherSplit()
     {
@@ -27,7 +27,7 @@ public class HigherSplit : BranchNode, IMobileNode
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="n"></param>
     public HigherSplit(int n)
@@ -38,7 +38,7 @@ public class HigherSplit : BranchNode, IMobileNode
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="S"></param>
     public HigherSplit(Segment[] S)
@@ -62,10 +62,10 @@ public class HigherSplit : BranchNode, IMobileNode
     }
 
     /// <inheritdoc/>
-    public override Segment Parent { get; set; } = null;
+    public override Segment? Parent { get; set; } = null;
 
     /// <inheritdoc/>
-    public override Vector3 Position { get; set; } = null;
+    public override Vector3 Position { get; set; } = Vector3.INVALID;
 
     /// <inheritdoc/>
     public override Segment[] Children => children;
@@ -74,7 +74,7 @@ public class HigherSplit : BranchNode, IMobileNode
     public override Branch[] Downstream => downstream;
 
     /// <inheritdoc/>
-    public override Branch Upstream => this.Parent?.Branch;
+    public override Branch? Upstream => this.Parent?.Branch;
 
 #if !NoEffectiveLength
     /// <inheritdoc/>
@@ -101,7 +101,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePressures()
     {
-        pressure = this.Upstream.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
+        pressure = this.Upstream!.Start.Pressure - this.Upstream.Flow * this.Upstream.Resistance;
         foreach (var d in downstream)
         {
             d.End.CalculatePressures();
@@ -122,7 +122,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePathLengthsAndDepths()
     {
-        depth = this.Upstream.Start.Depth + 1;
+        depth = this.Upstream!.Start.Depth + 1;
         pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         foreach (var d in downstream)
         {
@@ -133,7 +133,7 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void CalculatePathLengthsAndOrder()
     {
-        pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
+        pathLength = this.Upstream!.Start.PathLength + this.Upstream.Length;
         foreach (var d in downstream)
         {
             d.End.CalculatePathLengthsAndOrder();
@@ -199,7 +199,7 @@ public class HigherSplit : BranchNode, IMobileNode
     {
         for (var i = 0; i < downstream.Length; ++i)
         {
-            downstream[i].Radius = this.Upstream.Radius * fractions[i];
+            downstream[i].Radius = this.Upstream!.Radius * fractions[i];
         }
     }
 
@@ -241,19 +241,19 @@ public class HigherSplit : BranchNode, IMobileNode
     /// <inheritdoc/>
     public override void PropagateLogicalUpstream()
     {
-        this.Upstream.PropagateLogicalUpstream();
+        this.Upstream!.PropagateLogicalUpstream();
     }
 
     private void UpdatePhysicalDerived()
     {
-        this.Network.Splitting.Fractions(this, fractions);
+        this.Network!.Splitting.Fractions(this, fractions);
     }
 
     /// <inheritdoc/>
     public override void PropagatePhysicalUpstream()
     {
         UpdatePhysicalDerived();
-        this.Upstream.PropagatePhysicalUpstream();
+        this.Upstream!.PropagatePhysicalUpstream();
     }
 
     /// <summary>
@@ -265,7 +265,7 @@ public class HigherSplit : BranchNode, IMobileNode
         {
             c.UpdateLength();
         }
-        this.Parent.UpdateLength();
+        this.Parent!.UpdateLength();
     }
 
     /// <summary>
@@ -277,7 +277,7 @@ public class HigherSplit : BranchNode, IMobileNode
         {
             d.UpdatePhysicalLocal();
         }
-        this.Upstream.UpdatePhysicalLocal();
+        this.Upstream!.UpdatePhysicalLocal();
     }
 
     /// <summary>
@@ -331,19 +331,19 @@ public class HigherSplit : BranchNode, IMobileNode
     public double SplitRatio => fractions.Min() / fractions.Max();
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public double[] Fractions => fractions;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="weighting"></param>
     /// <returns></returns>
     public Vector3 WeightedMean(Func<Branch, double> weighting)
     {
-        var t = weighting(this.Upstream);
-        var v = this.Upstream.Start.Position * t;
+        var t = weighting(this.Upstream!);
+        var v = this.Upstream!.Start.Position * t;
         foreach (var d in downstream)
         {
             var w = weighting(d);

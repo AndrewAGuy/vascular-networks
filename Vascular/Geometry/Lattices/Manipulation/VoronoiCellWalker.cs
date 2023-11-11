@@ -18,17 +18,17 @@ namespace Vascular.Geometry.Lattices.Manipulation
         public enum RecordMode
         {
             /// <summary>
-            /// 
+            ///
             /// </summary>
             Set,
             /// <summary>
-            /// 
+            ///
             /// </summary>
             List
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Lattice Lattice
         {
@@ -41,7 +41,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public RecordMode Mode
         {
@@ -56,18 +56,20 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="lattice"></param>
         /// <param name="mode"></param>
         public VoronoiCellWalker(Lattice lattice, RecordMode mode = RecordMode.Set)
         {
-            this.Lattice = lattice;
+            // Satisfying the compiler by not using the property...
+            this.lattice = lattice;
+            voronoiCell = lattice.VoronoiCell;
             this.Mode = mode;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>

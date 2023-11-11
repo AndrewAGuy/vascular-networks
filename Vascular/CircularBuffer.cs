@@ -12,7 +12,7 @@ namespace Vascular
     public class CircularBuffer<T> : ICollection<T>, IList<T>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="num"></param>
         public CircularBuffer(int num)
@@ -24,7 +24,7 @@ namespace Vascular
         private readonly T[] data;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int Count => data.Length;
 
@@ -56,7 +56,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public bool IsReadOnly => false;
 
@@ -81,12 +81,12 @@ namespace Vascular
         {
             for (var i = 0; i < data.Length; ++i)
             {
-                data[i] = default;
+                data[i] = default!;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
@@ -96,7 +96,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
@@ -110,7 +110,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
@@ -132,7 +132,7 @@ namespace Vascular
 
             public T Current => buffer[position];
 
-            object IEnumerator.Current => buffer[position];
+            object IEnumerator.Current => buffer[position]!;
 
             public bool MoveNext()
             {
@@ -152,7 +152,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
@@ -161,13 +161,18 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new Enumerator(this);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public IEqualityComparer<T> EqualityComparer { get; set; } = EqualityComparer<T>.Default;
 
         /// <summary>
         /// Returns a postitive index from the current offset, such that <see cref="this[int]"/>
@@ -179,7 +184,7 @@ namespace Vascular
         {
             for (var i = 0; i < data.Length; ++i)
             {
-                if (item.Equals(data[i]))
+                if (this.EqualityComparer.Equals(item, data[i]))
                 {
                     var index = i - offset;
                     index = index < 0
@@ -192,7 +197,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         /// <param name="item"></param>
@@ -202,7 +207,7 @@ namespace Vascular
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         public void RemoveAt(int index)

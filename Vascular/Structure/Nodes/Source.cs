@@ -8,13 +8,10 @@ namespace Vascular.Structure.Nodes
     /// <summary>
     /// The source node of a tree, required for setting radii.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(PressureSource))]
-    [KnownType(typeof(RadiusSource))]
     public abstract class Source : BranchNode
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         public Source(Vector3 x)
@@ -22,28 +19,23 @@ namespace Vascular.Structure.Nodes
             SetPosition(x);
         }
 
-        [DataMember]
-        private Vector3 position = null;
+        private Vector3 position = Vector3.INVALID;
 
-        [DataMember]
-        private Segment child = null;
-        [DataMember]
-        private Branch down = null;
-        [DataMember]
-        private readonly Segment[] children = new Segment[1] { null };
-        [DataMember]
-        private readonly Branch[] downstream = new Branch[1] { null };
+        private Segment? child = null;
+        private Branch? down = null;
+        private readonly Segment[] children = new Segment[1];
+        private readonly Branch[] downstream = new Branch[1];
 
         /// <summary>
         /// Updates <see cref="Children"/> and <see cref="Downstream"/> when set.
         /// </summary>
-        public Segment Child
+        public Segment? Child
         {
             get => child;
             set
             {
                 child = value;
-                children[0] = value;
+                children[0] = value!;
                 if (value != null)
                 {
                     down = value.Branch;
@@ -52,7 +44,7 @@ namespace Vascular.Structure.Nodes
                 else
                 {
                     down = null;
-                    downstream[0] = null;
+                    downstream[0] = null!;
                 }
             }
         }
@@ -61,7 +53,7 @@ namespace Vascular.Structure.Nodes
         sealed public override Segment[] Children => children;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         public void SetPosition(Vector3 x)
@@ -70,20 +62,20 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <inheritdoc/>
-        sealed public override double Flow => child.Flow;
+        sealed public override double Flow => child!.Flow;
 
         /// <inheritdoc/>
         sealed public override Branch[] Downstream => downstream;
 
         /// <inheritdoc/>
-        sealed public override Segment Parent
+        sealed public override Segment? Parent
         {
             get => null;
             set => throw new TopologyException("Source node has no parent");
         }
 
         /// <inheritdoc/>
-        sealed public override Branch Upstream => null;
+        sealed public override Branch? Upstream => null;
 
         /// <inheritdoc/>
         sealed public override Vector3 Position
@@ -94,7 +86,7 @@ namespace Vascular.Structure.Nodes
 
 #if !NoEffectiveLength
         /// <inheritdoc/>
-        sealed public override double EffectiveLength => down.EffectiveLength;
+        sealed public override double EffectiveLength => down!.EffectiveLength;
 
         /// <summary>
         /// See DOI 10.1109/TBME.2019.2942313 for how this works.
@@ -103,7 +95,7 @@ namespace Vascular.Structure.Nodes
 #endif
 
         /// <inheritdoc/>
-        public sealed override double ReducedResistance => down.ReducedResistance;
+        public sealed override double ReducedResistance => down!.ReducedResistance;
 
         /// <summary>
         /// The total network resistance.
@@ -135,14 +127,14 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         sealed public override void SetChildRadii()
         {
-            down.Radius = this.RootRadius;
+            down!.Radius = this.RootRadius;
         }
 
         /// <inheritdoc/>
         sealed public override void PropagateRadiiDownstream()
         {
             SetChildRadii();
-            down.UpdateRadii();
+            down!.UpdateRadii();
             down.End.PropagateRadiiDownstream();
         }
 
@@ -150,7 +142,7 @@ namespace Vascular.Structure.Nodes
         sealed public override void PropagateRadiiDownstream(double pad)
         {
             SetChildRadii();
-            down.End.PropagateRadiiDownstream(pad);
+            down!.End.PropagateRadiiDownstream(pad);
             down.Radius += pad;
             down.UpdateRadii();
         }
@@ -159,7 +151,7 @@ namespace Vascular.Structure.Nodes
         public sealed override void PropagateRadiiDownstream(Func<Branch, double> postProcessing)
         {
             SetChildRadii();
-            down.End.PropagateRadiiDownstream(postProcessing);
+            down!.End.PropagateRadiiDownstream(postProcessing);
             down.Radius = postProcessing(down);
             down.UpdateRadii();
         }
@@ -169,13 +161,13 @@ namespace Vascular.Structure.Nodes
         sealed public override void CalculatePathLengthsAndDepths()
         {
             depth = 0;
-            down.End.CalculatePathLengthsAndDepths();
+            down!.End.CalculatePathLengthsAndDepths();
         }
 
         /// <inheritdoc/>
         public sealed override void CalculatePathLengthsAndOrder()
         {
-            down.End.CalculatePathLengthsAndOrder();
+            down!.End.CalculatePathLengthsAndOrder();
             depth = down.Depth;
         }
 
@@ -195,7 +187,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         sealed public override void CalculatePhysical()
         {
-            down.UpdateLengths();
+            down!.UpdateLengths();
             down.UpdatePhysicalLocal();
             down.End.CalculatePhysical();
             down.UpdatePhysicalGlobal();
@@ -205,20 +197,20 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         sealed public override void CalculatePressures()
         {
-            down.End.CalculatePressures();
+            down!.End.CalculatePressures();
         }
 #endif
 
         /// <inheritdoc/>
         sealed public override AxialBounds GenerateDownstreamBounds()
         {
-            return down.GenerateDownstreamBounds();
+            return down!.GenerateDownstreamBounds();
         }
 
         /// <inheritdoc/>
         sealed public override AxialBounds GenerateDownstreamBounds(double pad)
         {
-            return down.GenerateDownstreamBounds(pad);
+            return down!.GenerateDownstreamBounds(pad);
         }
 
         /// <summary>
@@ -229,7 +221,7 @@ namespace Vascular.Structure.Nodes
         public abstract void SetTargetRadius(double target, double current);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public abstract Source Clone();

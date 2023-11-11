@@ -7,14 +7,12 @@ namespace Vascular.Structure.Nodes
     /// <summary>
     /// A fixed radius source, useful for engineering approaches where inlet connections matter.
     /// </summary>
-    [DataContract]
     public class RadiusSource : Source
     {
-        [DataMember]
         private double radius, radius2, radius4inv;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="r"></param>
@@ -24,7 +22,7 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r"></param>
         public void SetRadius(double r)
@@ -47,7 +45,7 @@ namespace Vascular.Structure.Nodes
 #endif
 
         /// <inheritdoc/>
-        public sealed override double Resistance => this.ReducedResistance * this.Network.ScaledViscosity * radius4inv;
+        public sealed override double Resistance => this.ReducedResistance * this.Network!.ScaledViscosity * radius4inv;
 
         /// <inheritdoc/>
         public override double Work => this.Resistance * Math.Pow(this.Flow, 2);
@@ -60,7 +58,7 @@ namespace Vascular.Structure.Nodes
 #endif
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public PressureSource ConvertToPressureSource()

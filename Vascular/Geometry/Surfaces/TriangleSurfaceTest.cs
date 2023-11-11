@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
@@ -11,7 +12,7 @@ namespace Vascular.Geometry.Surfaces
     public class TriangleSurfaceTest : IAxialBoundable
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tr"></param>
         /// <param name="r"></param>
@@ -22,7 +23,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="A"></param>
         /// <param name="B"></param>
@@ -63,7 +64,7 @@ namespace Vascular.Geometry.Surfaces
             ab = new AxialBounds(p0).Append(p1).Append(p2).Extend(r);
         }
 
-        private readonly Triangle tri;
+        private readonly Triangle? tri;
         private readonly Vector3 p0, p1, p2;
         private readonly Vector3 e01, e02, e12;
         private readonly Vector3 eu01, eu02, eu12;
@@ -75,27 +76,27 @@ namespace Vascular.Geometry.Surfaces
         private readonly double t2;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 A => p0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 B => p1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 C => p2;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Triangle Triangle => tri;
+        public Triangle? Triangle => tri;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Vector3 Normal => n;
 
@@ -108,7 +109,7 @@ namespace Vascular.Geometry.Surfaces
         /// <param name="f"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public bool TestRay(Vector3 r0, Vector3 rd, double t, ref double f, ref Vector3 p)
+        public bool TestRay(Vector3 r0, Vector3 rd, double t, ref double f, [NotNullWhen(true)]ref Vector3? p)
         {
             // We want the first point of contact. Test if we start the ray above or below the testing planes, and if the ray moves away.
             var r0n = d - r0 * n;
@@ -147,7 +148,7 @@ namespace Vascular.Geometry.Surfaces
                 f = 0;
                 p = r0;
             }
-            // Triangle testing - express rp - p0 = a01 * e01 + a02 * e02 ( + 0 * n)   
+            // Triangle testing - express rp - p0 = a01 * e01 + a02 * e02 ( + 0 * n)
             var rp0 = p - p0;
             var a01 = rp0 * b01;
             var a02 = rp0 * b02;
@@ -219,13 +220,11 @@ namespace Vascular.Geometry.Surfaces
             Vector3 e0b, Vector3 e1b, Vector3 eudb, double d0b, double d1b,
             Vector3 r0, Vector3 rd, double t2, ref double f, ref Vector3 p)
         {
-            Vector3 pa = null, pb = null;
+            Vector3? pa = null, pb = null;
             double fa = 0.0, fb = 0.0;
-            var ba = TestRayEdge(e0a, e1a, euda, d0a, d1a, r0, rd, t2, ref fa, ref pa);
-            var bb = TestRayEdge(e0b, e1b, eudb, d0b, d1b, r0, rd, t2, ref fb, ref pb);
-            if (ba)
+            if (TestRayEdge(e0a, e1a, euda, d0a, d1a, r0, rd, t2, ref fa, ref pa))
             {
-                if (bb)
+                if (TestRayEdge(e0b, e1b, eudb, d0b, d1b, r0, rd, t2, ref fb, ref pb))
                 {
                     if (fa < fb)
                     {
@@ -241,7 +240,7 @@ namespace Vascular.Geometry.Surfaces
                 p = pa;
                 return true;
             }
-            if (bb)
+            if (TestRayEdge(e0b, e1b, eudb, d0b, d1b, r0, rd, t2, ref fb, ref pb))
             {
                 f = fb;
                 p = pb;
@@ -253,7 +252,7 @@ namespace Vascular.Geometry.Surfaces
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TestRayEdge(
             Vector3 e0, Vector3 e1, Vector3 eud, double d0, double d1,
-            Vector3 r0, Vector3 rd, double t2, ref double f, ref Vector3 p)
+            Vector3 r0, Vector3 rd, double t2, ref double f, [NotNullWhen(true)]ref Vector3? p)
         {
             // Convert ray clamp into e0 centred coords
             var r0e = r0 - e0;
@@ -273,12 +272,10 @@ namespace Vascular.Geometry.Surfaces
                 }
                 // In this case, we want to find the range of f which the edge covers
                 double f0 = 0.0, f1 = 0.0;
-                Vector3 p0 = null, p1 = null;
-                var b0 = TestRayVertex(e0, r0, rd, t2, ref f0, ref p0);
-                var b1 = TestRayVertex(e1, r0, rd, t2, ref f1, ref p1);
-                if (b0)
+                Vector3? p0 = null, p1 = null;
+                if (TestRayVertex(e0, r0, rd, t2, ref f0, ref p0))
                 {
-                    if (b1)
+                    if (TestRayVertex(e1, r0, rd, t2, ref f1, ref p1))
                     {
                         if (f0 < f1)
                         {
@@ -294,7 +291,7 @@ namespace Vascular.Geometry.Surfaces
                     p = p0;
                     return true;
                 }
-                if (b1)
+                if (TestRayVertex(e1, r0, rd, t2, ref f1, ref p1))
                 {
                     f = f1;
                     p = p1;
@@ -342,7 +339,8 @@ namespace Vascular.Geometry.Surfaces
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool TestRayVertex(Vector3 v, Vector3 r0, Vector3 rd, double t2, ref double f, ref Vector3 p)
+        private static bool TestRayVertex(Vector3 v, Vector3 r0, Vector3 rd, double t2,
+            ref double f, [NotNullWhen(true)]ref Vector3? p)
         {
             // Solving |r0+f*rd-v|=t2
             var r0v = r0 - v;
@@ -373,7 +371,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
@@ -382,7 +380,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -392,7 +390,7 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -494,123 +492,6 @@ namespace Vascular.Geometry.Surfaces
         }
 
         /// <summary>
-        /// Honestly I'm not sure why I wrote this now.
-        /// </summary>
-        /// <param name="clamp"></param>
-        /// <param name="direction"></param>
-        /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <returns></returns>
-        public bool Extremum(Vector3 clamp, Vector3 direction, out Vector3 position, out Vector3 normal)
-        {
-            // Work in edge coords
-            var clampAdjust = clamp - p0;
-            var cA = b01 * clampAdjust;
-            var cB = b02 * clampAdjust;
-            var dA = b01 * direction;
-            var dB = b02 * direction;
-            var dD = dA + dB;
-
-            // Now want to find extrema: intersections of A=0; B=0; A+B=1. There must be intersections with at least two lines, or none.
-            var zA = dA * dA <= t2;
-            var zB = dB * dB <= t2;
-            var zD = dD * dD <= t2;
-            if (zA)
-            {
-                if (zB)
-                {
-                    position = null;
-                    normal = null;
-                    return false;
-                }
-                // We cannot reach A=0 with this line - test B=0; A+B=1
-                var fB = -cB / dB;
-                // We now want to solve:
-                //  cA + fAB * dA = a'
-                //  cB + fAB * dB = 1 - a'
-                // Giving the matrix problem:
-                //  [ dA  -1 ][ fAB ]   [ -cA  ]
-                //  [ dB   1 ][  a' ] = [ 1-cB ]
-                // The condition for solution is that dA + dB != 0, but in this case we have asserted that dA ~ 0 so dB !~ 0 guarantees this.
-                // Inverse of 2x2: [a b; c d] <=> 1/det[d -b; -c a]
-                var fAB = (1 - cA - cB) / dD;
-                if (fAB > fB)
-                {
-                    position = clamp + fAB * direction;
-                    normal = tri.BC.GetNormal();
-                }
-                else
-                {
-                    position = clamp + fB * direction;
-                    normal = tri.CA.GetNormal();
-                }
-            }
-            else if (zB)
-            {
-                var fA = -cA / dA;
-                var fAB = (1 - cA - cB) / dD;
-                if (fAB > fA)
-                {
-                    position = clamp + fAB * direction;
-                    normal = tri.BC.GetNormal();
-                }
-                else
-                {
-                    position = clamp + fA * direction;
-                    normal = tri.AB.GetNormal();
-                }
-            }
-            else if (zD)
-            {
-                var fA = -cA / dA;
-                var fB = -cB / dB;
-                if (fA > fB)
-                {
-                    position = clamp + fA * direction;
-                    normal = tri.AB.GetNormal();
-                }
-                else
-                {
-                    position = clamp + fB * direction;
-                    normal = tri.CA.GetNormal();
-                }
-            }
-            else
-            {
-                var fA = -cA / dA;
-                var fB = -cB / dB;
-                var fAB = (1 - cA - cB) / dD;
-                if (fA > fB)
-                {
-                    if (fAB > fA)
-                    {
-                        position = clamp + fAB * direction;
-                        normal = tri.BC.GetNormal();
-                    }
-                    else
-                    {
-                        position = clamp + fA * direction;
-                        normal = tri.AB.GetNormal();
-                    }
-                }
-                else
-                {
-                    if (fAB > fB)
-                    {
-                        position = clamp + fAB * direction;
-                        normal = tri.BC.GetNormal();
-                    }
-                    else
-                    {
-                        position = clamp + fB * direction;
-                        normal = tri.CA.GetNormal();
-                    }
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
         /// Test a triangle against another naiively.
         /// </summary>
         /// <param name="other"></param>
@@ -618,10 +499,10 @@ namespace Vascular.Geometry.Surfaces
         /// <param name="b"></param>
         /// <param name="strict"></param>
         /// <returns></returns>
-        public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3 a, out Vector3 b, bool strict = false)
+        public bool TestTriangleRays(TriangleSurfaceTest other, out Vector3? a, out Vector3? b, bool strict = false)
         {
             var f = 0.0;
-            Vector3 p = null;
+            Vector3? p = null;
             a = null;
             b = null;
 
@@ -654,7 +535,7 @@ namespace Vascular.Geometry.Surfaces
             return a != null && (b != null || (strict ? throw new GeometryException("Ray intersection tests must find 2 intersection points") : true));
         }
 
-        private static void TryAssign(ref Vector3 a, ref Vector3 b, Vector3 v, bool strict)
+        private static void TryAssign(ref Vector3? a, ref Vector3? b, Vector3 v, bool strict)
         {
             if (a == null)
             {

@@ -19,11 +19,9 @@ namespace Vascular.Structure.Actions
         public static Transient InsertTransient(Segment seg, bool reinit = true)
         {
             var end = seg.End;
-            var child = new Segment();
             var tr = new Transient();
+            var child = new Segment(tr, end);
             // Child relationships first, to prevent wipe of segment end.
-            child.Start = tr;
-            child.End = end;
             tr.Child = child;
             end.Parent = child;
             // Parent relationships
@@ -38,7 +36,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="seg"></param>
         /// <param name="n"></param>
@@ -57,14 +55,14 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tran"></param>
         /// <returns></returns>
         public static Segment RemoveTransient(Transient tran)
         {
             // Simple case of rewiring existing parent to existing child end.
-            var seg = tran.Parent;
+            var seg = tran.Parent!;
             var end = tran.Child.End;
             seg.End = end;
             end.Parent = seg;
@@ -73,12 +71,12 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="term"></param>
         /// <param name="nullParent"></param>
         /// <returns></returns>
-        public static Transient CullTerminal(Terminal term, bool nullParent = true)
+        public static Transient? CullTerminal(Terminal term, bool nullParent = true)
         {
             // Was terminal ever actually built?
             if (term.Parent == null)
@@ -87,13 +85,13 @@ namespace Vascular.Structure.Actions
                 return null;
             }
             // Will this kill the whole network?
-            var branch = term.Upstream;
+            var branch = term.Upstream!;
             if (branch.Start is not Bifurcation bifurc)
             {
                 throw new TopologyException("Branch to be culled does not start at bifurcation");
             }
             // Rewire sibling and parent into single branch, this turns 3 branches into 1.
-            var parent = bifurc.Parent;
+            var parent = bifurc.Parent!;
             var other = bifurc.Downstream[0] == branch ? bifurc.Children[1] : bifurc.Children[0];
             var tr = new Transient()
             {
@@ -115,24 +113,24 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="term"></param>
         /// <param name="nullParent"></param>
         /// <returns></returns>
-        public static Transient CullTerminalAndPropagate(Terminal term, bool nullParent = true)
+        public static Transient? CullTerminalAndPropagate(Terminal term, bool nullParent = true)
         {
             var tr = CullTerminal(term, nullParent);
             if (tr != null)
             {
-                tr.Parent.Branch.PropagateLogicalUpstream();
+                tr.Parent!.Branch.PropagateLogicalUpstream();
                 tr.UpdatePhysicalAndPropagate();
             }
             return tr;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="s"></param>
         /// <param name="t"></param>
@@ -140,7 +138,7 @@ namespace Vascular.Structure.Actions
         public static Branch MakeFirst(Source s, Terminal t)
         {
             // Must create branch beforehand, since setting source child segment will pull branch in
-            var seg = new Segment() { Start = s, End = t };
+            var seg = new Segment(s, t);
             var br = new Branch(seg) { Start = s, End = t };
             s.Child = seg;
             t.Parent = seg;
@@ -149,7 +147,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
@@ -162,17 +160,13 @@ namespace Vascular.Structure.Actions
             //      Child 1 ends with the terminal
             var end = from.End;
             var branchEnd = from.Branch.End;
-            var child0 = new Segment();
-            var child1 = new Segment();
             var bifurc = new Bifurcation()
             {
                 Network = from.Branch.Network
             };
             // Structural relationships of children and bifurcation.
-            child0.Start = bifurc;
-            child0.End = end;
-            child1.Start = bifurc;
-            child1.End = to;
+            var child0 = new Segment(bifurc, end);
+            var child1 = new Segment(bifurc, to);
             bifurc.Children[0] = child0;
             bifurc.Children[1] = child1;
             end.Parent = child0;
@@ -192,7 +186,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bifurc"></param>
         /// <param name="keptChild"></param>
@@ -211,7 +205,7 @@ namespace Vascular.Structure.Actions
                 Child = bifurc.Children[keptChild],
                 Parent = bifurc.Parent
             };
-            tr.Parent.End = tr;
+            tr.Parent!.End = tr;
             tr.Child.Start = tr;
             tr.Parent.Branch.End = tr.Child.Branch.End;
             tr.Parent.Branch.Reinitialize();
@@ -236,7 +230,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="throwIfRoot"></param>
@@ -244,7 +238,7 @@ namespace Vascular.Structure.Actions
         /// <param name="nullDownstream"></param>
         /// <param name="nullLost"></param>
         /// <returns></returns>
-        public static Transient RemoveBranch(Branch branch, bool throwIfRoot = true,
+        public static Transient? RemoveBranch(Branch branch, bool throwIfRoot = true,
             bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
         {
             switch (branch.Start)
@@ -275,7 +269,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -290,7 +284,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -313,12 +307,12 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="moving"></param>
         /// <param name="from"></param>
         /// <returns></returns>
-        public static (Transient, Bifurcation) MoveBifurcation(Branch moving, Branch from)
+        public static (Transient?, Bifurcation?) MoveBifurcation(Branch moving, Branch from)
         {
             if (moving.Start is Bifurcation bifurc)
             {
@@ -330,7 +324,7 @@ namespace Vascular.Structure.Actions
                     Child = bifurc.Children[keptChild],
                     Parent = bifurc.Parent
                 };
-                tr.Parent.End = tr;
+                tr.Parent!.End = tr;
                 tr.Child.Start = tr;
                 tr.Parent.Branch.End = tr.Child.Branch.End;
                 tr.Parent.Branch.Reinitialize();
@@ -354,7 +348,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bf"></param>
         public static void SwapBifurcationOrder(Bifurcation bf)
@@ -364,7 +358,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="node"></param>
@@ -428,9 +422,9 @@ namespace Vascular.Structure.Actions
         public static void Transfer(Network to, Network from)
         {
             var node = to.Source;
-            var seg = from.Source.Child;
-            node.Child = seg;
-            seg.Start = node;
+            var seg = from.Source!.Child;
+            node!.Child = seg;
+            seg!.Start = node;
             seg.Branch.Start = node;
         }
     }

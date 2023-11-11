@@ -6,18 +6,14 @@ namespace Vascular.Geometry.Generators
     /// <summary>
     /// Uses a Box-Muller transform to turn unit uniform numbers to Gaussian.
     /// </summary>
-    [DataContract]
     public class GaussianRandom : IVector3Generator
     {
-        [DataMember]
         private readonly Random random;
-        [DataMember]
         private double cached = 0;
-        [DataMember]
         private bool generate = true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="seed"></param>
         public GaussianRandom(int seed)
@@ -26,7 +22,7 @@ namespace Vascular.Geometry.Generators
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public GaussianRandom()
         {
@@ -34,7 +30,7 @@ namespace Vascular.Geometry.Generators
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public double NextDouble()

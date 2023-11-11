@@ -11,11 +11,10 @@ namespace Vascular.Structure.Nodes
     /// the points at which we plug it in. For faster calculation, terminals are assumed to be at 0 pressure. This
     /// is fine for engineering uses but may not be suitable for others.
     /// </summary>
-    [DataContract]
     public class Terminal : BranchNode
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="Q"></param>
@@ -26,29 +25,26 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
-        protected Vector3 position = null;
+        protected Vector3 position = Vector3.INVALID;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         protected double flow;
 
         private static readonly Segment[] CHILDREN = Array.Empty<Segment>();
         private static readonly Branch[] DOWNSTREAM = Array.Empty<Branch>();
 
         /// <inheritdoc/>
-        [DataMember]
-        public override Segment Parent { get; set; } = null;
+        public override Segment? Parent { get; set; } = null;
 
         /// <inheritdoc/>
         public override Segment[] Children => CHILDREN;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         public void SetPosition(Vector3 x)
@@ -57,7 +53,7 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         public void SetFlow(double Q)
@@ -98,9 +94,7 @@ namespace Vascular.Structure.Nodes
         public override double ReducedResistance => 0.0;
 
 #if !NoDepthPathLength
-        [DataMember]
         private double pathLength = -1.0;
-        [DataMember]
         private int depth = -1;
 
         /// <inheritdoc/>
@@ -112,7 +106,7 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void CalculatePathLengthsAndDepths()
         {
-            depth = this.Upstream.Start.Depth + 1;
+            depth = this.Upstream!.Start.Depth + 1;
             pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
         }
 
@@ -120,20 +114,18 @@ namespace Vascular.Structure.Nodes
         public override void CalculatePathLengthsAndOrder()
         {
             depth = 1;
-            pathLength = this.Upstream.Start.PathLength + this.Upstream.Length;
+            pathLength = this.Upstream!.Start.PathLength + this.Upstream.Length;
         }
 #endif
 
         /// <summary>
         /// Terminals may matched together, and are granted exceptions to collision resolution.
         /// </summary>
-        [DataMember]
-        public Terminal[] Partners { get; set; } = null;
+        public Terminal[]? Partners { get; set; } = null;
 
         /// <summary>
         /// Legacy flag for tidying up collections.
         /// </summary>
-        [DataMember]
         public bool Culled { get; set; } = false;
 
         /// <summary>
@@ -191,17 +183,17 @@ namespace Vascular.Structure.Nodes
         /// <inheritdoc/>
         public override void PropagateLogicalUpstream()
         {
-            this.Upstream.PropagateLogicalUpstream();
+            this.Upstream!.PropagateLogicalUpstream();
         }
 
         /// <inheritdoc/>
         public override void PropagatePhysicalUpstream()
         {
-            this.Upstream.PropagatePhysicalUpstream();
+            this.Upstream!.PropagatePhysicalUpstream();
         }
 
         /// <inheritdoc/>
-        public override Branch Upstream => this.Parent?.Branch;
+        public override Branch? Upstream => this.Parent?.Branch;
 
         /// <inheritdoc/>
         public override Branch[] Downstream => DOWNSTREAM;
@@ -260,7 +252,7 @@ namespace Vascular.Structure.Nodes
         /// <param name="other"></param>
         public void ReplaceWith(Terminal other)
         {
-            other.Parent = this.Parent;
+            other.Parent = this.Parent!;
             other.Parent.End = other;
             other.Parent.Branch.End = other;
             other.Network = this.Network;
@@ -281,7 +273,7 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public virtual Terminal Clone()

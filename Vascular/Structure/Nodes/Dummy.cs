@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes
@@ -6,21 +7,19 @@ namespace Vascular.Structure.Nodes
     /// <summary>
     /// For using <see cref="Segment"/> instances for non-tree things.
     /// </summary>
-    [DataContract]
     public class Dummy : INode
     {
         /// <inheritdoc/>
-        public Segment Parent
+        public Segment? Parent
         {
             get => null;
-            set { }
+            set => throw new TopologyException("Dummy node can not have parent");
         }
 
         /// <inheritdoc/>
-        public Segment[] Children => null;
+        public Segment[] Children => Array.Empty<Segment>();
 
         /// <inheritdoc/>
-        [DataMember]
-        public Vector3 Position { get; set; } = null;
+        public Vector3 Position { get; set; } = Vector3.INVALID;
     }
 }

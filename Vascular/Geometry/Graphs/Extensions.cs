@@ -5,7 +5,7 @@ using System.Linq;
 namespace Vascular.Geometry.Graphs
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class Extensions
     {
@@ -18,7 +18,7 @@ namespace Vascular.Geometry.Graphs
         /// <typeparam name="TE"></typeparam>
         /// <param name="graph"></param>
         /// <param name="immune"></param>
-        public static void RemoveLeafBranches<TV, TE>(this Graph<TV, TE> graph, Func<TV, bool> immune = null)
+        public static void RemoveLeafBranches<TV, TE>(this Graph<TV, TE> graph, Func<TV, bool>? immune = null)
             where TV : Vertex<TV, TE>, new()
             where TE : Edge<TV, TE>, new()
         {
@@ -45,7 +45,7 @@ namespace Vascular.Geometry.Graphs
                     }
                     // Get the opposite end of the attached edge (know that current vertex has 1 branch)
                     // Remove the current vertex, try moving to the next one
-                    var e = v.E.First.Value;
+                    var e = v.E.First!.Value;
                     var n = e.Other(v);
                     graph.RemoveVertex(v);
                     if (n.E.Count > 1)
@@ -58,7 +58,7 @@ namespace Vascular.Geometry.Graphs
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TV"></typeparam>
         /// <typeparam name="TE"></typeparam>
@@ -78,7 +78,7 @@ namespace Vascular.Geometry.Graphs
                 {
                     continue;
                 }
-                var E = s.E.First.Value;
+                var E = s.E.First!.Value;
                 var e = WalkBranch(s, E);
                 yield return (s, e);
                 visited.Add(s);
@@ -97,15 +97,15 @@ namespace Vascular.Geometry.Graphs
             where TV : Vertex<TV, TE>, new()
             where TE : Edge<TV, TE>, new()
         {
-            var e0 = v.E.First.Value;
+            var e0 = v.E.First!.Value;
             var v0 = WalkBranch(v, e0);
             if (v.E.Count == 1)
             {
-                return (v0, null);
+                return (v0, null!);
             }
             else
             {
-                var e1 = v.E.Last.Value;
+                var e1 = v.E.Last!.Value;
                 return (v0, WalkBranch(v, e1));
             }
         }
@@ -130,8 +130,8 @@ namespace Vascular.Geometry.Graphs
                 {
                     return ve;
                 }
-                var e0 = ve.E.First.Value;
-                var e1 = ve.E.Last.Value;
+                var e0 = ve.E.First!.Value;
+                var e1 = ve.E.Last!.Value;
                 e = e == e0 ? e1 : e0;
             }
         }

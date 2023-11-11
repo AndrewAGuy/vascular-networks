@@ -8,17 +8,17 @@ namespace Vascular.Structure
     public interface INode
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        Segment Parent { get; set; }
+        Segment? Parent { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Segment[] Children { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Vector3 Position { get; set; }
     }

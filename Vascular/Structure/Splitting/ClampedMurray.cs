@@ -5,16 +5,13 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// A decorator for a <see cref="FlowContextualMurray"/> to prevent the exponent going outside of a given range.
     /// </summary>
-    [DataContract]
     public class ClampedMurray : FlowContextualMurray
     {
-        [DataMember]
         private readonly double elo, ehi, qlo, qhi;
-        [DataMember]
         private readonly FlowContextualMurray murray;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q_lo"></param>
         /// <param name="e_lo"></param>
@@ -31,7 +28,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>
@@ -41,7 +38,7 @@ namespace Vascular.Structure.Splitting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="Q"></param>
         /// <returns></returns>

@@ -9,7 +9,7 @@ namespace Vascular.Structure.Actions
     public abstract class BranchAction : TopologyAction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -20,22 +20,22 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected Branch a;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected Branch b;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch A => a;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Branch B => b;
 
@@ -45,8 +45,8 @@ namespace Vascular.Structure.Actions
         /// <returns></returns>
         public virtual bool Update()
         {
-            a = a.CurrentTopologicallyValid;
-            b = b.CurrentTopologicallyValid;
+            a = a.CurrentTopologicallyValid!;
+            b = b.CurrentTopologicallyValid!;
             return !ReferenceEquals(a, b)
                 && a != null
                 && b != null; // In case anything has been completely removed
@@ -63,7 +63,7 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -84,7 +84,7 @@ namespace Vascular.Structure.Actions
         public abstract void Reverse(bool propagateLogical = true, bool propagatePhysical = false);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pred"></param>
         /// <returns></returns>
@@ -94,15 +94,15 @@ namespace Vascular.Structure.Actions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="action"></param>
         /// <param name="clone"></param>
         /// <returns></returns>
-        public static BranchAction TransferToClone(BranchAction action, Network clone)
+        public static BranchAction? TransferToClone(BranchAction action, Network clone)
         {
-            var a = Address.Navigate(clone.Root, Address.Get(action.A));
-            var b = Address.Navigate(clone.Root, Address.Get(action.B));
+            var a = Address.Navigate(clone.Root!, Address.Get(action.A));
+            var b = Address.Navigate(clone.Root!, Address.Get(action.B));
             return action switch
             {
                 SwapEnds => new SwapEnds(a, b),

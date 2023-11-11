@@ -10,24 +10,24 @@ namespace Vascular.Structure.Diagnostics
     public class TopologyComparer : IEqualityComparer<Network>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool Equals(Network x, Network y)
+        public bool Equals(Network? x, Network? y)
         {
-            return CompareCanonicalized(x, y);
+            return CompareCanonicalized(x!, y!);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
         public int GetHashCode(Network obj)
         {
-            return GetHashCode(obj.Root.End);
+            return GetHashCode(obj.Root!.End);
         }
 
         private int GetHashCode(BranchNode node)
@@ -55,8 +55,8 @@ namespace Vascular.Structure.Diagnostics
 
         private bool CompareCanonicalized(Network x, Network y)
         {
-            var Bx = enumeratorX.Downstream(x.Root).GetEnumerator();
-            var By = enumeratorY.Downstream(y.Root).GetEnumerator();
+            var Bx = enumeratorX.Downstream(x.Root!).GetEnumerator();
+            var By = enumeratorY.Downstream(y.Root!).GetEnumerator();
             while (true)
             {
                 var mx = Bx.MoveNext();
@@ -93,7 +93,7 @@ namespace Vascular.Structure.Diagnostics
         private readonly BranchEnumerator enumeratorX = new(), enumeratorY = new();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public IEqualityComparer<Terminal> TerminalEqualityComparer { get; set; } = new TerminalCanonicalPositionComparer();
     }

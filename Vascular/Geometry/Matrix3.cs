@@ -4,29 +4,27 @@ using System.Runtime.Serialization;
 namespace Vascular.Geometry
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [DataContract]
     public class Matrix3
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        [DataMember]
         public double
             m11 = 1.0, m12 = 0.0, m13 = 0.0,
             m21 = 0.0, m22 = 1.0, m23 = 0.0,
             m31 = 0.0, m32 = 0.0, m33 = 1.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Matrix3()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="m"></param>
         public Matrix3(Matrix3 m) : this(m.m11, m.m12, m.m13, m.m21, m.m22, m.m23, m.m31, m.m32, m.m33)
@@ -34,7 +32,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="d"></param>
         public Matrix3(double d) : this(d, d, d, d, d, d, d, d, d)
@@ -42,7 +40,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="m11"></param>
         /// <param name="m12"></param>
@@ -67,7 +65,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r1"></param>
         /// <param name="r2"></param>
@@ -79,7 +77,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="c1"></param>
         /// <param name="c2"></param>
@@ -91,7 +89,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
@@ -101,7 +99,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -111,7 +109,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -142,7 +140,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="u"></param>
         /// <param name="v"></param>
@@ -169,7 +167,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
@@ -184,7 +182,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
@@ -199,7 +197,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
@@ -214,7 +212,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="axis"></param>
         /// <param name="angle"></param>
@@ -243,7 +241,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -257,7 +255,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -271,7 +269,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="m"></param>
         /// <param name="a"></param>
@@ -285,7 +283,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="m"></param>
@@ -296,7 +294,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="m"></param>
         /// <param name="a"></param>
@@ -310,7 +308,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="l"></param>
         /// <param name="r"></param>
@@ -324,7 +322,7 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="m"></param>
         /// <param name="v"></param>
@@ -335,32 +333,32 @@ namespace Vascular.Geometry
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Matrix3 Transpose => new Matrix3(m11, m21, m31, m12, m22, m32, m13, m23, m33);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Trace => m11 + m22 + m33;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Determinant => m11 * (m22 * m33 - m23 * m32) - m12 * (m21 * m33 - m23 * m31) + m13 * (m21 * m32 - m22 * m31);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public (Vector3 c1, Vector3 c2, Vector3 c3) Columns => (new Vector3(m11, m21, m31), new Vector3(m12, m22, m32), new Vector3(m13, m23, m33));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public (Vector3 r1, Vector3 r2, Vector3 r3) Rows => (new Vector3(m11, m12, m13), new Vector3(m21, m22, m23), new Vector3(m31, m32, m33));
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="d2">The tolerance for the determinant squared before considered singular.</param>
         /// <returns></returns>
