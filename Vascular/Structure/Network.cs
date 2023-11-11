@@ -108,7 +108,11 @@ namespace Vascular.Structure
             var n = new Network()
             {
                 Source = s,
-                Splitting = this.Splitting
+                Splitting = this.Splitting.TryClone(),
+                Output = this.Output,
+                InletDirection = this.InletDirection,
+                Viscosity = this.Viscosity,
+                PressureOffset = this.PressureOffset
             };
             var r = CloneDownstream(n, this.Root);
             s.Child = r.Segments[0];

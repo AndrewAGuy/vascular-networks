@@ -38,7 +38,7 @@ namespace Vascular.Structure
         /// <returns></returns>
         public static double Flow(this INode node)
         {
-            return node.Parent!.Flow;
+            return node.Parent?.Flow ?? node.Children[0].Flow;
         }
 
         /// <summary>

@@ -17,6 +17,17 @@ namespace Vascular
         ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static T TryClone<T>(this T t)
+        {
+            return t is ICloneable c ? (T)c.Clone() : t;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
         /// <param name="random"></param>
         public static void Permute<T>(this IList<T> list, Random? random = null)

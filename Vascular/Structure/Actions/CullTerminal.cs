@@ -32,7 +32,7 @@ namespace Vascular.Structure.Actions
             {
                 if (propagateLogical)
                 {
-                    T.Parent!.Branch.PropagateLogicalUpstream();
+                    T.Parent.Branch.PropagateLogicalUpstream();
                     if (propagatePhysical)
                     {
                         T.UpdatePhysicalAndPropagate();
@@ -44,7 +44,7 @@ namespace Vascular.Structure.Actions
         /// <inheritdoc/>
         public override bool IsPermissible()
         {
-            return t.Parent != null && (t.Upstream!.Start is not Source);
+            return t.Parent != null && (t.Upstream.Start is not Source);
         }
     }
 }

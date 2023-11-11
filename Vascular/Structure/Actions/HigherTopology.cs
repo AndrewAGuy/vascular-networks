@@ -59,8 +59,8 @@ public static class HigherTopology
     public static (BranchNode remaining, BranchNode leaving) SplitToChild(HigherSplit hs, int[] indices)
     {
         // TODO: add in size checks here
-        var pSeg = hs.Parent!;
-        var pBr = hs.Upstream!;
+        var pSeg = hs.Parent;
+        var pBr = hs.Upstream;
         var (splitS, remS) = hs.Children.SplitArrayStack(indices);
 
         // Generate new child and attaching segment
@@ -130,8 +130,8 @@ public static class HigherTopology
     /// <returns></returns>
     public static (BranchNode remaining, BranchNode leaving) SplitToSibling(HigherSplit hs, int[] indices)
     {
-        var pSeg = hs.Parent!;
-        var pBr = hs.Upstream!;
+        var pSeg = hs.Parent;
+        var pBr = hs.Upstream;
         var (splitS, remS) = hs.Children.SplitArrayStack(indices);
         var pBf = new Bifurcation() { Parent = pSeg, Network = hs.Network };
         pSeg.End = pBf;
@@ -208,7 +208,7 @@ public static class HigherTopology
     public static INode Remove(HigherSplit hs, int[] idx, bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
     {
         var (kept, lost) = hs.Children.SplitArrayStack(idx);
-        var newNode = MakeNode(hs.Parent!, kept, hs.Network, Vector3.INVALID);
+        var newNode = MakeNode(hs.Parent, kept, hs.Network, Vector3.INVALID);
         foreach (var L in lost)
         {
             if (markDownstream)

@@ -33,7 +33,7 @@ namespace Vascular.Structure.Actions
             {
                 if (propagateLogical)
                 {
-                    t!.Parent!.Branch.PropagateLogicalUpstream();
+                    t!.Parent.Branch.PropagateLogicalUpstream();
                     n.UpdateLogicalAndPropagate();
                     n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
                     if (propagatePhysical)
@@ -88,7 +88,7 @@ namespace Vascular.Structure.Actions
 
             // Start by removing the bifurcation: moved branch points to same end node, but is not actually valid.
             var tr = Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
-            tr.Parent!.Branch.Reset();
+            tr.Parent.Branch.Reset();
 
             var bf = new Bifurcation()
             {
