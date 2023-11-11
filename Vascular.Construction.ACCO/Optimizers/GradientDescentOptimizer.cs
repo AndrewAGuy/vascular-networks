@@ -11,12 +11,21 @@ namespace Vascular.Construction.ACCO.Optimizers
     public class GradientDescentOptimizer : IBifurcationOptimizer
     {
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="cost"></param>
+        public GradientDescentOptimizer(Func<Source, double> cost)
+        {
+            this.Cost = cost;
+        }
+
+        /// <summary>
         /// Terminate when bifurcation gets too close to any other node in the triad.
         /// </summary>
         public double TerminationLengthFraction { get; set; } = 0.2;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int MaxIterations { get; set; } = 100;
 
@@ -31,7 +40,7 @@ namespace Vascular.Construction.ACCO.Optimizers
         public double StepFraction { get; set; } = 0.1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Source, double> Cost { get; set; }
 
@@ -41,7 +50,7 @@ namespace Vascular.Construction.ACCO.Optimizers
         public double TerminationCostFraction { get; set; } = 0.0001;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         public void Optimize(Bifurcation node)
@@ -65,7 +74,7 @@ namespace Vascular.Construction.ACCO.Optimizers
             var x = x0;
             var f0 = 0.0;
             var f1 = 0.0;
-            for (uint i = 0; i < this.MaxIterations; ++i)
+            for (var i = 0; i < this.MaxIterations; ++i)
             {
                 // Get probing scale, check proximity to vertices
                 var lm = Math.Sqrt(
@@ -87,7 +96,7 @@ namespace Vascular.Construction.ACCO.Optimizers
                 node.Position = x + b1 * lp;
                 node.UpdatePhysicalAndPropagate();
                 var v1p = this.Cost(S);
-                node.Position= x - b1 * lp;
+                node.Position = x - b1 * lp;
                 node.UpdatePhysicalAndPropagate();
                 var v1n = this.Cost(S);
                 var lpi = 1.0 / (2.0 * lp);

@@ -18,11 +18,11 @@ namespace Vascular.Construction.ACCO
         private readonly LinkedList<Terminal> built = new();
 
         private Random random = new();
-        private Network network = null;
+        private Network network = null!;
         private int rejections = 0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public TerminalCollection()
         {
@@ -235,7 +235,7 @@ namespace Vascular.Construction.ACCO
 
         /// <summary>
         /// If a terminal has been culled, either directly or through a matching group, it may be present in any of the other collections.
-        /// Always removes from <see cref="Built"/>. If <paramref name="all"/> specified, prevents them from showing up again 
+        /// Always removes from <see cref="Built"/>. If <paramref name="all"/> specified, prevents them from showing up again
         /// by removing from the waiting and rejected lists.
         /// </summary>
         /// <param name="all"></param>
@@ -361,6 +361,10 @@ namespace Vascular.Construction.ACCO
         {
             foreach (var t in built)
             {
+                if (t.Partners is null)
+                {
+                    continue;
+                }
                 foreach (var p in t.Partners)
                 {
                     if (p.Parent == null)

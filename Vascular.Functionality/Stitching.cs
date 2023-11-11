@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vascular.Geometry;
@@ -9,7 +10,7 @@ using Vascular.Structure;
 namespace Vascular.Functionality
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Stitching<TV, TE>
         where TV : Vertex<TV, TE>, new()
@@ -28,7 +29,7 @@ namespace Vascular.Functionality
         private readonly IAxialBoundsQueryable<Segment>[] major;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="continuous"></param>
         /// <param name="major"></param>
@@ -39,19 +40,19 @@ namespace Vascular.Functionality
         {
             this.continuous = continuous;
             this.major = major;
-            chunks = new(null, stride, factor);
+            chunks = new(Array.Empty<Chunk>(), stride, factor);
         }
 
         private readonly Graph<TV, TE> graph = new();
         private readonly SemaphoreSlim graphSemaphore = new(1);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int MaxConcurrency { get; set; } = 1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bounds"></param>
         /// <returns></returns>
@@ -83,7 +84,7 @@ namespace Vascular.Functionality
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int BoundarySizeMultiplier { get; set; } = 26;
 
@@ -96,7 +97,7 @@ namespace Vascular.Functionality
         }
 
         /// <summary>
-        /// Scans the whole graph, gets all edges which intersect the output bounds and 
+        /// Scans the whole graph, gets all edges which intersect the output bounds and
         /// removes all edges which are completely contained in this bounds.
         /// </summary>
         /// <param name="bounds"></param>

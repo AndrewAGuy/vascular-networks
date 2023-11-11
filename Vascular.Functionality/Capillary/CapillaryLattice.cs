@@ -10,32 +10,41 @@ using Vascular.Structure;
 namespace Vascular.Functionality.Capillary
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class CapillaryLattice : CapillaryBase
     {
         /// <summary>
-        /// 
+        ///
+        /// </summary>
+        /// <param name="lattice"></param>
+        public CapillaryLattice(Lattice lattice)
+        {
+            this.Lattice = lattice;
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         public Lattice Lattice { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Vector3, bool> PermittedVertex { get; set; } = x => true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Vector3, Vector3, bool> PermittedEdge { get; set; } = (x, y) => true;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Vector3, Vector3, double> RadiusFactor { get; set; } = (x, y) => 1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
@@ -45,7 +54,7 @@ namespace Vascular.Functionality.Capillary
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="bounds"></param>
         /// <returns></returns>
@@ -112,7 +121,7 @@ namespace Vascular.Functionality.Capillary
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="existing"></param>
         /// <param name="existingBoundary"></param>

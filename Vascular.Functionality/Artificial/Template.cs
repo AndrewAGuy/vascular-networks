@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -23,35 +24,40 @@ namespace Vascular.Functionality.Artificial
     public class Template : Discrete
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Segment[] Channels { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Attachment[] Attachments { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Mesh Boundary { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="channels"></param>
         /// <param name="attachments"></param>
         /// <param name="boundary"></param>
-        public Template(IEnumerable<Segment> channels, IEnumerable<Attachment> attachments, Mesh boundary)
+        /// <param name="permitted"></param>
+        /// <param name="candidate"></param>
+        public Template(IEnumerable<Segment> channels, IEnumerable<Attachment> attachments, Mesh boundary,
+            Func<TriangleIntersection, int> permitted, Func<Branch, bool> candidate)
         {
             this.Channels = channels.ToArray();
             this.Attachments = attachments.ToArray();
             this.Boundary = boundary;
+            this.PermittedIntersection = permitted;
+            this.CandidateConnection = candidate;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Vector3, Matrix3> Orientation { get; set; } = x => new();
 
@@ -61,17 +67,17 @@ namespace Vascular.Functionality.Artificial
         public Func<TriangleIntersection, int> PermittedIntersection { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Action<Terminal> OnCull { get; set; }
+        public Action<Terminal>? OnCull { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Branch, bool> CandidateConnection { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double TerminalSearchLength { get; set; }
 
@@ -81,7 +87,7 @@ namespace Vascular.Functionality.Artificial
         public double TerminalEndFraction { get; set; } = 1e-3;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Network, double> TerminalFlowRate { get; set; } = n => 1;
 
@@ -124,7 +130,7 @@ namespace Vascular.Functionality.Artificial
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="position"></param>
         /// <param name="connections"></param>
@@ -155,7 +161,8 @@ namespace Vascular.Functionality.Artificial
             }
         }
 
-        private bool Prepare(Network[] N, Vector3 x, out Terminal[] T, out Attachment[] A)
+        private bool Prepare(Network[] N, Vector3 x,
+            [NotNullWhen(true)]out Terminal[]? T, out Attachment[] A)
         {
             T = null;
             Mesh M;
@@ -171,13 +178,13 @@ namespace Vascular.Functionality.Artificial
             return T != null;
         }
 
-        private Terminal[] MakeAttachments(IAxialBoundsQueryable<TriangleSurfaceTest> B, Network[] N, Attachment[] A)
+        private Terminal[]? MakeAttachments(IAxialBoundsQueryable<TriangleSurfaceTest> B, Network[] N, Attachment[] A)
         {
-            var T = new Terminal[A.Length];
+            var T = new Terminal?[A.Length];
             var CB = Candidates(N, A);
 
-            var S = new Segment[A.Length];
-            var X = new Vector3[A.Length];
+            var S = new Segment?[A.Length];
+            var X = new Vector3?[A.Length];
             for (var i = 0; i < A.Length; ++i)
             {
                 T[i] = TryTerminal(A[i], CB[i], B);
@@ -193,31 +200,31 @@ namespace Vascular.Functionality.Artificial
             }
 
             Connect(A, T, S, X);
-            return T;
+            return T!;
         }
 
-        private void Connect(Attachment[] A, Terminal[] T, Segment[] S, Vector3[] X)
+        private void Connect(Attachment[] A, Terminal?[] T, Segment?[] S, Vector3?[] X)
         {
             for (var i = 0; i < A.Length; ++i)
             {
-                if (T[i] is not null)
+                if (T[i] is Terminal ti)
                 {
-                    T[i].SetPosition(A[i].Position);
+                    ti.SetPosition(A[i].Position);
                 }
                 else
                 {
-                    var n = S[i].Network();
+                    var n = S[i]!.Network();
                     T[i] = new Terminal(A[i].Position, this.TerminalFlowRate(n))
                     {
                         Network = n
                     };
-                    var b = Topology.CreateBifurcation(S[i], T[i]);
-                    b.Position = X[i];
+                    var b = Topology.CreateBifurcation(S[i]!, T[i]!);
+                    b.Position = X[i]!;
                 }
             }
         }
 
-        private static bool CheckFeasibility(Terminal[] T, Segment[] S)
+        private static bool CheckFeasibility(Terminal?[] T, Segment?[] S)
         {
             for (var i = 0; i < T.Length; ++i)
             {
@@ -242,11 +249,11 @@ namespace Vascular.Functionality.Artificial
             return true;
         }
 
-        private (Segment, Vector3) TryBifurcate(Attachment A, List<Branch> C, IAxialBoundsQueryable<TriangleSurfaceTest> S)
+        private (Segment?, Vector3?) TryBifurcate(Attachment A, List<Branch> C, IAxialBoundsQueryable<TriangleSurfaceTest> S)
         {
             var d2Min = double.PositiveInfinity;
-            Segment sMin = null;
-            Vector3 xMin = null;
+            Segment? sMin = null;
+            Vector3? xMin = null;
 
             foreach (var c in C)
             {
@@ -267,7 +274,7 @@ namespace Vascular.Functionality.Artificial
             return (sMin, xMin);
         }
 
-        private Terminal TryTerminal(Attachment A, List<Branch> C, IAxialBoundsQueryable<TriangleSurfaceTest> S)
+        private Terminal? TryTerminal(Attachment A, List<Branch> C, IAxialBoundsQueryable<TriangleSurfaceTest> S)
         {
             var T = new List<Terminal>(C.Count);
             foreach (var c in C)

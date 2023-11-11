@@ -4,5 +4,5 @@
     <ProjectReference Include="..\Vascular.Intersections\Vascular.Intersections.csproj" />
     <ProjectReference Include="..\Vascular\Vascular.csproj" />
   </ItemGroup>
-
+<PropertyGroup><Nullable>enable</Nullable></PropertyGroup>
 </Project>
