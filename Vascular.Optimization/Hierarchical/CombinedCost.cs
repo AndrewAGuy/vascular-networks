@@ -102,5 +102,23 @@ namespace Vascular.Optimization.Hierarchical
             }
             gradients = gradient(costs);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public override double SetCost(Network? n)
+        {
+            if (n is not null)
+            {
+                cache.Network = n;
+            }
+            foreach (var cost in costs)
+            {
+                cost.SetCost(n);
+            }
+            return this.Cost;
+        }
     }
 }

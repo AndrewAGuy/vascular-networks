@@ -291,54 +291,6 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
-        /// Estimates the cost change of executing action <paramref name="action"/> under the costs
-        /// <paramref name="costs"/>. For <see cref="MoveBifurcation"/> actions, uses <paramref name="placement"/>
-        /// to decide where to place the bifurcation. Note that typical weightings might not be valid as the topology
-        /// hasn't been changed at this point, so for flow weightings use
-        /// <see cref="FlowWeightedPlacement(BranchNode, BranchNode, BranchNode)"/> (if no function supplied, this is
-        /// the default).
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="costs"></param>
-        /// <param name="placement">
-        /// For <see cref="MoveBifurcation"/> actions, takes the existing parent node,
-        /// child node and target node (in that order) and returns the bifurcation position.
-        /// </param>
-        /// <returns></returns>
-        [Obsolete]
-        public static double EstimateCostChange(BranchAction action, HierarchicalCosts costs,
-            Func<BranchNode, BranchNode, BranchNode, Vector3>? placement = null)
-        {
-            switch (action)
-            {
-                case MoveBifurcation m:
-                    placement ??= FlowWeightedPlacement;
-                    var p = placement(action.B.Start, action.B.End, action.A.End);
-                    return ActionEstimates.MoveBifurcation(costs, action.A, action.B, p);
-                case SwapEnds s:
-                    return ActionEstimates.SwapEnds(costs, action.A, action.B);
-            }
-            return double.PositiveInfinity;
-        }
-
-        /// <summary>
-        /// Gets the optimal action from <paramref name="actions"/>. For a description of <paramref name="placement"/>
-        /// function, see <see cref="EstimateCostChange(BranchAction, HierarchicalCosts, Func{BranchNode, BranchNode, BranchNode, Vector3})"/>.
-        /// </summary>
-        /// <param name="actions"></param>
-        /// <param name="costs"></param>
-        /// <param name="placement"></param>
-        /// <returns></returns>
-        [Obsolete]
-        public static (BranchAction? a, double dC) OptimalAction(IEnumerable<BranchAction> actions, HierarchicalCosts costs,
-            Func<BranchNode, BranchNode, BranchNode, Vector3>? placement = null)
-        {
-            return actions.ArgMin(a => EstimateCostChange(a, costs, placement), out var optimal, out var dC)
-                ? (optimal, dC)
-                : (null, double.PositiveInfinity);
-        }
-
-        /// <summary>
         /// Gets all promotions that could be made, filtered by <see cref="TopologyAction.IsPermissible"/>.
         /// </summary>
         /// <param name="branches"></param>

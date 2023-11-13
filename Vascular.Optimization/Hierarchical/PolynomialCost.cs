@@ -50,6 +50,23 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public override double SetCost(Network? n)
+        {
+            if (n is not null)
+            {
+                this.Cache.Network = n;
+            }
+            this.EffectiveLengths.SetLengths();
+            dC_dLe = Math.Pow(this.Cache.Source.RootRadius, this.EffectiveLengths.ExpR)
+                * this.Multiplier;
+            return this.Cost;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         public override void SetCache(Network? n)
         {
             if (n is not null)

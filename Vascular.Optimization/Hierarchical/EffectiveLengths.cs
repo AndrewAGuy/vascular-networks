@@ -7,7 +7,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Optimization.Hierarchical
 {
     /// <summary>
-    /// For <see cref="SchreinerCost"/> terms.
+    /// For <see cref="PolynomialCost"/> terms.
     /// </summary>
     public class EffectiveLengths
     {

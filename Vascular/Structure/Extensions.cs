@@ -14,6 +14,74 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
+        /// <param name="node"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double MaxSegmentProperty(this INode node, Func<Segment, double> value)
+        {
+            return (node.Parent, node.Children.Length) switch
+            {
+                (Segment p, 0) => value(p),
+                (Segment p, _) => Math.Max(value(p), node.Children.Max(value)),
+                (null, 0) => double.NaN,
+                (null, _) => node.Children.Max(value)
+            };
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double MaxBranchProperty(this BranchNode node, Func<Branch, double> value)
+        {
+            return (node.Upstream, node.Downstream.Length) switch
+            {
+                (Branch p, 0) => value(p),
+                (Branch p, _) => Math.Max(value(p), node.Downstream.Max(value)),
+                (null, 0) => double.NaN,
+                (null, _) => node.Downstream.Max(value)
+            };
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double MinSegmentProperty(this INode node, Func<Segment, double> value)
+        {
+            return (node.Parent, node.Children.Length) switch
+            {
+                (Segment p, 0) => value(p),
+                (Segment p, _) => Math.Min(value(p), node.Children.Min(value)),
+                (null, 0) => double.NaN,
+                (null, _) => node.Children.Min(value)
+            };
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double MinBranchProperty(this BranchNode node, Func<Branch, double> value)
+        {
+            return (node.Upstream, node.Downstream.Length) switch
+            {
+                (Branch p, 0) => value(p),
+                (Branch p, _) => Math.Min(value(p), node.Downstream.Min(value)),
+                (null, 0) => double.NaN,
+                (null, _) => node.Downstream.Min(value)
+            };
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         /// <param name="segment"></param>
         /// <returns></returns>
         public static Network Network(this Segment segment)

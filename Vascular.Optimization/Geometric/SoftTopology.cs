@@ -1,6 +1,5 @@
 using System;
 using Vascular.Structure;
-using Vascular.Optimization.Hybrid;
 using Vascular.Structure.Nodes;
 using Vascular.Optimization.Topological;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using Vascular.Structure.Actions;
 namespace Vascular.Optimization.Geometric;
 
 /// <summary>
-/// Experimental, taking the "geometry-only" features of the <see cref="HybridMinimizer"/>,
+/// Experimental, taking the "geometry-only" features of the old hybrid minimizer,
 /// i.e., we allow "soft topology changes" such as trimming terminals that have been consumed
 /// and merging branches that have collapsed.
 /// This is then to be called between rounds of real topological modification explicitly performed
@@ -23,20 +22,25 @@ public class SoftTopology
     /// No point collapsing if pinned by a terminal, no point defragmenting vessels that are doomed.
     /// </summary>
     /// <param name="network"></param>
-    public void Update(Network network)
+    public bool Update(Network network)
     {
+        var acted = false;
         if (TrimTerminals(network))
         {
             this.UpdateNetwork(network);
+            acted = true;
         }
         if (CollapseBranches(network))
         {
             this.UpdateNetwork(network);
+            acted = true;
         }
         if (Defragment(network))
         {
             this.UpdateNetwork(network);
+            acted = true;
         }
+        return acted;
     }
 
     /// <summary>
@@ -47,12 +51,12 @@ public class SoftTopology
     /// <summary>
     ///
     /// </summary>
-    public Func<Branch, bool> Collapse { get; set; }
+    public Func<Branch, bool>? Collapse { get; set; } = IsTotallyConsumed;
 
     /// <summary>
     ///
     /// </summary>
-    public Action<Branch> OnCollapse { get; set; }
+    public Action<Branch>? OnCollapse { get; set; }
 
     private bool CollapseBranches(Network network)
     {
@@ -85,12 +89,12 @@ public class SoftTopology
     /// <summary>
     ///
     /// </summary>
-    public Func<Branch, bool> Trim { get; set; }
+    public Func<Branch, bool>? Trim { get; set; } = IsTotallyConsumed;
 
     /// <summary>
     ///
     /// </summary>
-    public Action<Terminal> OnTrim { get; set; }
+    public Action<Terminal>? OnTrim { get; set; }
 
     private bool TrimTerminals(Network network)
     {
@@ -119,12 +123,12 @@ public class SoftTopology
     /// <summary>
     ///
     /// </summary>
-    public Func<Transient, bool> DefragmentationPredicate { get; set; }
+    public Func<Transient, bool>? DefragmentationPredicate { get; set; }
 
     /// <summary>
     ///
     /// </summary>
-    public Func<Transient, double> DefragmentationRadius { get; set; }
+    public Func<Transient, double>? DefragmentationRadius { get; set; }
 
     /// <summary>
     /// More than just defragmenting - completely wipe all transient nodes. Good for performance
@@ -157,5 +161,17 @@ public class SoftTopology
             }
         }
         return geometryInvalid;
+    }
+
+    /// <summary>
+    /// Predicate for whether a branch should be removed by whether it sticks out beyond its parent.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    public static bool IsTotallyConsumed(Branch b)
+    {
+        var L2 = b.Direction.LengthSquared;
+        var r2 = Math.Pow(b.Start.Parent!.Radius, 2);
+        return L2 < r2;
     }
 }

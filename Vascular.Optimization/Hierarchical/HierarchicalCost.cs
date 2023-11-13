@@ -32,31 +32,39 @@ namespace Vascular.Optimization.Hierarchical
         public abstract double ReducedResistanceGradient(Branch branch);
 
         /// <summary>
-        ///
+        /// Sets <see cref="Cost"/> and gradient caches required to evaluate
+        /// <see cref="PositionGradient"/>, <see cref="FlowGradient"/>, <see cref="ReducedResistanceGradient"/>.
         /// </summary>
         /// <param name="network"></param>
         public abstract void SetCache(Network? network = null);
+
+        /// <summary>
+        /// Sets <see cref="Cost"/> and returns the value.
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
+        public abstract double SetCost(Network? network = null);
 
         /// <summary>
         ///
         /// </summary>
         public abstract double Cost { get; }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="network"></param>
-        /// <returns></returns>
-        public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Network network)
-        {
-            var G = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
-            SetCache(network);
-            foreach (var m in network.MobileNodes)
-            {
-                G[m] = PositionGradient(m);
-            }
-            return (this.Cost, G);
-        }
+        // /// <summary>
+        // ///
+        // /// </summary>
+        // /// <param name="network"></param>
+        // /// <returns></returns>
+        // public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Network network)
+        // {
+        //     var G = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
+        //     SetCache(network);
+        //     foreach (var m in network.MobileNodes)
+        //     {
+        //         G[m] = PositionGradient(m);
+        //     }
+        //     return (this.Cost, G);
+        // }
 
         ///// <summary>
         /////

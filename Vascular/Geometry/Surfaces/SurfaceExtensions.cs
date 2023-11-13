@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vascular.Geometry.Bounds;
 using Vascular.Geometry.Triangulation;
 
@@ -9,13 +10,61 @@ namespace Vascular.Geometry.Surfaces
     /// Fraction along the ray where the object is hit.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public record RayIntersection<T>(T Object, double Fraction);
+    public record struct RayIntersection<T>(T Object, double Fraction);
 
     /// <summary>
     ///
     /// </summary>
     public static class SurfaceExtensions
     {
+        /// <summary>
+        /// If <paramref name="mode"/> is positive, records outwards intersections, if negative records inwards,
+        /// if zero records all.
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="radius"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static double RayIntersection(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, Vector3 direction, double radius = 0, int mode = 0)
+        {
+            var minFraction = double.PositiveInfinity;
+            Vector3? hitPoint = null;
+            var hitFraction = 0.0;
+            var bounds = new AxialBounds(point, point + direction, radius);
+            surface.Query(bounds, triangle =>
+            {
+                if (triangle.Normal * direction * mode >= 0 &&
+                    triangle.TestRay(point, direction, radius, ref hitFraction, ref hitPoint))
+                {
+                    minFraction = Math.Min(minFraction, hitFraction);
+                }
+            });
+            return minFraction;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="direction"></param>
+        /// <param name="radius"></param>
+        /// <returns></returns>
+        public static bool RayIntersects(
+            this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, Vector3 direction, double radius)
+        {
+            var bounds = new AxialBounds(point, point + direction, radius);
+            var fraction = 0.0;
+            Vector3? hitPoint = null;
+            bool test(TriangleSurfaceTest triangle)
+                => triangle.TestRay(point, direction, radius, ref fraction, ref hitPoint);
+            return surface.Query(bounds, test);
+        }
+
         /// <summary>
         ///
         /// </summary>

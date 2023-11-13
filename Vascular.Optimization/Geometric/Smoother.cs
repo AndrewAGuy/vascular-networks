@@ -14,32 +14,32 @@ namespace Vascular.Optimization.Geometric
     public class Smoother
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Func<Terminal, Vector3> TerminalDirection { get; set; } = GroupTerminalDirection();
+        public Func<Terminal, Vector3?> TerminalDirection { get; set; } = GroupTerminalDirection();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Func<Source, Vector3> SourceDirection { get; set; } = InletSourceDirection();
+        public Func<Source, Vector3?> SourceDirection { get; set; } = InletSourceDirection();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Func<Segment, double> LinearSpringConstant { get; set; }
+        public Func<Segment, double> LinearSpringConstant { get; set; } = s => 0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public Func<Segment, double> AngularSpringConstant { get; set; }
+        public Func<Segment, double> AngularSpringConstant { get; set; } = s => 1;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Branch, double> TargetBranchLength { get; set; } = b => b.DirectLength;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double NormalTolerance { get; set; } = 1.0e-9;
 
@@ -49,7 +49,7 @@ namespace Vascular.Optimization.Geometric
         public double Scaling { get; set; } = 1.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="k0"></param>
         /// <param name="t"></param>
@@ -60,7 +60,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="k0"></param>
         /// <param name="t"></param>
@@ -71,7 +71,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="k"></param>
         /// <returns></returns>
@@ -81,11 +81,11 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="t2"></param>
         /// <returns></returns>
-        public static Func<Terminal, Vector3> GroupTerminalDirection(double t2 = 1e-12)
+        public static Func<Terminal, Vector3?> GroupTerminalDirection(double t2 = 1e-12)
         {
             return t =>
             {
@@ -108,10 +108,10 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
-        public static Func<Source, Vector3> InletSourceDirection()
+        public static Func<Source, Vector3?> InletSourceDirection()
         {
             return s => s.Network.InletDirection;
         }
@@ -128,7 +128,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="network"></param>
         /// <returns></returns>
@@ -147,7 +147,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <param name="forces"></param>
@@ -164,7 +164,7 @@ namespace Vascular.Optimization.Geometric
                 default:
                     foreach (var child in node.Children)
                     {
-                        AddAngularForces(node.Parent, child, forces);
+                        AddAngularForces(node.Parent!, child, forces);
                     }
                     break;
             }
@@ -247,7 +247,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="branch"></param>
         /// <param name="forces"></param>
@@ -279,7 +279,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<IMobileNode, bool> RecordPredicate { get; set; } = n => true;
     }

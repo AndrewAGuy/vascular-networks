@@ -47,27 +47,24 @@ This project does not currently accept contributions.
 - Collision:
   - Intercept and ignore API for imaging/predefined roots context.
 - Hybrid of LSV/ACCO growth - a general purpose growth method.
-- Move Vascular.Analysis and CAD interop into a separate repository, merge with rendering libraries.
+- ~~Move Vascular.Analysis and CAD interop into a separate repository, merge with rendering libraries.~~
 - Output:
   - Slice streaming as image/curve.
   - Support for basic mesh options such as cutting out of a boundary.
 - Input:
   - Support for approximating a mesh with point sources - deriving this set of sources to be in a separate repository.
+  - Converting a generic graph to a network. (Loading graphs and peripheral information to be done separately).
 - Housekeeping:
   - Documentation and API consistency.
   - Tidy up legacy bits.
-  - Enable nullable.
-  - Remove data contract members.
+  - ~~Enable nullable.~~
+  - ~~Remove data contract members.~~
 
 ## Installation
 `dotnet add package Vascular.Networks`
 
 #### Requirements
 .NET 6.0
-
-Vascular.Analysis was developed to interoperate with Python 3.7.8 - earlier versions may work. Requires NumPy, optionally SciPy.
-
-The FreeCAD .csv import macro was developed to work with FreeCAD 0.19, but will most likely work with earlier versions as it uses only basic functionality.
 
 ## Build
 The project copies its output to a [NuGet convention-based working directory](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory) /Release/ in release configuration: `dotnet build -c Release`.

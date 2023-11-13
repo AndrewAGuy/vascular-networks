@@ -43,6 +43,28 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public override double SetCost(Network? n)
+        {
+            if (n is not null)
+            {
+                this.Cache.Network = n;
+            }
+            var r = this.Cache.Source.RootRadius;
+            var r2 = r * r;
+            var r4 = r2 * r2;
+            var r4i = 1.0 / r4;
+            var Q = flow != 0.0 ? flow : this.Cache.Source.Flow;
+            var Q2 = Q * Q;
+            var R = this.Cache.Source.ReducedResistance;
+            cost = Q2 * R * r4i * multiplier;
+            return cost;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         public override void SetCache(Network? n)
         {
             if (n is not null)

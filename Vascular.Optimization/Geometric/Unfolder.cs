@@ -14,17 +14,17 @@ namespace Vascular.Optimization.Geometric
     public class Unfolder
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Func<Segment, double> Weighting { get; set; } = s => s.Flow;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double Fraction { get; set; } = 0.25;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
@@ -41,7 +41,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
@@ -60,7 +60,7 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="n"></param>
         /// <param name="recalculate"></param>
@@ -80,8 +80,8 @@ namespace Vascular.Optimization.Geometric
 
         private Vector3 WeightedMean(IMobileNode n)
         {
-            var w = this.Weighting(n.Parent);
-            var x = n.Parent.Start.Position * w;
+            var w = this.Weighting(n.Parent!);
+            var x = n.Parent!.Start.Position * w;
             var W = w;
             foreach (var c in n.Children)
             {

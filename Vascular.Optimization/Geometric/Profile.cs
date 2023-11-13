@@ -7,7 +7,7 @@ namespace Vascular.Optimization.Geometric
 {
     /// <summary>
     /// Methods for setting branch profiles and ensuring that they do not distort the design flow rates.
-    /// Note that profiles will reduce the optimality of <see cref="SchreinerCost"/> with radius exponent &gt;= 1.
+    /// Note that profiles will reduce the optimality of <see cref="Hierarchical.PolynomialCost"/> with radius exponent &gt;= 1.
     /// Apply these at the end of the design procedure, during the final round of collision resolution to ensure
     /// that expanded segments do not create new intersections.
     /// </summary>
@@ -74,8 +74,8 @@ namespace Vascular.Optimization.Geometric
         }
 
         /// <summary>
-        /// Applies average radius smoothing for specified number of iterations, stepping specified 
-        /// <paramref name="fraction"/> towards the average neighbouring radius each time. 
+        /// Applies average radius smoothing for specified number of iterations, stepping specified
+        /// <paramref name="fraction"/> towards the average neighbouring radius each time.
         /// Defaults to flow weighting, preventing highly asymmetric bifurcations
         /// from contracting their parent too much.
         /// Can choose to include or ignore segment siblings, as profiles are mostly intended to ensure
@@ -87,7 +87,7 @@ namespace Vascular.Optimization.Geometric
         /// <param name="fraction"></param>
         /// <param name="siblings"></param>
         public static void Average(Network network, int iterations,
-            Func<Segment, double> weighting = null, double fraction = 1, bool siblings = false)
+            Func<Segment, double>? weighting = null, double fraction = 1, bool siblings = false)
         {
             var fractionOld = 1.0 - fraction;
             weighting ??= s => s.Flow;
