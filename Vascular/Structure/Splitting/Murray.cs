@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
-using System.Security.AccessControl;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting
@@ -197,7 +195,7 @@ namespace Vascular.Structure.Splitting
         {
             var d = node.Downstream;
             var (df1_dq1, df2_dq1) = FlowGradient(d[0].ReducedResistance, d[0].Flow, d[1].ReducedResistance, d[1].Flow);
-            var (df1_dq2, df2_dq2) = FlowGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
+            var (df2_dq2, df1_dq2) = FlowGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
             return (df1_dq1, df1_dq2, df2_dq1, df2_dq2);
         }
 
@@ -210,7 +208,7 @@ namespace Vascular.Structure.Splitting
         {
             var d = node.Downstream;
             var (df1_drs1, df2_drs1) = ReducedResistanceGradient(d[0].ReducedResistance, d[0].Flow, d[1].ReducedResistance, d[1].Flow);
-            var (df1_drs2, df2_drs2) = ReducedResistanceGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
+            var (df2_drs2, df1_drs2) = ReducedResistanceGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
             return (df1_drs1, df1_drs2, df2_drs1, df2_drs2);
         }
     }

@@ -50,25 +50,20 @@ namespace Vascular.Optimization.Hierarchical
         /// </summary>
         public abstract double Cost { get; }
 
-        // /// <summary>
-        // ///
-        // /// </summary>
-        // /// <param name="network"></param>
-        // /// <returns></returns>
-        // public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Network network)
-        // {
-        //     var G = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
-        //     SetCache(network);
-        //     foreach (var m in network.MobileNodes)
-        //     {
-        //         G[m] = PositionGradient(m);
-        //     }
-        //     return (this.Cost, G);
-        // }
-
-        ///// <summary>
-        /////
-        ///// </summary>
-        //public abstract HierarchicalGradients Cache { get; }
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
+        public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Network network)
+        {
+            var G = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
+            SetCache(network);
+            foreach (var m in network.MobileNodes)
+            {
+                G[m] = PositionGradient(m);
+            }
+            return (this.Cost, G);
+        }
     }
 }

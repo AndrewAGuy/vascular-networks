@@ -19,6 +19,9 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Gradient(Branch branch, double probeFlow, Func<double> cost)
         {
+            // Propagating logical pulls in the child flow.
+            throw new Exception("Implemented incorrectly");
+
             var oldFlow = branch.Flow;
             branch.SetFlow(oldFlow + probeFlow);
             branch.PropagateLogicalUpstream();
@@ -184,6 +187,30 @@ namespace Vascular.Optimization
         {
             var source = branch.Network.Source;
             return Gradient(branch, probeFlow, () => source.Resistance);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <param name="node"></param>
+        /// <param name="probeLength"></param>
+        /// <returns></returns>
+        public static Vector3 Hierarchical(HierarchicalCost cost, IMobileNode node, double probeLength)
+        {
+            return Gradient(node, probeLength, () => cost.SetCost(node.Network()));
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <param name="branch"></param>
+        /// <param name="probeFlow"></param>
+        /// <returns></returns>
+        public static double Hierarchical(HierarchicalCost cost, Branch branch, double probeFlow)
+        {
+            return Gradient(branch, probeFlow, () => cost.SetCost(branch.Network));
         }
     }
 }
