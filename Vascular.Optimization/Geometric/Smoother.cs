@@ -131,46 +131,44 @@ namespace Vascular.Optimization.Geometric
         ///
         /// </summary>
         /// <param name="network"></param>
+        /// <param name="energy"></param>
         /// <returns></returns>
-        public IDictionary<IMobileNode, Vector3> Forces(Network network)
+        public IDictionary<IMobileNode, Vector3> Forces(Network network, out double energy)
         {
             var forces = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
+            energy = 0.0;
             foreach (var branch in network.Branches)
             {
-                AddLinearForces(branch, forces);
+                AddLinearForces(branch, forces, ref energy);
             }
             foreach (var node in network.Nodes)
             {
-                AddAngularForces(node, forces);
+                AddAngularForces(node, forces, ref energy);
             }
+            energy = Math.Abs(energy / 2);
             return forces;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="node"></param>
-        /// <param name="forces"></param>
-        public void AddAngularForces(INode node, IDictionary<IMobileNode, Vector3> forces)
+        private void AddAngularForces(INode node, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             switch (node)
             {
                 case Source source:
-                    AddAngularForces(source, forces);
+                    AddAngularForces(source, forces, ref energy);
                     break;
                 case Terminal terminal:
-                    AddAngularForces(terminal, forces);
+                    AddAngularForces(terminal, forces, ref energy);
                     break;
                 default:
                     foreach (var child in node.Children)
                     {
-                        AddAngularForces(node.Parent!, child, forces);
+                        AddAngularForces(node.Parent!, child, forces, ref energy);
                     }
                     break;
             }
         }
 
-        private void AddAngularForces(Segment parent, Segment child, IDictionary<IMobileNode, Vector3> forces)
+        private void AddAngularForces(Segment parent, Segment child, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             var pDir = parent.Direction.Normalize();
             var cDir = child.Direction.Normalize();
@@ -198,9 +196,10 @@ namespace Vascular.Optimization.Geometric
             TryAddForce(forces, parent.End, -pForce);
             TryAddForce(forces, child.Start, cForce);
             TryAddForce(forces, child.End, -cForce);
+            energy += moment * angle;
         }
 
-        private void AddAngularForces(Terminal terminal, IDictionary<IMobileNode, Vector3> forces)
+        private void AddAngularForces(Terminal terminal, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             var pDir = terminal.Parent.Direction.Normalize();
             var cDir = this.TerminalDirection?.Invoke(terminal);
@@ -221,9 +220,10 @@ namespace Vascular.Optimization.Geometric
             var pCouple = moment / terminal.Parent.Length;
             var pForce = pCouple * (pDir ^ normal);
             TryAddForce(forces, terminal.Parent.Start, pForce);
+            energy += moment * angle;
         }
 
-        private void AddAngularForces(Source source, IDictionary<IMobileNode, Vector3> forces)
+        private void AddAngularForces(Source source, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             var cDir = source.Child.Direction.Normalize();
             var pDir = this.SourceDirection?.Invoke(source);
@@ -244,30 +244,28 @@ namespace Vascular.Optimization.Geometric
             var cCouple = moment / source.Child.Length;
             var cForce = cCouple * (normal ^ cDir);
             TryAddForce(forces, source.Child.End, -cForce);
+            energy += moment * angle;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="branch"></param>
-        /// <param name="forces"></param>
-        public void AddLinearForces(Branch branch, IDictionary<IMobileNode, Vector3> forces)
+        private void AddLinearForces(Branch branch, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             var naturalLength = this.TargetBranchLength(branch) / branch.Segments.Count;
             foreach (var segment in branch.Segments)
             {
-                AddLinearForces(segment, naturalLength, forces);
+                AddLinearForces(segment, naturalLength, forces, ref energy);
             }
         }
 
-        private void AddLinearForces(Segment segment, double naturalLength, IDictionary<IMobileNode, Vector3> forces)
+        private void AddLinearForces(Segment segment, double naturalLength, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
             var length = segment.Length;
-            var magnitude = (length - naturalLength) * this.LinearSpringConstant(segment);
+            var extension = length - naturalLength;
+            var magnitude =  extension * this.LinearSpringConstant(segment);
             var direction = segment.Direction.Normalize();
             var force = magnitude * direction * this.Scaling;
             TryAddForce(forces, segment.Start, force);
             TryAddForce(forces, segment.End, -force);
+            energy += magnitude * extension;
         }
 
         private void TryAddForce(IDictionary<IMobileNode, Vector3> forces, INode node, Vector3 force)

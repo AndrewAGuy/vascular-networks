@@ -45,7 +45,7 @@ namespace Vascular.Optimization.Geometric
             Func<double, double, double> agg = max ? Math.Max : Math.Min;
             return node =>
             {
-                var lp = node.Parent.Length;
+                var lp = node.Parent!.Length;
                 foreach (var c in node.Children)
                 {
                     lp = agg(lp, c.Length);
@@ -63,7 +63,7 @@ namespace Vascular.Optimization.Geometric
         /// <returns></returns>
         public static Func<IMobileNode, Vector3> PerturbByFlow(IVector3Generator generator, Func<double, double> length)
         {
-            return node => generator.NextVector3() * length(node.Parent.Flow);
+            return node => generator.NextVector3() * length(node.Flow());
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Vascular.Optimization.Geometric
         /// <param name="amplification"></param>
         /// <param name="moveSource"></param>
         /// <param name="moveTerminals"></param>
-        public static void Offset(this Network network, Vector3 offset, Func<INode, double> amplification = null,
+        public static void Offset(this Network network, Vector3 offset, Func<INode, double>? amplification = null,
             bool moveSource = false, bool moveTerminals = false)
         {
             amplification ??= node => 1;
@@ -146,18 +146,18 @@ namespace Vascular.Optimization.Geometric
         /// Uses the approximation that <c>r ~ kQ^(1/3)</c>, thus the appropriate factor should be <c>(Q/Q_0)^(1/3)</c>.
         /// </summary>
         public static Func<INode, double> FlowEstimatedRadiusAmplification =>
-            node => Math.Pow(node.Parent.Flow / node.Network().Root.Flow, 1.0 / 3.0);
+            node => Math.Pow(node.Flow() / node.Network().Root.Flow, 1.0 / 3.0);
 
         /// <summary>
         /// Uses the approximation that <c>r ~ 2^(-1/3)r_p</c> at each bifurcation, thus the appropriate factor is <c>2^(-d/3)</c>.
         /// </summary>
         public static Func<INode, double> DepthEstimatedRadiusAmplification =>
-            node => Math.Pow(0.5, node.Parent.Branch.Start.Depth / 3.0);
+            node => Math.Pow(0.5, (node.Parent?.Branch.Start.Depth ?? 0) / 3.0);
 
         /// <summary>
         /// Uses the actual ratio of radii, <c>r/r_0</c>.
         /// </summary>
         public static Func<INode, double> ActualRadiusAmplification =>
-            node => node.Parent.Radius / node.Network().Root.Radius;
+            node => node.MaxRadius() / node.Network().Root.Radius;
     }
 }

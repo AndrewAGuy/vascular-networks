@@ -153,7 +153,7 @@ namespace Vascular.Optimization.Topological
         /// If <paramref name="includeChildren"/> is specified, adds the children of <paramref name="endpoints"/>
         /// to the returned set. This can prevent bugs due to potentially invalid branches, in which the creation
         /// of new branches during <see cref="MoveBifurcation"/> actions causes a <see cref="KeyNotFoundException"/>
-        /// in <see cref="HierarchicalCosts"/>.
+        /// in <see cref="Hierarchical.HierarchicalCost"/>.
         /// </summary>
         /// <param name="endpoints"></param>
         /// <param name="parent"></param>
@@ -187,7 +187,7 @@ namespace Vascular.Optimization.Topological
 
         /// <summary>
         /// Tests whether the branches in <paramref name="grouping"/> have been visited already.
-        /// If so, returns false, as the branches may not have references in a <see cref="HierarchicalCosts"/>
+        /// If so, returns false, as the branches may not have references in a <see cref="Hierarchical.HierarchicalCost"/>
         /// gradient cache.
         /// If not visited yet, adds the elements of <paramref name="grouping"/> to <paramref name="visited"/>
         /// and returns true.
