@@ -125,7 +125,7 @@ namespace Vascular.Optimization.Hierarchical
             Calculate(this.Cache.Root, 0, 0, 1);
         }
 
-        private void Calculate(Branch b, double LQ, double LR, double LL)
+        private void Calculate(Branch b, double dLe_dQp, double dLe_dRp, double dLe_dLp)
         {
             if (b.End is Bifurcation bf)
             {
@@ -137,21 +137,21 @@ namespace Vascular.Optimization.Hierarchical
                 var c0 = this.ExpR * Math.Pow(f0, this.ExpDR) * ls0;
                 var c1 = this.ExpR * Math.Pow(f1, this.ExpDR) * ls1;
 
-                var dLQ = c0 * dl.df0_dQ0 + c1 * dl.df1_dQ0;
-                var dLR = c0 * dl.df0_dR0 + c1 * dl.df1_dR0;
-                var dLL = Math.Pow(f0, this.ExpR);
+                var dLp_dQi = c0 * dl.df0_dQ0 + c1 * dl.df1_dQ0;
+                var dLp_dRi = c0 * dl.df0_dR0 + c1 * dl.df1_dR0;
+                var dLp_dLi = Math.Pow(f0, this.ExpR);
                 Calculate(bf.Downstream[0],
-                    dLQ + dLR * dg.dRe_dQ + dLL * LQ,
-                    dLR * dg.dRe_dR + dLL * LR,
-                    dLL * LL);
+                    dLe_dQp + dLe_dRp * dl.dRp_dQ0 + dLe_dLp * dLp_dQi,
+                    dLe_dRp * dl.dRp_dR0 + dLe_dLp * dLp_dRi,
+                    dLe_dLp * dLp_dLi);
 
-                dLQ = c0 * dl.df0_dQ1 + c1 * dl.df1_dQ1;
-                dLR = c0 * dl.df0_dR1 + c1 * dl.df1_dR1;
-                dLL = Math.Pow(f1, this.ExpR);
+                dLp_dQi = c0 * dl.df0_dQ1 + c1 * dl.df1_dQ1;
+                dLp_dRi = c0 * dl.df0_dR1 + c1 * dl.df1_dR1;
+                dLp_dLi = Math.Pow(f1, this.ExpR);
                 Calculate(bf.Downstream[1],
-                    dLQ + dLR * dg.dRe_dQ + dLL * LQ,
-                    dLR * dg.dRe_dR + dLL * LR,
-                    dLL * LL);
+                    dLe_dQp + dLe_dRp * dl.dRp_dQ1 + dLe_dLp * dLp_dQi,
+                    dLe_dRp * dl.dRp_dR1 + dLe_dLp * dLp_dRi,
+                    dLe_dLp * dLp_dLi);
             }
             else if (b.End is HigherSplit hs)
             {
@@ -165,25 +165,25 @@ namespace Vascular.Optimization.Hierarchical
 
                 for (var i = 0; i < hs.Downstream.Length; ++i)
                 {
-                    var (dLQ, dLR) = (0.0, 0.0);
+                    var (dLp_dQi, dLp_dRi) = (0.0, 0.0);
                     for (var j = 0; j < hs.Downstream.Length; ++j)
                     {
-                        dLQ += c[j] * dl.dfi_dQj[j, i];
-                        dLR += c[j] * dl.dfi_dRj[j, i];
+                        dLp_dQi += c[j] * dl.dfi_dQj[j, i];
+                        dLp_dRi += c[j] * dl.dfi_dRj[j, i];
                     }
-                    var dLL = Math.Pow(hs.Fractions[i], this.ExpR);
+                    var dLp_dLi = Math.Pow(hs.Fractions[i], this.ExpR);
                     Calculate(hs.Downstream[i],
-                        dLQ + dLR * dg.dRe_dQ + dLL * LQ,
-                        dLR * dg.dRe_dR + dLL * LR,
-                        dLL * LL);
+                        dLe_dQp + dLe_dRp * dl.dRp_dQi[i] + dLe_dLp * dLp_dQi,
+                        dLe_dRp * dl.dRp_dRi[i] + dLe_dLp * dLp_dRi,
+                        dLe_dLp * dLp_dLi);
                 }
             }
 
             this.Gradients[b] = new RootGradient()
             {
-                dLe_dL = LL,
-                dLe_dQ = LQ,
-                dLe_dR = LR
+                dLe_dL = dLe_dLp,
+                dLe_dQ = dLe_dQp,
+                dLe_dR = dLe_dRp
             };
         }
 

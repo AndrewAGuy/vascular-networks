@@ -19,22 +19,22 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Gradient(Branch branch, double probeFlow, Func<double> cost)
         {
-            // Propagating logical pulls in the child flow.
-            throw new Exception("Implemented incorrectly");
-
+            var p = branch.Parent!;
             var oldFlow = branch.Flow;
+
             branch.SetFlow(oldFlow + probeFlow);
-            branch.PropagateLogicalUpstream();
-            branch.PropagatePhysicalUpstream();
+            p.PropagateLogicalUpstream();
+            p.PropagatePhysicalUpstream();
             var qp = cost();
             branch.SetFlow(oldFlow - probeFlow);
-            branch.PropagateLogicalUpstream();
-            branch.PropagatePhysicalUpstream();
+            p.PropagateLogicalUpstream();
+            p.PropagatePhysicalUpstream();
             var qn = cost();
-            branch.SetFlow(oldFlow);
 
-            branch.PropagateLogicalUpstream();
-            branch.PropagatePhysicalUpstream();
+            branch.SetFlow(oldFlow);
+            p.PropagateLogicalUpstream();
+            p.PropagatePhysicalUpstream();
+
             var scale = 0.5 / probeFlow;
             return (qp - qn) * scale;
         }
