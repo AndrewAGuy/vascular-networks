@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry.Lattices.Transformed
+﻿namespace Vascular.Geometry.Lattices.Transformed
 {
     /// <summary>
     /// Not technically a lattice, but useful and behaves similarly.

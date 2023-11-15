@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry
+﻿namespace Vascular.Geometry
 {
     /// <summary>
     ///

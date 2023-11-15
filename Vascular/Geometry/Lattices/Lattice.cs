@@ -1,7 +1,4 @@
-﻿using System.Runtime.Serialization;
-using Vascular.Geometry.Lattices.Transformed;
-
-namespace Vascular.Geometry.Lattices
+﻿namespace Vascular.Geometry.Lattices
 {
     /// <summary>
     /// The base type for all lattices. Defines a mapping between integral vectors and real space.

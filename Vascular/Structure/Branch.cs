@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 using Vascular.Structure.Nodes;

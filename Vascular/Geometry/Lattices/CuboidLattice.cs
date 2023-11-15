@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry.Lattices
+﻿namespace Vascular.Geometry.Lattices
 {
     /// <summary>
     /// A lattice with different lengths in each axis.

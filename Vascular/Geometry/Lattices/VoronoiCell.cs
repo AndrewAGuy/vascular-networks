@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry.Lattices
+﻿namespace Vascular.Geometry.Lattices
 {
     /// <summary>
     /// A collection of half spaces that define the Voronoi cell of a lattice.
@@ -10,7 +8,7 @@ namespace Vascular.Geometry.Lattices
         private struct HalfSpace
         {
             public double x, y, z, d;
-            public double Distance(Vector3 v)
+            public readonly double Distance(Vector3 v)
             {
                 return v.x * x + v.y * y + v.z * z;
             }

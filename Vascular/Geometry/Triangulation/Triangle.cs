@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry.Triangulation

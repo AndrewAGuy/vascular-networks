@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
 using Vascular.Geometry;
 
 namespace Vascular.Structure.Nodes

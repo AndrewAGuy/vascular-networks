@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry.Lattices.Transformed
+﻿namespace Vascular.Geometry.Lattices.Transformed
 {
     /// <summary>
     /// A lattice whose basis has been scaled, useful for subdivision.

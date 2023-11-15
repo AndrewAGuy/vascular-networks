@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
-using Vascular.Structure.Nodes;
+﻿using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting
 {

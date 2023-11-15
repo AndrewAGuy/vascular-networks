@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Geometry.Lattices.Transformed
+﻿namespace Vascular.Geometry.Lattices.Transformed
 {
     /// <summary>
     /// Lattice with rotation. Does not verify that the rotation is a rotation.

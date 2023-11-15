@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry.Triangulation

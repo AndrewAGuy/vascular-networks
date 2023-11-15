@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.Serialization;
 using Vascular.Geometry.Bounds;
 
 namespace Vascular.Geometry

@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Vascular.Structure.Splitting
+﻿namespace Vascular.Structure.Splitting
 {
     /// <summary>
     /// A decorator for a <see cref="FlowContextualMurray"/> to prevent the exponent going outside of a given range.

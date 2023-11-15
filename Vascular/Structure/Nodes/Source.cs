@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
 
