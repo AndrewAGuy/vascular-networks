@@ -222,7 +222,7 @@ namespace Vascular.Structure.Splitting
             }
 
             // dfi_dAi = fi (1-fi^y) / 4Ai
-            // fdi_dAj = -fj fi^y / 4Ai
+            // fdi_dAj = -fi fj^y / 4Aj
             for (var i = 0; i < c.Length; ++i)
             {
                 for (var j = 0; j < c.Length; ++j)
@@ -233,7 +233,7 @@ namespace Vascular.Structure.Splitting
                     }
                     else
                     {
-                        dfi_dAj[i, j] = -c[j] * Math.Pow(c[i], e) * 0.25 / A[i];
+                        dfi_dAj[i, j] = -c[i] * Math.Pow(c[j], e) * 0.25 / A[j];
                     }
                 }
             }
