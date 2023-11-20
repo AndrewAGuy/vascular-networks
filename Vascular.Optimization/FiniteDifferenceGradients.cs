@@ -20,20 +20,22 @@ namespace Vascular.Optimization
         public static double Gradient(Branch branch, double probeFlow, Func<double> cost)
         {
             var p = branch.Parent!;
+            var s = branch.Start;
             var oldFlow = branch.Flow;
 
             branch.SetFlow(oldFlow + probeFlow);
             p.PropagateLogicalUpstream();
-            p.PropagatePhysicalUpstream();
+            s.PropagatePhysicalUpstream();
             var qp = cost();
             branch.SetFlow(oldFlow - probeFlow);
             p.PropagateLogicalUpstream();
-            p.PropagatePhysicalUpstream();
+            s.PropagatePhysicalUpstream();
+            //p.PropagatePhysicalUpstream();
             var qn = cost();
 
             branch.SetFlow(oldFlow);
             p.PropagateLogicalUpstream();
-            p.PropagatePhysicalUpstream();
+            s.PropagatePhysicalUpstream();
 
             var scale = 0.5 / probeFlow;
             return (qp - qn) * scale;

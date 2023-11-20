@@ -86,13 +86,13 @@ namespace Vascular.Optimization.Hierarchical
             SetCache(this.Root, 1, 0);
         }
 
-        private void SetCache(Branch b, double RR, double RQ)
+        private void SetCache(Branch b, double dRe_dRp, double dRe_dQp)
         {
             if (b.End is Bifurcation bf)
             {
                 var d = new BifurcationGradients(bf);
-                SetCache(b.Children[0], d.dRp_dR0 * RR, d.dRp_dR0 * RQ + d.dRp_dQ0);
-                SetCache(b.Children[1], d.dRp_dR1 * RR, d.dRp_dR1 * RQ + d.dRp_dQ1);
+                SetCache(b.Children[0], d.dRp_dR0 * dRe_dRp, dRe_dQp + dRe_dRp * d.dRp_dQ0);
+                SetCache(b.Children[1], d.dRp_dR1 * dRe_dRp, dRe_dQp + dRe_dRp * d.dRp_dQ1);
                 this.Local[bf] = d;
             }
             else if (b.End is HigherSplit hs)
@@ -101,10 +101,10 @@ namespace Vascular.Optimization.Hierarchical
                 this.LocalHigher[hs] = d;
                 for (var i = 0; i < b.Children.Length; ++i)
                 {
-                    SetCache(b.Children[i], d.dRp_dRi[i] * RR, d.dRp_dRi[i] * RQ + d.dRp_dQi[i]);
+                    SetCache(b.Children[i], d.dRp_dRi[i] * dRe_dRp, dRe_dQp + dRe_dRp * d.dRp_dQi[i]);
                 }
             }
-            this.Global[b] = new BranchGradients(RR, RQ);
+            this.Global[b] = new BranchGradients(dRe_dRp, dRe_dQp);
         }
 
         /// <summary>
