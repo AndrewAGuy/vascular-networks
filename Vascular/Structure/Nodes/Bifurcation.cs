@@ -19,6 +19,17 @@ namespace Vascular.Structure.Nodes
 
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="c"></param>
+        public Bifurcation(Segment[] c)
+        {
+            SetChildren(c);
+            UpdateDownstream();
+            UpdateChildTopology();
+        }
+
         private double f0 = 1.0, f1 = 0.0;
 
         private readonly Segment[] children = new Segment[2];

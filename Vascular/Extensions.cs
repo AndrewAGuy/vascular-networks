@@ -703,7 +703,7 @@ namespace Vascular
         /// <param name="array"></param>
         /// <param name="idx"></param>
         /// <returns></returns>
-        public static (T[] inIdx, T[] notInIdx) SplitArrayStack<T>(this T[] array, int[] idx)
+        public static (T[] inIdx, T[] notInIdx) SplitArrayStack<T>(this T[] array, ReadOnlySpan<int> idx)
         {
             Span<bool> hit = stackalloc bool[array.Length];
             hit.Fill(false);
