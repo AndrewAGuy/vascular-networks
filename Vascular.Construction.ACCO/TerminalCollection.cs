@@ -461,7 +461,7 @@ namespace Vascular.Construction.ACCO
                     var tr = Topology.CullTerminal(p);
                     if (tr != null)
                     {
-                        tr.Parent.Branch.PropagateLogicalUpstream();
+                        tr.Parent!.Branch.PropagateLogicalUpstream();
                         tr.UpdatePhysicalAndPropagate();
                     }
                 }
@@ -471,7 +471,7 @@ namespace Vascular.Construction.ACCO
                 var tr = Topology.CullTerminal(t);
                 if (tr != null)
                 {
-                    tr.Parent.Branch.PropagateLogicalUpstream();
+                    tr.Parent!.Branch.PropagateLogicalUpstream();
                     tr.UpdatePhysicalAndPropagate();
                 }
             }

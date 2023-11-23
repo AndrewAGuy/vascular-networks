@@ -4,7 +4,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure.Actions
 {
     /// <summary>
-    /// Wrapper for <see cref="Topology.RemoveBranch(Branch, bool, bool, bool, bool)"/>.
+    /// Wrapper for <see cref="Topology.CullBranch(BranchNode, int, Action{Terminal}?, Action{Branch}?)"/>
     /// </summary>
     public class RemoveBranch : BranchAction
     {
@@ -28,13 +28,13 @@ namespace Vascular.Structure.Actions
             {
                 Terminal.ForDownstream(a, this.OnCull);
             }
-            var transient = Topology.RemoveBranch(a, true, true, false, true)!;
+            var transient = Topology.CullBranch(a.Start, a.IndexInParent, null, null); //Topology.RemoveBranch(a, true, true, false, true)!;
             if (propagateLogical)
             {
-                transient.Child.Branch.PropagateLogicalUpstream();
-                if (propagatePhysical)
+                transient.Parent!.Branch.PropagateLogicalUpstream();
+                if (propagatePhysical && transient is IMobileNode mn)
                 {
-                    transient.UpdatePhysicalAndPropagate();
+                    mn.UpdatePhysicalAndPropagate();
                 }
             }
         }

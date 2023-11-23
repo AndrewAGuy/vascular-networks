@@ -5,7 +5,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure.Actions
 {
     /// <summary>
-    /// Wrapper for <see cref="Topology.MoveBifurcation(Branch, Branch)"/>.
+    /// Wrapper for <see cref="Topology.MoveBifurcation(Branch, Segment)"/>
     /// </summary>
     public class MoveBifurcation : BranchAction
     {
@@ -28,17 +28,17 @@ namespace Vascular.Structure.Actions
         public override void Execute(bool propagateLogical, bool propagatePhysical)
         {
             GetReverseData();
-            var (t, n) = Topology.MoveBifurcation(a, b);
+            var (n, t) = Topology.MoveBifurcation(a, b.Segments[0]);
             if (n != null)
             {
                 if (propagateLogical)
                 {
-                    t!.Parent.Branch.PropagateLogicalUpstream();
+                    t.Parent!.Branch.PropagateLogicalUpstream();
                     n.UpdateLogicalAndPropagate();
                     n.Position = this.Position?.Invoke(n) ?? n.WeightedMean(b => 1.0);
-                    if (propagatePhysical)
+                    if (propagatePhysical && t is IMobileNode mn)
                     {
-                        t.UpdatePhysicalAndPropagate();
+                        mn.UpdatePhysicalAndPropagate();
                         n.UpdatePhysicalAndPropagate();
                     }
                 }
@@ -87,8 +87,9 @@ namespace Vascular.Structure.Actions
             // Need to reconstruct exactly as it was. We have created 2 new branches and lost 2 old.
 
             // Start by removing the bifurcation: moved branch points to same end node, but is not actually valid.
-            var tr = Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
-            tr.Parent.Branch.Reset();
+            var aa = a.CurrentTopologicallyValid!;
+            var tr = Topology.CullBranch(aa.Start, aa.IndexInParent, null, null); //Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
+            tr.Parent!.Branch.Reset();
 
             var bf = new Bifurcation()
             {
@@ -125,9 +126,9 @@ namespace Vascular.Structure.Actions
             {
                 tr.Parent.Branch.PropagateLogicalUpstream();
                 bf.UpdateLogicalAndPropagate();
-                if (propagatePhysical)
+                if (propagatePhysical && tr is IMobileNode mn)
                 {
-                    tr.UpdatePhysicalAndPropagate();
+                    mn.UpdatePhysicalAndPropagate();
                     bf.UpdatePhysicalAndPropagate();
                 }
             }

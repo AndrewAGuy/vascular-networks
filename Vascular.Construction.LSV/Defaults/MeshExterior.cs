@@ -43,6 +43,7 @@ namespace Vascular.Construction.LSV.Defaults
         /// <returns></returns>
         public static TerminalPairPredicate BifurcationTriadNotPenetrating(Surface surface, double rayTolerance, double normalTolerance = 0)
         {
+            // TODO: handle case where bifurcation triad becomes degenerate.
             return (T, t) =>
             {
                 var tst = new TriangleSurfaceTest(

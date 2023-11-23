@@ -277,7 +277,7 @@ namespace Vascular.Intersections.Enforcement
                         var tr = Topology.CullTerminal(c)!;
                         if (this.PropagateTopology)
                         {
-                            tr.Parent.Branch.PropagateLogicalUpstream();
+                            tr.Parent!.Branch.PropagateLogicalUpstream();
                             if (this.PropagateGeometry)
                             {
                                 tr.UpdatePhysicalAndPropagate();

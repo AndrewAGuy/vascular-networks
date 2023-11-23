@@ -28,11 +28,11 @@ namespace Vascular.Structure.Actions
         public override void Execute(bool propagateLogical = true, bool propagatePhysical = false)
         {
             this.OnCull?.Invoke(t);
-            if (Topology.CullTerminal(t) is Transient T)
+            if (Topology.CullTerminal(t) is IMobileNode T)
             {
                 if (propagateLogical)
                 {
-                    T.Parent.Branch.PropagateLogicalUpstream();
+                    T.Parent!.Branch.PropagateLogicalUpstream();
                     if (propagatePhysical)
                     {
                         T.UpdatePhysicalAndPropagate();

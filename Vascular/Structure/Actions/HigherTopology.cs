@@ -241,25 +241,13 @@ public static class HigherTopology
         return newNode;
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="node"></param>
-    /// <param name="idx"></param>
-    /// <returns></returns>
-    public static INode RemoveBranches(BranchNode node, ReadOnlySpan<int> idx)
+    private static INode RemoveBranches(BranchNode node, ReadOnlySpan<int> idx)
     {
         var (kept, _) = node.Children.SplitArrayStack(idx);
         return MakeNode(node.Parent!, kept, node.Network, node.Position);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="node"></param>
-    /// <param name="i"></param>
-    /// <returns></returns>
-    public static INode RemoveBranch(BranchNode node, int i)
+    private static INode RemoveBranch(BranchNode node, int i)
     {
         ReadOnlySpan<int> idx = stackalloc int[1] { i };
         return RemoveBranches(node, idx);
