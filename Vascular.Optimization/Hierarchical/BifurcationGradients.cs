@@ -33,8 +33,9 @@ namespace Vascular.Optimization.Hierarchical
             var rs0 = bf.Downstream[0].ReducedResistance;
             var rs1 = bf.Downstream[1].ReducedResistance;
 
-            (df0_dR0, df0_dR1, df1_dR0, df1_dR1) = sr.ReducedResistanceGradient(bf);
+            (df0_dR0, df0_dR1, df1_dR0, df1_dR1, df0_dQ0, df0_dQ1, df1_dQ0, df1_dQ1) = sr.Gradient(bf);
             var (f0, f1) = bf.Fractions;
+
             var u0 = Math.Pow(f0, 4) / rs0;
             var u1 = Math.Pow(f1, 4) / rs1;
             var u = u0 + u1;
@@ -47,7 +48,7 @@ namespace Vascular.Optimization.Hierarchical
             dRp_dR0 = dRp_du * du_dR0;
             dRp_dR1 = dRp_du * du_dR1;
 
-            (df0_dQ0, df0_dQ1, df1_dQ0, df1_dQ1) = sr.FlowGradient(bf);
+            //(df0_dQ0, df0_dQ1, df1_dQ0, df1_dQ1) = sr.FlowGradient(bf);
             var du_dQ0 = du_df0 * df0_dQ0 + du_df1 * df1_dQ0;
             var du_dQ1 = du_df0 * df0_dQ1 + du_df1 * df1_dQ1;
             dRp_dQ0 = dRp_du * du_dQ0;

@@ -6,7 +6,7 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// A constant radius splitting law, for systems made of one type of pipe. Will cause a deviation from expected flow rates.
     /// </summary>
-    public class ConstantRadius : ISplittingFunction
+    public class ConstantRadius// : ISplittingFunction
     {
         /// <summary>
         ///

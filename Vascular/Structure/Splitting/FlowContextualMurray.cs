@@ -6,7 +6,7 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// Murray's law where the exponent depends on flow rate.
     /// </summary>
-    public abstract class FlowContextualMurray : ISplittingFunction
+    public abstract class FlowContextualMurray// : ISplittingFunction
     {
         /// <summary>
         ///

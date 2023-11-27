@@ -72,7 +72,7 @@ namespace Vascular.Optimization.Topological
             {
                 onCull(terminal);
                 // Always choose to propagate as this should only happen very rarely.
-                Topology.CullTerminalAndPropagate(terminal, true);
+                Topology.CullTerminalAndPropagate(terminal);
             }
         }
 
@@ -92,7 +92,7 @@ namespace Vascular.Optimization.Topological
             foreach (var terminal in removing)
             {
                 onCull(terminal);
-                Topology.CullTerminalAndPropagate(terminal, true);
+                Topology.CullTerminalAndPropagate(terminal);
             }
         }
 

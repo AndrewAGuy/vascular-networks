@@ -6,7 +6,7 @@ namespace Vascular.Structure.Splitting
     /// <summary>
     /// A constant exponent Murray's law.
     /// </summary>
-    public class Murray : ISplittingFunction
+    public class Murray// : ISplittingFunction
     {
         private double e, e_ni, e_dd, e_dn;
 

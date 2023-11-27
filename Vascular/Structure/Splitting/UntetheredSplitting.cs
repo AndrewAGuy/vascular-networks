@@ -8,7 +8,7 @@ namespace Vascular.Structure.Splitting;
 internal class UntetheredSplitting// : ISplittingFunction
 {
     private readonly Dictionary<BranchNode, double> factors = new();
-    public ISplittingFunction Initial { get; set; } = new Murray();
+    public ISplittingFunction Initial { get; set; } = new ConstantMurray();
 
 
     public void FlowGradient(BranchNode node, double[,] dfi_dQj)

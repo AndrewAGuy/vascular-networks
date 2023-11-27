@@ -88,7 +88,7 @@ namespace Vascular.Structure.Actions
 
             // Start by removing the bifurcation: moved branch points to same end node, but is not actually valid.
             var aa = a.CurrentTopologicallyValid!;
-            var tr = Topology.CullBranch(aa.Start, aa.IndexInParent, null, null); //Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
+            var tr = Topology.CullBranch(aa.Start, aa.IndexInParent, null); //Topology.RemoveBranch(a.CurrentTopologicallyValid!, true, false, false, false)!;
             tr.Parent!.Branch.Reset();
 
             var bf = new Bifurcation()

@@ -78,7 +78,7 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        public ISplittingFunction Splitting { get; set; } = new Murray() { Exponent = 3.0 };
+        public ISplittingFunction Splitting { get; set; } = new ConstantMurray(3);
 
         /// <summary>
         /// Used in collision resolution.

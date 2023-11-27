@@ -28,7 +28,7 @@ namespace Vascular.Structure.Actions
             {
                 Terminal.ForDownstream(a, this.OnCull);
             }
-            var transient = Topology.CullBranch(a.Start, a.IndexInParent, null, null); //Topology.RemoveBranch(a, true, true, false, true)!;
+            var transient = Topology.CullBranch(a.Start, a.IndexInParent, null); //Topology.RemoveBranch(a, true, true, false, true)!;
             if (propagateLogical)
             {
                 transient.Parent!.Branch.PropagateLogicalUpstream();

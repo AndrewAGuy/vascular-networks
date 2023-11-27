@@ -35,8 +35,9 @@ public class SplittingGradients
 
         dfi_dRj = new double[N, N];
         dfi_dQj = new double[N, N];
-        sr.ReducedResistanceGradient(hs, dfi_dRj);
-        sr.FlowGradient(hs, dfi_dQj);
+        sr.Gradient(hs, dfi_dRj, dfi_dQj);
+        //sr.ReducedResistanceGradient(hs, dfi_dRj);
+        //sr.FlowGradient(hs, dfi_dQj);
 
         var u = 0.0;
         Span<double> du_dfi = stackalloc double[N];
