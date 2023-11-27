@@ -1,4 +1,5 @@
-﻿using Vascular.Structure.Nodes;
+﻿using System;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting
 {
@@ -119,6 +120,23 @@ namespace Vascular.Structure.Splitting
         public (double df1_drs1, double df1_drs2, double df2_drs1, double df2_drs2) ReducedResistanceGradient(Bifurcation node)
         {
             return (0, 0, 0, 0);
+        }
+
+        public void Fractions(ReadOnlySpan<double> R, ReadOnlySpan<double> Q, Span<double> f)
+        {
+            f.Fill(1);
+        }
+
+        public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj)
+        {
+            for (var i = 0; i < node.Downstream.Length; ++i)
+            {
+                for (var j = 0; j < node.Downstream.Length; ++j)
+                {
+                    dfi_dQj[i, j] = 0;
+                    dfi_dRj[i, j] = 0;
+                }
+            }
         }
     }
 }

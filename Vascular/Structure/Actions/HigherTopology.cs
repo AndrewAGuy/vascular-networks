@@ -14,40 +14,40 @@ public static class HigherTopology
 {
     // TODO: Merge into main topology class.
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="br"></param>
-    /// <returns></returns>
-    public static HigherSplit Collapse(Branch br)
-    {
-        // We collapse the given branch, putting its children into the same grouping as its siblings.
-        // We therefore need to swap out the end node held by the parent,
-        // and the higher split will handle the references held by its children.
-        var parentB = br.Parent!;
-        var parentS = parentB.Segments[^1];
+    // /// <summary>
+    // ///
+    // /// </summary>
+    // /// <param name="br"></param>
+    // /// <returns></returns>
+    // public static HigherSplit Collapse(Branch br)
+    // {
+    //     // We collapse the given branch, putting its children into the same grouping as its siblings.
+    //     // We therefore need to swap out the end node held by the parent,
+    //     // and the higher split will handle the references held by its children.
+    //     var parentB = br.Parent!;
+    //     var parentS = parentB.Segments[^1];
 
-        var N = br.Start.Downstream.Length - 1 + br.Children.Length;
-        var S = new Segment[N];
-        Array.Copy(br.End.Children, S, br.Children.Length);
-        var i = br.Children.Length;
-        foreach (var s in br.Siblings)
-        {
-            S[i] = s.Segments[0];
-            ++i;
-        }
+    //     var N = br.Start.Downstream.Length - 1 + br.Children.Length;
+    //     var S = new Segment[N];
+    //     Array.Copy(br.End.Children, S, br.Children.Length);
+    //     var i = br.Children.Length;
+    //     foreach (var s in br.Siblings)
+    //     {
+    //         S[i] = s.Segments[0];
+    //         ++i;
+    //     }
 
-        var hs = new HigherSplit(S)
-        {
-            Parent = parentS,
-            Network = br.Network,
-            Position = br.Start.Position
-        };
-        parentS.End = hs;
-        parentB.End = hs;
+    //     var hs = new HigherSplit(S)
+    //     {
+    //         Parent = parentS,
+    //         Network = br.Network,
+    //         Position = br.Start.Position
+    //     };
+    //     parentS.End = hs;
+    //     parentB.End = hs;
 
-        return hs;
-    }
+    //     return hs;
+    // }
 
     // /// <summary>
     // /// Elements in <paramref name="indices"/> split into new child of <paramref name="hs"/>, which is

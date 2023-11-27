@@ -275,5 +275,32 @@ namespace Vascular.Structure.Splitting
             var (df2_drs2, df1_drs2) = ReducedResistanceGradient(d[1].ReducedResistance, d[1].Flow, d[0].ReducedResistance, d[0].Flow);
             return (df1_drs1, df1_drs2, df2_drs1, df2_drs2);
         }
+
+        public void Fractions(ReadOnlySpan<double> R, ReadOnlySpan<double> Q, Span<double> f)
+        {
+            var q = 0.0;
+            for(var i=0;i<f.Length;++i)
+            {
+                q += Q[i];
+            }
+            var e = Exponent(q);
+            var S = 0.0;
+            Span<double> c = stackalloc double[f.Length];
+            for (var i = 0; i < f.Length; ++i)
+            {
+                c[i] = Math.Pow(Q[i] * R[i], 0.25);
+                S += Math.Pow(c[i], e);
+            }
+            S = Math.Pow(S, -1.0 / e);
+            for (var i = 0; i < f.Length; ++i)
+            {
+                f[i] = c[i] * S;
+            }
+        }
+
+        public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

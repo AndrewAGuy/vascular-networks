@@ -1,3 +1,4 @@
+using System;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting;
@@ -11,49 +12,23 @@ namespace Vascular.Structure.Splitting;
 public interface ISplittingFunction
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="node"></param>
     /// <param name="fracs"></param>
     public void Fractions(BranchNode node, double[] fracs);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="node"></param>
-    /// <param name="dfi_dRj"></param>
-    public void ReducedResistanceGradient(BranchNode node, double[,] dfi_dRj);
+    public void Fractions(ReadOnlySpan<double> R, ReadOnlySpan<double> Q, Span<double> f);
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="node"></param>
-    /// <param name="dfi_dQj"></param>
-    public void FlowGradient(BranchNode node, double[,] dfi_dQj);
-
-    /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
     public (double f1, double f2) Fractions(Bifurcation node);
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    public (double df1_dq1, double df1_dq2, double df2_dq1, double df2_dq2) FlowGradient(Bifurcation node);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    public (double df1_drs1, double df1_drs2, double df2_drs1, double df2_drs2) ReducedResistanceGradient(Bifurcation node);
-
-    /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="rs1"></param>
     /// <param name="q1"></param>
@@ -63,7 +38,45 @@ public interface ISplittingFunction
     public (double f1, double f2) Fractions(double rs1, double q1, double rs2, double q2);
 
     /// <summary>
-    /// 
+    ///
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="dfi_dRj"></param>
+    public void ReducedResistanceGradient(BranchNode node, double[,] dfi_dRj);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="dfi_dQj"></param>
+    public void FlowGradient(BranchNode node, double[,] dfi_dQj);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="dfi_dRj"></param>
+    /// <param name="dfi_dQj"></param>
+    public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public (double df1_dq1, double df1_dq2, double df2_dq1, double df2_dq2) FlowGradient(Bifurcation node);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public (double df1_drs1, double df1_drs2, double df2_drs1, double df2_drs2) ReducedResistanceGradient(Bifurcation node);
+
+
+
+    /// <summary>
+    ///
     /// </summary>
     /// <param name="rs1"></param>
     /// <param name="q1"></param>
@@ -73,7 +86,7 @@ public interface ISplittingFunction
     public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="rs1"></param>
     /// <param name="q1"></param>

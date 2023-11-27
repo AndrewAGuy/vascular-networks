@@ -80,7 +80,7 @@ public class SoftTopology
         foreach (var b in collapsing)
         {
             this.OnCollapse?.Invoke(b);
-            HigherTopology.Collapse(b);
+            Topology.Collapse(b);
         }
 
         return collapsing.Count != 0;
