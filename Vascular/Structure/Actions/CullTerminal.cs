@@ -4,7 +4,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure.Actions
 {
     /// <summary>
-    /// Wrapper for <see cref="Topology.CullTerminal(Terminal, bool)"/>.
+    /// Wrapper for <see cref="Topology.CullTerminal(Terminal)"/>.
     /// </summary>
     public class CullTerminal : TopologyAction
     {

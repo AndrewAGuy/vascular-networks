@@ -4,7 +4,7 @@ using Vascular.Structure.Nodes;
 namespace Vascular.Structure.Actions
 {
     /// <summary>
-    /// Wrapper for <see cref="Topology.CullBranch(BranchNode, int, Action{Terminal}?, Action{Branch}?)"/>
+    /// Wrapper for <see cref="Topology.CullBranch(BranchNode, int, Action{Terminal}?)"/>
     /// </summary>
     public class RemoveBranch : BranchAction
     {

@@ -3,9 +3,9 @@
 namespace Vascular.Structure.Splitting
 {
     /// <summary>
-    /// A simple type of <see cref="FlowContextualMurray"/> where the exponent decreases linearly with bifurcation depth in a balanced tree.
+    /// A simple type of <see cref="FlowVariableMurray"/> where the exponent decreases linearly with bifurcation depth in a balanced tree.
     /// </summary>
-    public class ExponentialMurray : FlowContextualMurray
+    public class ExponentialMurray : FlowVariableMurray
     {
         /// <summary>
         /// Exponent calculated as <c>a * exp(-b * Q) + c</c>

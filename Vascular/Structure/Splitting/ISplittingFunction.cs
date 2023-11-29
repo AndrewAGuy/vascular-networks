@@ -16,7 +16,7 @@ public interface ISplittingFunction
     /// </summary>
     /// <param name="node"></param>
     /// <param name="f"></param>
-    public void Fractions(BranchNode node, double[] f);
+    public void Fractions(HigherSplit node, double[] f);
 
     /// <summary>
     ///
@@ -63,7 +63,7 @@ public interface ISplittingFunction
     /// <param name="node"></param>
     /// <param name="dfi_dRj"></param>
     /// <param name="dfi_dQj"></param>
-    public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj);
+    public void Gradient(HigherSplit node, double[,] dfi_dRj, double[,] dfi_dQj);
 
     /// <summary>
     ///

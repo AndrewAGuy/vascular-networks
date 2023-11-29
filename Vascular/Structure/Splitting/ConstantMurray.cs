@@ -33,7 +33,7 @@ public class ConstantMurray : ISplittingFunction
     }
 
     /// <inheritdoc/>
-    public void Fractions(BranchNode node, double[] f)
+    public void Fractions(HigherSplit node, double[] f)
     {
         var S = 0.0;
         for (var i = 0; i < f.Length; ++i)
@@ -82,7 +82,7 @@ public class ConstantMurray : ISplittingFunction
     }
 
     /// <inheritdoc/>
-    public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj)
+    public void Gradient(HigherSplit node, double[,] dfi_dRj, double[,] dfi_dQj)
     {
         var D = node.Downstream;
         var N = D.Length;

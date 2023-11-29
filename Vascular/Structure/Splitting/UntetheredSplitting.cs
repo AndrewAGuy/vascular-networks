@@ -28,7 +28,7 @@ internal class UntetheredSplitting// : ISplittingFunction
 
     private static double Ratio(Branch b) => Math.Pow(b.Flow * b.ReducedResistance, 0.25);
 
-    public void Fractions(BranchNode node, double[] fracs)
+    public void Fractions(HigherSplit node, double[] fracs)
     {
         if (!factors.TryGetValue(node, out var f))
         {

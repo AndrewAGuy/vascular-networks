@@ -122,11 +122,23 @@ namespace Vascular.Structure.Splitting
             return (0, 0, 0, 0);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="R"></param>
+        /// <param name="Q"></param>
+        /// <param name="f"></param>
         public void Fractions(ReadOnlySpan<double> R, ReadOnlySpan<double> Q, Span<double> f)
         {
             f.Fill(1);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="dfi_dRj"></param>
+        /// <param name="dfi_dQj"></param>
         public void Gradient(BranchNode node, double[,] dfi_dRj, double[,] dfi_dQj)
         {
             for (var i = 0; i < node.Downstream.Length; ++i)

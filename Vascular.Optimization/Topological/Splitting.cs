@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Optimization.Hierarchical;
+using Vascular.Structure;
+using Vascular.Structure.Actions;
+using Vascular.Structure.Diagnostics;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Topological;
@@ -12,16 +15,140 @@ namespace Vascular.Optimization.Topological;
 /// </summary>
 public static class Splitting
 {
-    public static int[] GreedySplitToChild(HigherSplit hs, HierarchicalCost cost)
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="root"></param>
+    /// <param name="cost"></param>
+    /// <param name="generateAll"></param>
+    /// <param name="terminateEarly"></param>
+    /// <param name="onSplit"></param>
+    /// <returns></returns>
+    public static int MakeSplits(Branch root, HierarchicalCost cost, int generateAll = 5,
+        bool terminateEarly = false, Action<HigherSplit, int[]>? onSplit = null)
     {
-        throw new NotImplementedException();
+        var splits = GenerateSplits(root, cost, generateAll, terminateEarly).ToList();
+        foreach (var (hs, idx) in splits)
+        {
+            onSplit?.Invoke(hs, idx);
+            HigherTopology.SplitToChild(hs, idx);
+        }
+        return splits.Count;
     }
 
-    public static int[] FullSplitToChild(HigherSplit hs, HierarchicalCost cost)
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="root"></param>
+    /// <param name="cost"></param>
+    /// <param name="generateAll"></param>
+    /// <param name="terminateEarly"></param>
+    /// <returns></returns>
+    public static IEnumerable<(HigherSplit hs, int[] s)> GenerateSplits(Branch root, HierarchicalCost cost, int generateAll = 5, bool terminateEarly = false)
     {
-        throw new NotImplementedException();
+        var be = new BranchEnumerator();
+        foreach (var node in be.Nodes(root))
+        {
+            if (node is HigherSplit hs)
+            {
+                if (hs.Downstream.Length <= generateAll)
+                {
+                    if (FullSplitToChild(hs, cost) is int[] split)
+                    {
+                        yield return (hs, split);
+                    }
+                }
+                else
+                {
+                    if (GreedySplitToChild(hs, cost, terminateEarly) is int[] split)
+                    {
+                        yield return (hs, split);
+                    }
+                }
+            }
+        }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="hs"></param>
+    /// <param name="cost"></param>
+    /// <param name="terminateEarly"></param>
+    /// <returns></returns>
+    public static int[]? GreedySplitToChild(HigherSplit hs, HierarchicalCost cost, bool terminateEarly = false)
+    {
+        int[]? sBest = null;
+        var fBest = double.NegativeInfinity;
+        var (_, fc) = Forces(cost, hs);
+        foreach (var split in GenerateAllPairs(hs.Downstream.Length))
+        {
+            var f = SplittingForce(cost, hs, fc, split.ToArray());
+            if (f > fBest)
+            {
+                sBest = split.ToArray();
+                fBest = f;
+            }
+        }
+
+        if (fBest < 0 && terminateEarly)
+        {
+            return null;
+        }
+
+        while (sBest!.Length < hs.Downstream.Length - 2)
+        {
+            var stop = true;
+            foreach (var split in GenerateAllAdditions(hs.Downstream.Length, sBest.ToHashSet()))
+            {
+                var f = SplittingForce(cost, hs, fc, split.ToArray());
+                if (f > fBest)
+                {
+                    sBest = split.ToArray();
+                    fBest = f;
+                    stop = false;
+                }
+            }
+            if (stop && terminateEarly)
+            {
+                break;
+            }
+        }
+
+        return fBest <= 0 ? null : sBest;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="hs"></param>
+    /// <param name="cost"></param>
+    /// <returns></returns>
+    public static int[]? FullSplitToChild(HigherSplit hs, HierarchicalCost cost)
+    {
+        int[]? sBest = null;
+        var fBest = double.NegativeInfinity;
+        var (_, fc) = Forces(cost, hs);
+
+        foreach (var split in GenerateAllSplitsToChild(hs.Downstream.Length))
+        {
+            var f = SplittingForce(cost, hs, fc, split.Span);
+            if (f > fBest)
+            {
+                sBest = split.ToArray();
+                fBest = f;
+            }
+        }
+
+        return fBest <= 0 ? null : sBest;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="N"></param>
+    /// <param name="G"></param>
+    /// <returns></returns>
     public static IEnumerable<IReadOnlyList<int>> GenerateAllAdditions(int N, IReadOnlySet<int> G)
     {
         var C = new List<int>();
@@ -42,6 +169,11 @@ public static class Splitting
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="N"></param>
+    /// <returns></returns>
     public static IEnumerable<IReadOnlyList<int>> GenerateAllPairs(int N)
     {
         var split = new List<int>(2);
@@ -57,7 +189,12 @@ public static class Splitting
         }
     }
 
-    public static IEnumerable<IReadOnlyList<int>> GenerateAllSplitsToChild(int N)
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="N"></param>
+    /// <returns></returns>
+    public static IEnumerable<ReadOnlyMemory<int>> GenerateAllSplitsToChild(int N)
     {
         var masks = new uint[N];
         for (var i = 0; i < N; ++i)
@@ -65,7 +202,7 @@ public static class Splitting
             masks[i] = (uint)1 << i;
         }
 
-        var split = new List<int>(N);
+        var split = new int[N];
         for (uint j = 0; j < (uint)Math.Pow(2, N) - 1; ++j)
         {
             var popcnt = System.Numerics.BitOperations.PopCount(j);
@@ -73,15 +210,16 @@ public static class Splitting
             {
                 continue;
             }
-            split.Clear();
+            var idx = 0;
             for (var i = 0; i < N; ++i)
             {
                 if ((j & masks[i]) != 0)
                 {
-                    split.Add(i);
+                    split[idx] = i;
+                    ++idx;
                 }
             }
-            yield return split;
+            yield return new Memory<int>(split, 0, idx);
         }
     }
 
