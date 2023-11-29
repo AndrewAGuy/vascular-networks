@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vascular.Geometry;
+using Vascular.Optimization.Geometric;
 using Vascular.Optimization.Hierarchical;
 using Vascular.Structure;
 using Vascular.Structure.Actions;
@@ -21,17 +22,18 @@ public static class Splitting
     /// <param name="root"></param>
     /// <param name="cost"></param>
     /// <param name="generateAll"></param>
-    /// <param name="terminateEarly"></param>
     /// <param name="onSplit"></param>
     /// <returns></returns>
     public static int MakeSplits(Branch root, HierarchicalCost cost, int generateAll = 5,
-        bool terminateEarly = false, Action<HigherSplit, int[]>? onSplit = null)
+        Action<HigherSplit, int[]>? onSplit = null)
     {
-        var splits = GenerateSplits(root, cost, generateAll, terminateEarly).ToList();
+        var splits = GenerateSplits(root, cost, generateAll).ToList();
         foreach (var (hs, idx) in splits)
         {
             onSplit?.Invoke(hs, idx);
-            HigherTopology.SplitToChild(hs, idx);
+            var (rem, spl) = Topology.SplitToChild(hs, idx);
+            spl.Upstream!.UpdateLogical();
+            Unfolder.AverageParentAndChild(rem, spl, b => b.Flow);
         }
         return splits.Count;
     }
@@ -42,9 +44,9 @@ public static class Splitting
     /// <param name="root"></param>
     /// <param name="cost"></param>
     /// <param name="generateAll"></param>
-    /// <param name="terminateEarly"></param>
     /// <returns></returns>
-    public static IEnumerable<(HigherSplit hs, int[] s)> GenerateSplits(Branch root, HierarchicalCost cost, int generateAll = 5, bool terminateEarly = false)
+    public static IEnumerable<(HigherSplit hs, int[] s)> GenerateSplits(Branch root, HierarchicalCost cost,
+        int generateAll = 5)
     {
         var be = new BranchEnumerator();
         foreach (var node in be.Nodes(root))
@@ -60,7 +62,7 @@ public static class Splitting
                 }
                 else
                 {
-                    if (GreedySplitToChild(hs, cost, terminateEarly) is int[] split)
+                    if (GreedySplitToChild(hs, cost) is int[] split)
                     {
                         yield return (hs, split);
                     }
@@ -74,48 +76,57 @@ public static class Splitting
     /// </summary>
     /// <param name="hs"></param>
     /// <param name="cost"></param>
-    /// <param name="terminateEarly"></param>
     /// <returns></returns>
-    public static int[]? GreedySplitToChild(HigherSplit hs, HierarchicalCost cost, bool terminateEarly = false)
+    public static int[]? GreedySplitToChild(HigherSplit hs, HierarchicalCost cost)
+    {
+        var (_, fc) = Forces(cost, hs);
+
+        var (sBest, fBest) = GetBestPair(hs, cost, fc);
+
+        var sCurrent = sBest;
+        while (sCurrent!.Length < hs.Downstream.Length - 2)
+        {
+            (sCurrent, var fCurrent) = GetBestAddition(hs, cost, fc, sCurrent!);
+            if (fCurrent > fBest)
+            {
+                sBest = sCurrent;
+                fBest = fCurrent;
+            }
+        }
+
+        return fBest <= 0 ? null : sBest;
+    }
+
+    private static (int[]?, double) GetBestAddition(HigherSplit hs, HierarchicalCost cost, Vector3[] fc, int[] G)
     {
         int[]? sBest = null;
         var fBest = double.NegativeInfinity;
-        var (_, fc) = Forces(cost, hs);
-        foreach (var split in GenerateAllPairs(hs.Downstream.Length))
+        foreach (var split in GenerateAllAdditions(hs.Downstream.Length, G))
         {
-            var f = SplittingForce(cost, hs, fc, split.ToArray());
+            var f = SplittingForce(cost, hs, fc, split.Span);
             if (f > fBest)
             {
                 sBest = split.ToArray();
                 fBest = f;
             }
         }
+        return (sBest, fBest);
+    }
 
-        if (fBest < 0 && terminateEarly)
+    private static (int[]?, double) GetBestPair(HigherSplit hs, HierarchicalCost cost, Vector3[] fc)
+    {
+        int[]? sBest = null;
+        var fBest = double.NegativeInfinity;
+        foreach (var split in GenerateAllPairs(hs.Downstream.Length))
         {
-            return null;
-        }
-
-        while (sBest!.Length < hs.Downstream.Length - 2)
-        {
-            var stop = true;
-            foreach (var split in GenerateAllAdditions(hs.Downstream.Length, sBest.ToHashSet()))
+            var f = SplittingForce(cost, hs, fc, split.Span);
+            if (f > fBest)
             {
-                var f = SplittingForce(cost, hs, fc, split.ToArray());
-                if (f > fBest)
-                {
-                    sBest = split.ToArray();
-                    fBest = f;
-                    stop = false;
-                }
-            }
-            if (stop && terminateEarly)
-            {
-                break;
+                sBest = split.ToArray();
+                fBest = f;
             }
         }
-
-        return fBest <= 0 ? null : sBest;
+        return (sBest, fBest);
     }
 
     /// <summary>
@@ -149,23 +160,23 @@ public static class Splitting
     /// <param name="N"></param>
     /// <param name="G"></param>
     /// <returns></returns>
-    public static IEnumerable<IReadOnlyList<int>> GenerateAllAdditions(int N, IReadOnlySet<int> G)
+    public static IEnumerable<ReadOnlyMemory<int>> GenerateAllAdditions(int N, int[] G)
     {
-        var C = new List<int>();
-        var S = G.ToList();
-        for (var i = 0; i < N; ++i)
+        var A = new int[G.Length + 1];
+        Array.Copy(G, A, G.Length);
+        var h = new bool[N];
+        for (var i = 0; i < G.Length; ++i)
         {
-            if (!G.Contains(i))
-            {
-                C.Add(i);
-            }
+            h[G[i]] = true;
         }
 
-        foreach (var c in C)
+        for (var i = 0; i < N; ++i)
         {
-            S.Add(c);
-            yield return S;
-            S.RemoveAt(S.Count - 1);
+            if (!h[i])
+            {
+                A[^1] = i;
+                yield return A;
+            }
         }
     }
 
@@ -174,16 +185,15 @@ public static class Splitting
     /// </summary>
     /// <param name="N"></param>
     /// <returns></returns>
-    public static IEnumerable<IReadOnlyList<int>> GenerateAllPairs(int N)
+    public static IEnumerable<ReadOnlyMemory<int>> GenerateAllPairs(int N)
     {
-        var split = new List<int>(2);
+        var split = new int[2];
         for (var i = 0; i < N; ++i)
         {
             for (var j = i + 1; j < N; ++j)
             {
-                split.Clear();
-                split.Add(i);
-                split.Add(j);
+                split[0] = i;
+                split[1] = j;
                 yield return split;
             }
         }
@@ -219,7 +229,7 @@ public static class Splitting
                     ++idx;
                 }
             }
-            yield return new Memory<int>(split, 0, idx);
+            yield return new ReadOnlyMemory<int>(split, 0, idx);
         }
     }
 
@@ -304,42 +314,5 @@ public static class Splitting
             dCG += cost.ReducedResistanceGradient(hs.Downstream[G[i]]) * Math.Pow(pf[i], 4) / Q[i];
         }
         return dCG * QG;
-
-        // // At a split: c_p = (R*_p + sum Q_i)^1/4
-        // // R_p = L_p + (sum f_i^4/R*_i)^-1
-        // //     = L_p + R*_i/f_i^4 Q_i/sum Q_j, for all children i (as R*_i Q_i / f_i^4 = const)
-        // // Therefore c_p = c_i / f_i
-        // // When L_p = 0, R_p represents the children exactly
-
-        // // Now pass the estimated cost change up: dL_p emulated by dL_i * k_i
-        // // Need to do it in a way that f_i remains constant, i.e. d(R*_i Q_i) = const
-        // // This is satisfied if we take sum with dR*_i (=dL_i) * Q_i
-
-        // // First, get group force and cost gradient wrt. downstream branches, weighted such fractions const.
-        // var F = new Vector3();
-        // var dcJ = 0.0;
-        // Span<double> R = stackalloc double[group.Length];
-        // Span<double> Q = stackalloc double[group.Length];
-        // var i = 0;
-        // foreach (var g in group)
-        // {
-        //     F += cf[g];
-        //     var d = hs.Downstream[g];
-        //     dcJ += cost.ReducedResistanceGradient(d) * d.Flow / hs.Fractions[g];
-        //     R[i] = d.ReducedResistance;
-        //     Q[i] = d.Flow;
-        //     ++i;
-        // }
-        // var CF = F.Length;
-
-        // // Get intermediate fractions
-        // Span<double> pf = stackalloc double[group.Length];
-        // hs.Network.Splitting.Fractions(R, Q, pf);
-        // var kp = R[0] * Q[0] / Math.Pow(pf[0], 4);
-
-        // // Now need to get dRp/dRj weighted by Qj/fj, then we can solve for dC/dRp
-        // // Remember that Rp = Lp(=0) + kp/Qp, and kp=fp^4 k0
-
-        //throw new NotImplementedException();
     }
 }
