@@ -449,7 +449,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
                     t.Partners = T;
                 }
 
-FAIL:
+            FAIL:
                 continue;
             }
         }

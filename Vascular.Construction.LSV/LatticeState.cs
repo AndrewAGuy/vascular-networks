@@ -412,7 +412,7 @@ namespace Vascular.Construction.LSV
                     this.SingleInterior = LatticeActions.Reduce(
                         LatticeActions.GetMultipleInterior<List<Terminal>>(this.Network.Root, this.ClosestBasisFunction),
                         this.ReductionFunction);
-PREPARE_SINGLE:
+                PREPARE_SINGLE:
                     this.MultipleInterior = null;
                     oldInterior = ((ICollection<Vector3>)oldSingle?.Keys! ?? oldMultiple?.Keys) ?? new List<Vector3>();
                     newInterior = this.SingleInterior.Keys;

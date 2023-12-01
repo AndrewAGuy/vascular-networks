@@ -97,20 +97,76 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="br"></param>
+        /// <param name="qRatio"></param>
+        /// <param name="rqRatio"></param>
+        /// <returns></returns>
+        public static BranchAction? SplittingRatio(Branch br, double qRatio, double rqRatio)
+        {
+            if (br.End is Bifurcation bf)
+            {
+                return BifurcationRatio(bf, qRatio, rqRatio);
+            }
+            else if (br.End is HigherSplit hs)
+            {
+                return HigherSplitRatio(hs, qRatio, rqRatio);
+            }
+            return null;
+        }
+
+        private static BranchAction? HigherSplitRatio(HigherSplit hs, double flowRatio, double rqRatio)
+        {
+            // For large splits, can scale better by getting max,min,2nd min in loop.
+            // But this is indicative of a different issue, so I don't feel bad punishing the user.
+            var c = hs.Downstream.OrderBy(b => b.Flow).ToList();
+            var cHi = c[^1];
+            var cLo = c[0];
+            var (qHi, rqHi, qLo, rqLo) = (cHi.Flow, cHi.ReducedResistance * cHi.Flow, cLo.Flow, cLo.ReducedResistance * cLo.Flow);
+            if (qHi > qLo * flowRatio)
+            {
+                if (rqHi > rqLo * rqRatio)
+                {
+                    // Flow imbalanced, matched by larger radius on that side.
+                    // Attempt to fix by moving smaller side downstream
+                    return new MoveBifurcation(cLo, c[1]);
+                }
+                else if (rqLo > rqHi * rqRatio)
+                {
+                    // Flow imbalanced, but radius imbalanced in the other direction?
+                    // How does this even happen - cull lower flow, larger radius side.
+                    return new RemoveBranch(cLo);
+                }
+            }
+            else
+            {
+                (cHi, rqHi, cLo, rqLo) = rqHi < rqLo
+                    ? (cLo, rqLo, cHi, rqHi)
+                    : (cHi, rqHi, cLo, rqLo);
+                if (rqHi > rqLo * rqRatio)
+                {
+                    return new RemoveBranch(cLo);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Try to move bifurcations if they are highly unbalanced in either flow or radius.
         /// </summary>
-        /// <param name="branch"></param>
+        /// <param name="bifurcation"></param>
         /// <param name="flowRatio"></param>
         /// <param name="rqRatio"></param>
         /// <returns></returns>
-        public static BranchAction? BifurcationRatio(Branch branch, double flowRatio, double rqRatio)
+        private static BranchAction? BifurcationRatio(Bifurcation bifurcation, double flowRatio, double rqRatio)
         {
-            if (branch.End is not Bifurcation bifurcation)
-            {
-                return null;
-            }
+            // if (branch.End is not Bifurcation bifurcation)
+            // {
+            //     return null;
+            // }
 
-            var p = bifurcation.Upstream;
+            //var p = bifurcation.Upstream;
             var c0 = bifurcation.Downstream[0];
             var c1 = bifurcation.Downstream[1];
             var Q0 = c0.Flow;

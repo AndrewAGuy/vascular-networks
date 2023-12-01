@@ -1,32 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting;
 
-internal class UntetheredSplitting// : ISplittingFunction
+/// <summary>
+/// Allows for splitting factors to become degrees of freedom after initial assignment to a reasonable value
+/// </summary>
+internal class UntetheredSplitting : ISplittingFunction
 {
     private readonly Dictionary<BranchNode, double> factors = new();
     public ISplittingFunction Initial { get; set; } = new ConstantMurray();
 
-
-    public void FlowGradient(BranchNode node, double[,] dfi_dQj)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public (double df1_dq1, double df1_dq2, double df2_dq1, double df2_dq2) FlowGradient(Bifurcation node)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public (double df1_dq1, double df2_dq1) FlowGradient(double rs1, double q1, double rs2, double q2)
-    {
-        throw new System.NotImplementedException();
-    }
-
     private static double Ratio(Branch b) => Math.Pow(b.Flow * b.ReducedResistance, 0.25);
+
+    public Dictionary<BranchNode, double> Factors => factors;
 
     public void Fractions(HigherSplit node, double[] fracs)
     {
@@ -44,28 +32,58 @@ internal class UntetheredSplitting// : ISplittingFunction
         }
     }
 
-    public (double f1, double f2) Fractions(Bifurcation node)
+    public void Fractions(ReadOnlySpan<double> R, ReadOnlySpan<double> Q, Span<double> f)
     {
-        throw new System.NotImplementedException();
+        this.Initial.Fractions(R, Q, f);
     }
 
-    public (double f1, double f2) Fractions(double rs1, double q1, double rs2, double q2)
+    public (double f0, double f1) Fractions(Bifurcation node)
     {
-        throw new System.NotImplementedException();
+        if (!factors.TryGetValue(node, out var f))
+        {
+            var (f0, f1) = this.Initial.Fractions(node);
+            factors[node] = Ratio(node.Downstream[0]) / f0;
+            return (f0, f1);
+        }
+        else
+        {
+            return (Ratio(node.Downstream[0]) / f, Ratio(node.Downstream[1]) / f);
+        }
     }
 
-    public void ReducedResistanceGradient(BranchNode node, double[,] dfi_dRj)
+    public (double f0, double f1) Fractions(double rs0, double q0, double rs1, double q1)
     {
-        throw new System.NotImplementedException();
+        return this.Initial.Fractions(rs0, q0, rs1, q1);
     }
 
-    public (double df1_drs1, double df1_drs2, double df2_drs1, double df2_drs2) ReducedResistanceGradient(Bifurcation node)
+    public void Gradient(HigherSplit node, double[,] dfi_dRj, double[,] dfi_dQj)
     {
-        throw new System.NotImplementedException();
+        var f = factors[node];
+        for (var i = 0; i < node.Downstream.Length; ++i)
+        {
+            var c = 0.25 * Ratio(node.Downstream[i]) / f;
+            dfi_dRj[i, i] = c / node.Downstream[i].ReducedResistance;
+            dfi_dQj[i, i] = c / node.Downstream[i].Flow;
+            for (var j = 0; j < i; ++j)
+            {
+                dfi_dRj[i, j] = 0;
+                dfi_dQj[i, j] = 0;
+            }
+            for (var j = i + 1; j < node.Downstream.Length; ++j)
+            {
+                dfi_dRj[i, j] = 0;
+                dfi_dQj[i, j] = 0;
+            }
+        }
     }
 
-    public (double df1_drs1, double df2_drs1) ReducedResistanceGradient(double rs1, double q1, double rs2, double q2)
+    public (double df0_dR0, double df0_dR1, double df1_dR0, double df1_dR1,
+            double df0_dQ0, double df0_dQ1, double df1_dQ0, double df1_dQ1) Gradient(Bifurcation node)
     {
-        throw new System.NotImplementedException();
+        var f = factors[node];
+        var c0 = 0.25 * Ratio(node.Downstream[0]) / f;
+        var c1 = 0.25 * Ratio(node.Downstream[1]) / f;
+        return (c0 / node.Downstream[0].ReducedResistance, 0, 0, c1 / node.Downstream[1].ReducedResistance,
+                c0 / node.Downstream[0].Flow, 0, 0, c1 / node.Downstream[1].Flow);
     }
 }

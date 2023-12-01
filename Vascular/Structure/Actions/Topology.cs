@@ -71,48 +71,6 @@ namespace Vascular.Structure.Actions
             return seg;
         }
 
-        // /// <summary>
-        // ///
-        // /// </summary>
-        // /// <param name="term"></param>
-        // /// <param name="nullParent"></param>
-        // /// <returns></returns>
-        // public static Transient? CullTerminal(Terminal term, bool nullParent = true)
-        // {
-        //     // Was terminal ever actually built?
-        //     if (term.Parent == null)
-        //     {
-        //         term.Culled = true;
-        //         return null;
-        //     }
-        //     // Will this kill the whole network?
-        //     var branch = term.Upstream;
-        //     if (branch.Start is not Bifurcation bifurc)
-        //     {
-        //         throw new TopologyException("Branch to be culled does not start at bifurcation");
-        //     }
-        //     // Rewire sibling and parent into single branch, this turns 3 branches into 1.
-        //     var parent = bifurc.Parent;
-        //     var other = bifurc.Downstream[0] == branch ? bifurc.Children[1] : bifurc.Children[0];
-        //     var tr = new Transient()
-        //     {
-        //         Position = bifurc.Position,
-        //         Child = other,
-        //         Parent = parent
-        //     };
-        //     other.Start = tr;
-        //     parent.End = tr;
-        //     parent.Branch.End = other.Branch.End;
-        //     parent.Branch.Reinitialize();
-        //     // Set as culled, cast branch into the void
-        //     if (nullParent)
-        //     {
-        //         term.Parent = null;
-        //     }
-        //     term.Culled = true;
-        //     return tr;
-        // }
-
         /// <summary>
         ///
         /// </summary>
@@ -489,89 +447,6 @@ namespace Vascular.Structure.Actions
             return bifurc;
         }
 
-        // /// <summary>
-        // ///
-        // /// </summary>
-        // /// <param name="bifurc"></param>
-        // /// <param name="keptChild"></param>
-        // /// <param name="markDownstream"></param>
-        // /// <param name="nullDownstream"></param>
-        // /// <param name="nullLost"></param>
-        // /// <returns></returns>
-        // public static Transient RemoveBifurcation(Bifurcation bifurc, int keptChild,
-        //     bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
-        // {
-        //     var lostChild = 1 - keptChild;
-        //     // Rewire bifurcation into transient, same as in culling
-        //     var tr = new Transient()
-        //     {
-        //         Position = bifurc.Position,
-        //         Child = bifurc.Children[keptChild],
-        //         Parent = bifurc.Parent
-        //     };
-        //     tr.Parent.End = tr;
-        //     tr.Child.Start = tr;
-        //     tr.Parent.Branch.End = tr.Child.Branch.End;
-        //     tr.Parent.Branch.Reinitialize();
-        //     // Now find all downstream terminals on the lost side, remove them
-        //     if (markDownstream)
-        //     {
-        //         Terminal.ForDownstream(bifurc.Downstream[lostChild], t =>
-        //         {
-        //             if (nullDownstream)
-        //             {
-        //                 t.Parent = null;
-        //             }
-        //             t.Culled = true;
-        //         });
-        //     }
-        //     if (nullLost)
-        //     {
-        //         bifurc.Parent = null;
-        //         bifurc.Downstream[lostChild].End.Parent = null;
-        //     }
-        //     return tr;
-        // }
-
-        // /// <summary>
-        // ///
-        // /// </summary>
-        // /// <param name="branch"></param>
-        // /// <param name="throwIfRoot"></param>
-        // /// <param name="markDownstream"></param>
-        // /// <param name="nullDownstream"></param>
-        // /// <param name="nullLost"></param>
-        // /// <returns></returns>
-        // public static Transient? RemoveBranch(Branch branch, bool throwIfRoot = true,
-        //     bool markDownstream = true, bool nullDownstream = true, bool nullLost = false)
-        // {
-        //     switch (branch.Start)
-        //     {
-        //         case Bifurcation bifurc:
-        //             return RemoveBifurcation(bifurc, 1 - bifurc.IndexOf(branch), markDownstream, nullDownstream, nullLost);
-        //         case Source source:
-        //             if (throwIfRoot)
-        //             {
-        //                 throw new TopologyException("Branch to be removed is root vessel");
-        //             }
-        //             source.Child = null!;
-        //             if (markDownstream)
-        //             {
-        //                 Terminal.ForDownstream(branch, t =>
-        //                 {
-        //                     if (nullDownstream)
-        //                     {
-        //                         t.Parent = null;
-        //                     }
-        //                     t.Culled = true;
-        //                 });
-        //             }
-        //             return null;
-        //         default:
-        //             throw new TopologyException("Branch started with invalid node");
-        //     }
-        // }
-
         /// <summary>
         ///
         /// </summary>
@@ -622,36 +497,6 @@ namespace Vascular.Structure.Actions
             var nNode = CreateBifurcation(target, moving.End);
             return (nNode, rNode);
         }
-
-        // /// <summary>
-        // ///
-        // /// </summary>
-        // /// <param name="moving"></param>
-        // /// <param name="from"></param>
-        // /// <returns></returns>
-        // public static (Transient?, Bifurcation?) MoveBifurcation(Branch moving, Branch from)
-        // {
-        //     if (moving.Start is Bifurcation bifurc)
-        //     {
-        //         // Remove bifurcation, rewire parent and sibling into single branch
-        //         var keptChild = 1 - bifurc.IndexOf(moving);
-        //         var tr = new Transient()
-        //         {
-        //             Position = bifurc.Position,
-        //             Child = bifurc.Children[keptChild],
-        //             Parent = bifurc.Parent
-        //         };
-        //         tr.Parent.End = tr;
-        //         tr.Child.Start = tr;
-        //         tr.Parent.Branch.End = tr.Child.Branch.End;
-        //         tr.Parent.Branch.Reinitialize();
-        //         // Create new bifurcation, reset branches to do this
-        //         moving.Reset();
-        //         from.Reset();
-        //         return (tr, CreateBifurcation(from.Segments[0], moving.End));
-        //     }
-        //     return (null, null);
-        // }
 
         /// <summary>
         /// Given a comparer and a starting branch, canonicalize the network. This places children in order according
