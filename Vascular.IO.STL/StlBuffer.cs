@@ -110,17 +110,21 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// Some programs like STL files to be ordered upwards. If so, set <paramref name="zOrder"/> to true.
+        /// Some programs like STL files to be ordered. If so, set <paramref name="zOrder"/> positive for ascending, negative for descending.
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="zOrder"></param>
-        public void Write(Mesh mesh, bool zOrder = false)
+        public void Write(Mesh mesh, int zOrder = 0)
         {
-            if (zOrder)
+            double minZ(Triangle t) => Math.Min(Math.Min(t.A.P.z, t.B.P.z), t.C.P.z);
+            double maxZ(Triangle t) => Math.Max(Math.Max(t.A.P.z, t.B.P.z), t.C.P.z);
+            if (zOrder > 0)
             {
-                double minZ(Triangle t) => Math.Min(Math.Min(t.A.P.z, t.B.P.z), t.C.P.z);
-                double maxZ(Triangle t) => Math.Max(Math.Max(t.A.P.z, t.B.P.z), t.C.P.z);
                 Write(mesh.T.OrderBy(minZ).ThenBy(maxZ));
+            }
+            else if (zOrder < 0)
+            {
+                Write(mesh.T.OrderByDescending(maxZ).ThenByDescending(minZ));
             }
             else
             {

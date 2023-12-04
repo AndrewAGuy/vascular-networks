@@ -23,31 +23,36 @@ namespace Vascular.IO.STL
         }
 
         /// <summary>
-        /// Writes all triangles in a mesh to the file. For options, see <see cref="StlWriter.StlWriter(Stream, string, char)"/>.
-        /// Optionally order the mesh by height using <paramref name="zOrder"/>.
+        /// Writes all triangles in a mesh to the file. For options, see <see cref="StlWriter(Stream, string, char)"/>.
+        /// Optionally order the mesh by height using <paramref name="zOrder"/>, see <see cref="StlBuffer.Write(Mesh, int)"/>.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="mesh"></param>
         /// <param name="header"></param>
         /// <param name="padChar"></param>
         /// <param name="zOrder"></param>
-        public static void ToFile(string path, Mesh mesh, string header = "", char padChar = ' ', bool zOrder = false)
+        public static void ToFile(string path, Mesh mesh, string header = "", char padChar = ' ', int zOrder = 0)
         {
             using var writer = new StlWriter(new FileStream(path, FileMode.Create, FileAccess.Write), header, padChar);
             writer.Write(mesh, zOrder);
         }
 
         private const int HEADER_SIZE = 80;
+        private const string SOLID = "solid";
 
         private void Begin(string header, char padChar = ' ')
         {
+            if (header.StartsWith(SOLID, StringComparison.Ordinal))
+            {
+                throw new FileFormatException($"Cannot start binary STL file with ASCII keyword: '{SOLID}'");
+            }
             var formatted =
                 header.Length < HEADER_SIZE
                 ? header.PadRight(HEADER_SIZE, padChar)
                 : header.Length > HEADER_SIZE
                 ? header.Substring(0, HEADER_SIZE)
                 : header;
-            var bytes = Encoding.ASCII.GetBytes(formatted);
+            var bytes = Encoding.UTF8.GetBytes(formatted);
             stream.Write(bytes, 0, HEADER_SIZE);
             stream.Write(0);
         }

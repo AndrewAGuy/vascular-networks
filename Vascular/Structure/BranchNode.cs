@@ -206,5 +206,18 @@ namespace Vascular.Structure
                 this.Downstream[i].Start = this;
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="n"></param>
+        public void SetNetworkDownstream(Network n)
+        {
+            this.Network = n;
+            foreach (var d in this.Downstream)
+            {
+                d.End.SetNetworkDownstream(n);
+            }
+        }
     }
 }

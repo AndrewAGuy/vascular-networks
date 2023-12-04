@@ -20,9 +20,9 @@ namespace Vascular.Optimization.Hierarchical
         public EffectiveLengths(double r, double l, HierarchicalGradients c)
         {
             this.ExpR = r;
+            this.ExpDR = r != 0 ? r - 1 : 0;
             this.ExpL = l;
-            this.ExpDL = l - 1;
-            this.ExpDR = r - 1;
+            this.ExpDL = l != 0 ? l - 1 : 0;
             this.Cache = c;
         }
 

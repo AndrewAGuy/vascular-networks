@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure.Splitting;
@@ -15,6 +16,19 @@ internal class UntetheredSplitting : ISplittingFunction
     private static double Ratio(Branch b) => Math.Pow(b.Flow * b.ReducedResistance, 0.25);
 
     public Dictionary<BranchNode, double> Factors => factors;
+    public void RestrictToNetwork(Network network, bool trim = true)
+    {
+        var nodes = network.BranchNodes.ToHashSet();
+        var removing = factors.Keys.Where(n => !nodes.Contains(n)).ToList();
+        foreach (var r in removing)
+        {
+            factors.Remove(r);
+        }
+        if (trim)
+        {
+            factors.TrimExcess();
+        }
+    }
 
     public void Fractions(HigherSplit node, double[] fracs)
     {

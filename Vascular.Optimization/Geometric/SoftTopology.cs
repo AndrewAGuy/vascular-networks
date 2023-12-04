@@ -98,7 +98,7 @@ public class SoftTopology
 
     private bool TrimTerminals(Network network)
     {
-        if (this.Trim is null)
+        if (this.Trim is null || network.Root.End is Terminal)
         {
             return false;
         }
