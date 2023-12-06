@@ -34,29 +34,42 @@ public class ArmijoBacktracker : IGradientDescentStepControl
     /// <param name="aMax"></param>
     /// <param name="cost"></param>
     /// <param name="network"></param>
+    /// <param name="takeStep"></param>
     /// <returns></returns>
     public double GetStep(List<IMobileNode> N, List<Vector3> G, double c0,
-        double aMax, IGradientDescentCost cost, Network network)
+        double aMax, IGradientDescentCost cost, Network network, bool takeStep)
     {
         // Armijo's method uses f(x) - f(x + a*p) >= -a*c * dot(grad(f), p)
         // We just use p = -grad(f)
         var X0 = N.Select(n => n.Position).ToList();
         var a = aMax;
         var t = this.Threshold * Inner(G);
+        var s = 0.0;
         for (var j = 0; j < this.MaxIterations; ++j)
         {
             for (var i = 0; i < N.Count; ++i)
             {
                 N[i].Position = X0[i] - G[i] * a;
             }
-            network.Set(true, true, true);
+            network.Set(false, true, true);
             var c = cost.Cost(network);
 
             if (c0 - c >= a * t)
             {
-                return a;
+                s = a;
+                break;
             }
             a *= this.ReductionRatio;
+        }
+
+        if (!takeStep)
+        {
+            for (var i = 0; i < N.Count; ++i)
+            {
+                N[i].Position = X0[i];
+            }
+            network.Set(false, true, true);
+            return s;
         }
         return 0;
     }

@@ -72,9 +72,10 @@ public interface IGradientDescentStepControl
     /// <param name="aMax"></param>
     /// <param name="cost"></param>
     /// <param name="network"></param>
+    /// <param name="takeStep"></param>
     /// <returns></returns>
     double GetStep(List<IMobileNode> N, List<Vector3> G, double c0,
-        double aMax, IGradientDescentCost cost, Network network);
+        double aMax, IGradientDescentCost cost, Network network, bool takeStep);
 }
 
 /// <summary>
@@ -273,13 +274,16 @@ public class GradientDescent
         var N = g.Select(p => p.Node).ToList();
 
         var aMax = MaxStride(N, G, this.StepFraction);
-        var a = this.StepControl.GetStep(N, G, c, aMax, cost, network);
+        var a = this.StepControl.GetStep(N, G, c, aMax, cost, network, this.StepPredicate is null);
         if (!double.IsFinite(a))
         {
             return -3;
         }
-        StepNodes(N, G, a);
-        network.Set(true, true, true);
+        if (a != 0)
+        {
+            StepNodes(N, G, a);
+            network.Set(false, true, true);
+        }
         this.OnStepTaken?.Invoke(new(c, g, a));
 
         this.SoftTopology.Update(network);
@@ -334,7 +338,7 @@ public class GradientDescent
                 for (var i = 0; i < N.Count; ++i)
                 {
                     var d0 = -a * G[i];
-                    var d = -this.StepPredicate.MaximumPermitted(N[i], d0) * G[i];
+                    var d = this.StepPredicate.MaximumPermitted(N[i], d0) * d0;
                     N[i].Position += d;
                 }
             }

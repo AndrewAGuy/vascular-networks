@@ -18,6 +18,26 @@ namespace Vascular.Geometry.Surfaces
     public static class SurfaceExtensions
     {
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <param name="point"></param>
+        /// <param name="radius"></param>
+        /// <returns></returns>
+        public static double SquaredDistanceToSurface(this IAxialBoundsQueryable<TriangleSurfaceTest> surface,
+            Vector3 point, double radius)
+        {
+            var dist2 = double.PositiveInfinity;
+            var bounds = new AxialBounds(point, radius);
+            surface.Query(bounds, triangle =>
+            {
+                var d2 = triangle.DistanceSquared(point);
+                dist2 = Math.Min(d2, dist2);
+            });
+            return dist2;
+        }
+
+        /// <summary>
         /// If <paramref name="mode"/> is positive, records outwards intersections, if negative records inwards,
         /// if zero records all.
         /// </summary>
