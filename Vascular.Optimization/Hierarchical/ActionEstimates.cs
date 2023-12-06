@@ -30,7 +30,7 @@ public static class ActionEstimates
         var Lts = Vector3.Distance(t.End.Position, x);
         var Rtm = Ltm + RmD;
         var Rts = Lts + RtD;
-        var (ftm, fts) = m.Network.Splitting.Fractions(Rtm, dQt, Rts, t.Flow);
+        var (ftm, fts) = t.Network.Splitting.Fractions(Rtm, dQt, Rts, t.Flow);
         var Rtp = Ltp + 1.0 / (Math.Pow(ftm, 4) / Rtm + Math.Pow(fts, 4) / Rts);
         var dRt = Rtp - t.ReducedResistance;
 

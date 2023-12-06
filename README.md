@@ -28,26 +28,30 @@ This project does not currently accept contributions.
 ## The roadmap to 1.0
 - Support for variable viscosity (e.g. Fåhræus-Lindqvist effect) and some degree of variable pressure at the network outlets (e.g. two-stage networks for functional structures and surrounding capillary bed), if possible to do without a generic constrained minimization package.
   - A separate package for optimization and setting radii in the most general case.
-- Support for higher order splitting:
+- Support for higher order splitting: (0.2)
   - ~~Adapt splitting function and optimizer to work with n-furcations.~~
-  - Adapt topological actions.
+  - ~~Adapt topological actions.~~
   - Fix any holes in collision/~~export~~ that don't actually work with arbitrary degree splits.
-  - Merging/splitting heuristics.
+  - ~~Merging/splitting heuristics.~~
 - Structure:
-  - Multiple source networks, mobile source nodes.
+  - Multi-network sets (i.e., multiple sources over the same set of terminals) (0.3)
   - Remove conditional compilation terms, or make network/branch/node generic so that data can be attached without requiring additional maps.
   - Splitting:
     - Amplifying downstream radii (and reducing upstream) to ensure minimum feature sizes.
     - Fixed vessels (where radii fractions are always known).
+      For imaging purposes, to be implemented using the multiple network framework and we will provide update methods to ensure pressure consistency. (0.3.x)
 - Optimization:
-  - Replace old costs with new ones.
-  - Simplify interface to optimizer.
-    - Integrate "soft-toplogy" and gradient descent (+ predicated movement) to ensure valid state.
-    - Remove actions queue, provide interface to rebalance+trim/regroup+split
+  - ~~Replace old costs with new ones.~~ (0.2)
+  - ~~Simplify interface to optimizer.~~ (0.2)
+    - ~~Integrate "soft-toplogy" and gradient descent (+ predicated movement) to ensure valid state.~~
+    - ~~Remove actions queue, provide interface to rebalance+trim/regroup+split~~
+  - Reintroduce region-based transfer actions and incorporate multi-network section transfer (0.3)
 - Collision:
-  - Intercept and ignore API for imaging/predefined roots context.
+  - Intercept and ignore API for imaging/predefined roots context. (0.2.x)
+  - Allowing multinetwork sets to pass subsections between each other. (0.3)
 - Hybrid of LSV/ACCO growth - a general purpose growth method.
-- ~~Move Vascular.Analysis and CAD interop into a separate repository, merge with rendering libraries.~~
+  - Support for multi-network growth. (0.3)
+- ~~Move Vascular.Analysis and CAD interop into a separate repository, merge with rendering libraries.~~ (removal 0.2, reintroduction 0.? - contact me if you need these bits in the meantime)
 - Output:
   - Slice streaming as image/curve.
   - Support for basic mesh options such as cutting out of a boundary.
@@ -55,10 +59,11 @@ This project does not currently accept contributions.
   - Support for approximating a mesh with point sources - deriving this set of sources to be in a separate repository.
   - Converting a generic graph to a network. (Loading graphs and peripheral information to be done separately).
 - Housekeeping:
-  - Documentation and API consistency.
-  - Tidy up legacy bits.
-  - ~~Enable nullable.~~
-  - ~~Remove data contract members.~~
+  - Documentation and API consistency. (target: 1.0)
+  - Tidy up legacy bits. (target: 1.0)
+  - ~~Enable nullable.~~ (0.2)
+  - ~~Remove data contract members.~~ (0.2)
+  - Make the test suite available (target: 1.0)
 
 ## Installation
 `dotnet add package Vascular.Networks`

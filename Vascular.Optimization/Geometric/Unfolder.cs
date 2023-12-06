@@ -95,6 +95,39 @@ namespace Vascular.Optimization.Geometric
         /// <summary>
         ///
         /// </summary>
+        /// <param name="n"></param>
+        /// <param name="w"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static Vector3 WeightedPredicatedMean(IMobileNode n, Func<Segment, double> w, Func<INode, bool> p)
+        {
+            double m;
+            var W = 0.0;
+            var x = Vector3.ZERO;
+
+            if (p(n.Parent!.Start))
+            {
+                m = w(n.Parent);
+                x = n.Parent.Start.Position * m;
+                W = m;
+            }
+
+            foreach (var c in n.Children)
+            {
+                if (p(c.End))
+                {
+                    m = w(c);
+                    x += c.End.Position * m;
+                    W += m;
+                }
+            }
+
+            return x / W;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         /// <param name="parent"></param>
         /// <param name="child"></param>
         /// <param name="weight"></param>

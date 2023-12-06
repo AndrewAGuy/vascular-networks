@@ -97,6 +97,38 @@ namespace Vascular.Optimization.Topological
         }
 
         /// <summary>
+        /// Go down the tree, executing rebalance actions and recurring from the endpoints.
+        /// </summary>
+        /// <param name="br"></param>
+        /// <param name="qRatio"></param>
+        /// <param name="rqRatio"></param>
+        /// <param name="pos"></param>
+        /// <param name="onMove"></param>
+        /// <returns></returns>
+        public static int Rebalance(Branch br, double qRatio, double rqRatio,
+            Func<Bifurcation, Vector3>? pos = null, Action<MoveBifurcation>? onMove = null)
+        {
+            var total = 0;
+            var children = br.Children;
+            if (SplittingRatio(br, qRatio, rqRatio) is MoveBifurcation mb)
+            {
+                if (br.End is Bifurcation)
+                {
+                    children = new[] { mb.A, mb.B, mb.B.Siblings.First() };
+                }
+                mb.Position = pos;
+                onMove?.Invoke(mb);
+                mb.Execute(false, false);
+                total = 1;
+            }
+            foreach (var c in children)
+            {
+                total += Rebalance(c, qRatio, rqRatio, pos, onMove);
+            }
+            return total;
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="br"></param>
