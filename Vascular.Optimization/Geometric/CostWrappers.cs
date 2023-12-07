@@ -83,6 +83,7 @@ public class SmootherWrapper : IGradientDescentCost
     public SmootherWrapper(Smoother smoother)
     {
         this.smoother = smoother;
+        smoother.Scaling = -1;
     }
 
     /// <summary>
@@ -104,10 +105,7 @@ public class SmootherWrapper : IGradientDescentCost
     /// <returns></returns>
     public (double, IEnumerable<GradientEntry>) CostGradient(Network n, Func<IMobileNode, bool>? p)
     {
-        if (p is not null)
-        {
-            smoother.RecordPredicate = p;
-        }
+        smoother.RecordPredicate = p ?? (n => true);
         var F = smoother.Forces(n, out var e);
         return (e, F.Select(p => new GradientEntry(p.Key, p.Value)));
     }

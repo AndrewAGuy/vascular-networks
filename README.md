@@ -28,10 +28,10 @@ This project does not currently accept contributions.
 ## The roadmap to 1.0
 - Support for variable viscosity (e.g. Fåhræus-Lindqvist effect) and some degree of variable pressure at the network outlets (e.g. two-stage networks for functional structures and surrounding capillary bed), if possible to do without a generic constrained minimization package.
   - A separate package for optimization and setting radii in the most general case.
-- Support for higher order splitting: (0.2)
+- ~~Support for higher order splitting: (0.2)~~
   - ~~Adapt splitting function and optimizer to work with n-furcations.~~
   - ~~Adapt topological actions.~~
-  - Fix any holes in collision/~~export~~ that don't actually work with arbitrary degree splits.
+  - ~~Fix any holes in collision/export that don't actually work with arbitrary degree splits.~~
   - ~~Merging/splitting heuristics.~~
 - Structure:
   - Multi-network sets (i.e., multiple sources over the same set of terminals) (0.3)

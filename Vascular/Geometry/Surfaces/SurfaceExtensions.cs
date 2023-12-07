@@ -321,6 +321,37 @@ namespace Vascular.Geometry.Surfaces
         /// <summary>
         ///
         /// </summary>
+        /// <param name="m"></param>
+        /// <param name="s0"></param>
+        /// <param name="f"></param>
+        /// <param name="sMin"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
+        /// <returns></returns>
+        public static AxialBoundsHashTable<TriangleSurfaceTest> ToHashTable(this Mesh m,
+            double s0 = 1, double f = 2, double sMin = 0, double r = 0, double t2 = 1e-12)
+        {
+            return new AxialBoundsHashTable<TriangleSurfaceTest>(
+                m.T.Select(t => new TriangleSurfaceTest(t, r, t2)),
+                s0, f, sMin);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="r"></param>
+        /// <param name="t2"></param>
+        /// <returns></returns>
+        public static AxialBoundsBinaryTreeNode<TriangleSurfaceTest> ToBinaryTree(this Mesh m,
+            double r = 0, double t2 = 1e-12)
+        {
+            return AxialBoundsBinaryTree.Create(m.T.Select(t => new TriangleSurfaceTest(t, r, t2)));
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         /// <param name="mesh"></param>
         /// <returns></returns>
         public static double Volume(this Mesh mesh)
@@ -347,26 +378,6 @@ namespace Vascular.Geometry.Surfaces
         {
             var total = 0.0;
             var bounds = surface.GetTotalBounds();
-            var centre = (bounds.Lower + bounds.Upper) * 0.5;
-            foreach (var triangle in surface)
-            {
-                var v1 = triangle.A - centre;
-                var v2 = triangle.B - centre;
-                var v3 = triangle.C - centre;
-                total += (v1 ^ v2) * v3;
-            }
-            return Math.Abs(total) / 6.0;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="surface"></param>
-        /// <returns></returns>
-        public static double Volume(this IAxialBoundsQueryable<TriangleSurfaceTest> surface)
-        {
-            var total = 0.0;
-            var bounds = surface.GetAxialBounds();
             var centre = (bounds.Lower + bounds.Upper) * 0.5;
             foreach (var triangle in surface)
             {
