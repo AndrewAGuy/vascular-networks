@@ -169,11 +169,6 @@ public class GradientDescent
     /// </summary>
     public Func<IMobileNode, bool>? RecordingPredicate { get; set; }
 
-    /// <summary>
-    ///
-    /// </summary>
-    public Func<IMobileNode, Vector3, bool>? MovingPredicate { get; set; }
-
     private readonly IGradientDescentCost cost;
 
     /// <summary>
@@ -274,14 +269,22 @@ public class GradientDescent
         var N = g.Select(p => p.Node).ToList();
 
         var aMax = MaxStride(N, G, this.StepFraction);
-        var a = this.StepControl.GetStep(N, G, c, aMax, cost, network, this.StepPredicate is null);
+        var stepEarly = this.StepPredicate is null;
+        var a = this.StepControl.GetStep(N, G, c, aMax, cost, network, stepEarly);
         if (!double.IsFinite(a))
         {
             return -3;
         }
-        if (a != 0)
+        if (a == 0)
         {
-            StepNodes(N, G, a);
+            return 2;
+        }
+        if (!stepEarly)
+        {
+            if (!StepNodesPredicated(N, G, a))
+            {
+                return 3;
+            }
             network.Set(false, true, true);
         }
         this.OnStepTaken?.Invoke(new(c, g, a));
@@ -311,37 +314,34 @@ public class GradientDescent
         return lmin / lp;
     }
 
-    private void StepNodes(List<IMobileNode> N, List<Vector3> G, double a)
+    private bool StepNodesPredicated(List<IMobileNode> N, List<Vector3> G, double a)
     {
-        if (this.StepPredicate is null)
+        var stepped = false;
+        if (this.StepMode == StepMode.AllOrNothing)
         {
             for (var i = 0; i < N.Count; ++i)
             {
-                N[i].Position -= a * G[i];
-            }
-        }
-        else
-        {
-            if (this.StepMode == StepMode.AllOrNothing)
-            {
-                for (var i = 0; i < N.Count; ++i)
+                var d = -a * G[i];
+                if (this.StepPredicate!.Permitted(N[i], d))
                 {
-                    var d = -a * G[i];
-                    if (this.StepPredicate.Permitted(N[i], d))
-                    {
-                        N[i].Position += d;
-                    }
-                }
-            }
-            else if (this.StepMode == StepMode.MaximumPermitted)
-            {
-                for (var i = 0; i < N.Count; ++i)
-                {
-                    var d0 = -a * G[i];
-                    var d = this.StepPredicate.MaximumPermitted(N[i], d0) * d0;
                     N[i].Position += d;
+                    stepped = true;
                 }
             }
         }
+        else if (this.StepMode == StepMode.MaximumPermitted)
+        {
+            for (var i = 0; i < N.Count; ++i)
+            {
+                var d0 = -a * G[i];
+                var f = this.StepPredicate!.MaximumPermitted(N[i], d0);
+                if (f != 0)
+                {
+                    N[i].Position += f * d0;
+                    stepped = true;
+                }
+            }
+        }
+        return stepped;
     }
 }

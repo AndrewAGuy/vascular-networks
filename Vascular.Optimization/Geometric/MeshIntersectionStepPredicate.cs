@@ -40,8 +40,8 @@ public class MeshIntersectionStepPredicate : IGradientDescentStepPredicate
         var start = node.Parent!.Start.Position;
         var radius = this.TestRadius(node.Parent);
         if (!this.Ignore(node.Parent) &&
-            (boundary.RayIntersects(start, position - start, radius) ||
-             boundary.RayIntersects(start, node.Position - start, radius)))
+            (TestRay(start, position - start, radius) <= 1 ||
+             this.TestInitial && TestRay(start, node.Position - start, radius) <= 1))
         {
             return false;
         }
@@ -51,8 +51,8 @@ public class MeshIntersectionStepPredicate : IGradientDescentStepPredicate
             start = c.End.Position;
             radius = this.TestRadius(c);
             if (!this.Ignore(c) &&
-                (boundary.RayIntersects(start, position - start, radius) ||
-                 boundary.RayIntersects(start, node.Position - start, radius)))
+                (TestRay(start, position - start, radius) <= 1 ||
+                 this.TestInitial && TestRay(start, node.Position - start, radius) <= 1))
             {
                 return false;
             }
@@ -82,11 +82,41 @@ public class MeshIntersectionStepPredicate : IGradientDescentStepPredicate
     private double minRayLength = 1e-3;
     private double minRayLengthSquared = 1e-6;
 
+    /// <summary>
+    ///
+    /// </summary>
+    public bool TestShortRaysAsSpheres { get; set; } = true;
+
+    /// <summary>
+    ///
+    /// </summary>
+    public bool TestInitial { get; set; } = true;
+
+    private double TestRay(Vector3 start, Vector3 dir, double radius)
+    {
+        var l2 = dir.LengthSquared;
+        if (l2 <= minRayLengthSquared)
+        {
+            if (!this.TestShortRaysAsSpheres)
+            {
+                return 0;
+            }
+            var d2 = boundary.SquaredDistanceToSurface(start, minRayLength + radius);
+            var s = (Math.Sqrt(d2) - radius) / Math.Sqrt(l2);
+            return double.IsFinite(s) ? s : 0;
+        }
+        else
+        {
+            var f = boundary.RayIntersection(start, dir, radius);
+            return double.IsNaN(f) ? 0 : f;
+        }
+    }
+
     private double MaximumPermitted(Vector3 start, Vector3 end, Vector3 endPerturbation, double radius)
     {
         // Early termination?
         var d0 = end - start;
-        if (boundary.RayIntersects(start, d0, radius))
+        if (this.TestInitial && TestRay(start, d0, radius) <= 1)
         {
             return 0;
         }
@@ -96,12 +126,7 @@ public class MeshIntersectionStepPredicate : IGradientDescentStepPredicate
         {
             // For the current step fraction, where do we first hit the boundary along this ray?
             var fDir = d0 + endPerturbation * f;
-            if (fDir.LengthSquared <= minRayLengthSquared)
-            {
-                return 0;
-            }
-
-            var hfFwd = boundary.RayIntersection(start, fDir, radius);
+            var hfFwd = TestRay(start, fDir, radius);
             if (hfFwd <= 0)
             {
                 return 0;
@@ -117,25 +142,13 @@ public class MeshIntersectionStepPredicate : IGradientDescentStepPredicate
             // Prevent a loop of f => hit => sweep back => f by subtracting tolerance
             var hStart = start + hfFwd * d0;
             var hDir = hfFwd * endPerturbation;
-            if (hDir.LengthSquared <= minRayLengthSquared)
-            {
-                return 0;
-            }
-            var hfBwd = boundary.RayIntersection(hStart, hDir, radius) * hfFwd - this.FractionTolerance;
+            var hfBwd = Math.Min(TestRay(hStart, hDir, radius), 1) * hfFwd - this.FractionTolerance;
             if (hfBwd <= 0)
             {
                 return 0;
             }
-            // else if (hfBwd > 1)
-            // {
-            //     return hfFwd;
-            // }
 
             f = Math.Min(f, hfBwd);
-            // if (f <= this.FractionTolerance)
-            // {
-            //     return 0;
-            // }
         }
     }
 

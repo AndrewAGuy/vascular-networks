@@ -47,11 +47,7 @@ public class ArmijoBacktracker : IGradientDescentStepControl
         var s = 0.0;
         for (var j = 0; j < this.MaxIterations; ++j)
         {
-            for (var i = 0; i < N.Count; ++i)
-            {
-                N[i].Position = X0[i] - G[i] * a;
-            }
-            network.Set(false, true, true);
+            Set(N, X0, a, G, network);
             var c = cost.Cost(network);
 
             if (c0 - c >= a * t)
@@ -62,16 +58,30 @@ public class ArmijoBacktracker : IGradientDescentStepControl
             a *= this.ReductionRatio;
         }
 
-        if (!takeStep)
+        if (!takeStep || s == 0)
+        {
+            Set(N, X0, 0, G, network);
+        }
+        return s;
+    }
+
+    private static void Set(List<IMobileNode> N, List<Vector3> X0, double a, List<Vector3> G, Network n)
+    {
+        if (a != 0)
+        {
+            for (var i = 0; i < N.Count; ++i)
+            {
+                N[i].Position = X0[i] - G[i] * a;
+            }
+        }
+        else
         {
             for (var i = 0; i < N.Count; ++i)
             {
                 N[i].Position = X0[i];
             }
-            network.Set(false, true, true);
-            return s;
         }
-        return 0;
+        n.Set(false, true, true);
     }
 
     private static double Inner(List<Vector3> g)
