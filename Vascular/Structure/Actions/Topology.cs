@@ -444,6 +444,11 @@ namespace Vascular.Structure.Actions
             // Update the existing branch.
             from.Branch.End = bifurc;
             from.Branch.Reinitialize();
+            // Update network reference if required
+            if (to.Network != bifurc.Network)
+            {
+                to.SetNetworkDownstream(bifurc.Network);
+            }
             return bifurc;
         }
 
@@ -460,6 +465,11 @@ namespace Vascular.Structure.Actions
             b.End = endA;
             a.Reset();
             b.Reset();
+            if (endA.Network != endB.Network)
+            {
+                a.End.SetNetworkDownstream(a.Start.Network);
+                b.End.SetNetworkDownstream(b.Start.Network);
+            }
         }
 
         /// <summary>
@@ -483,6 +493,12 @@ namespace Vascular.Structure.Actions
             b.Branch.End = branchEndA;
             a.Branch.Reinitialize();
             b.Branch.Reinitialize();
+            // Update network references
+            if (branchEndA.Network != branchEndB.Network)
+            {
+                a.Branch.End.SetNetworkDownstream(a.Branch.Start.Network);
+                b.Branch.End.SetNetworkDownstream(b.Branch.Start.Network);
+            }
         }
 
         /// <summary>
