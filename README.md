@@ -11,7 +11,7 @@ Similarly, it does not make adjustments for viscosity correction factors that ar
 If you need to do design work below this length scale, you'll probably want to work in subregions to generate microvasculature.
 
 This package is currently in pre-release so APIs should not be considered stable: if you build on top of this, fix your version number!
-Development is directly onto the `develop` branch, there are no guarantees that this will even build at a point in time.
+Development is directly onto the `develop` branch with the exception of major rewrites, there are no guarantees that this will even build at a point in time.
 Releases to NuGet will occur on a vibes-based schedule.
 During Version 0.X, the minor version number will indicate breaking changes.
 
@@ -72,17 +72,25 @@ This project does not currently accept contributions.
 .NET 6.0
 
 ## Build
-The project copies its output to a [NuGet convention-based working directory](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory) /Release/ in release configuration: `dotnet build -c Release`.
-All additional content files are copied to this structure.
-In Debug, output files are copied to a flat folder structure /Debug/TFM/ for the given Target Framework Moniker.
-
-To clean the release folder, copy over package assets and build the package, use the build file with the 'pack' target: `dotnet msbuild build.targets -t:pack`.
-This sets the configuration to release and builds documentation.
+The project copies its output to a [NuGet convention-based working directory](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory) in release configuration: `dotnet build -c Release`.
+You will find the output files in `/Release/lib/TFM/` for the current Target Framework Moniker.
+In Debug, output files are copied to `/Debug/TFM/`.
 
 #### Conditional compilation
+**Warning: at some point this will be removed**
+
 For types in the `Vascular.Structure` namespace, a custom build can choose to improve performance by removing fields that are not needed:
 - `NoEffectiveLength` - The most common use case for optimization is a combination of work and volume, so the branches by default keep track of their effective lengths and propagate these changes upstream, allowing instant query of the volume from the source node.
   Defining this disables the effective length caching.
 - `NoDepthPathLength` - Path lengths and logical depths are calculated from the root downwards in a single pass and stored at each node. If defined, these fields and methods are removed.
   Note that some optimization predicates may require depths to be defined, although flow rate could be used as a proxy in this case.
 - `NoPressure` - Pressures may be calculated downwards from the root after radii are assigned. If defined, these fields and methods are removed.
+
+## Packaging
+The semi-manual, mostly MSBuild based workflow has been deprecated in place of scripted release.
+
+#### Preparation (Ubuntu)
+`sudo ./setup-nuget.sh [ApiKey]`
+
+#### Automated release
+`./release.sh <Version> [push]`
