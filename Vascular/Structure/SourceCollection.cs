@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Vascular.Geometry.Bounds;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure;

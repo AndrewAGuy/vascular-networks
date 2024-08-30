@@ -20,33 +20,39 @@ namespace Vascular.Structure.Nodes
 
         private Vector3 position = Vector3.INVALID;
 
-        private Segment child = null!;
-        private Branch down = null!;
-        private readonly Segment[] children = new Segment[1];
-        private readonly Branch[] downstream = new Branch[1];
+        private Segment? child = null;
+        private Branch? down = null;
+        private Segment[] children = Array.Empty<Segment>();
+        private Branch[] downstream = Array.Empty<Branch>();
 
         /// <summary>
         /// Updates <see cref="Children"/> and <see cref="Downstream"/> when set.
         /// </summary>
-        public Segment Child
+        public Segment? Child
         {
             get => child;
             set
             {
                 child = value;
-                children[0] = value;
-                if (value != null)
+                if (child != null)
                 {
-                    down = value.Branch;
-                    downstream[0] = value.Branch;
+                    children = new[] { child };
+                    down = child.Branch;
+                    downstream = new[] { down };
                 }
                 else
                 {
-                    down = null!;
-                    downstream[0] = null!;
+                    children = Array.Empty<Segment>();
+                    down = null;
+                    downstream = Array.Empty<Branch>();
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public Branch? Root => down;
 
         /// <inheritdoc/>
         sealed public override Segment[] Children => children;
@@ -234,6 +240,21 @@ namespace Vascular.Structure.Nodes
             var s = CloneInternal();
             s.InletDirection = this.InletDirection?.Copy();
             return s;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        public void Copy(Source other)
+        {
+            if (other.Root != null)
+            {
+                var r = Network.CloneDownstream(this.Network, other.Root);
+                this.Child = r.Segments[0];
+                r.Segments[0].Start = this;
+                r.Start = this;
+            }
         }
 
         /// <summary>

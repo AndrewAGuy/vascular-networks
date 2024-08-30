@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
@@ -59,16 +60,7 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        public IEnumerable<Branch?> Roots
-        {
-            get
-            {
-                foreach (var s in sources)
-                {
-                    yield return s.Downstream[0];
-                }
-            }
-        }
+        public IEnumerable<Branch?> Roots => sources.Select(s => s.Root);
 
         /// <summary>
         /// The matching group this belongs to.
@@ -123,27 +115,30 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        /// <param name="s"></param>
         /// <returns></returns>
-        public Network Clone(Source? s = null)
+        public Network Clone()
         {
-            s ??= this.Source.Clone();
+            //s ??= this.Source.Clone();
             var n = new Network()
             {
-                Source = s,
+                Sources = new(sources.Select(s => s.Clone())),
                 Splitting = this.Splitting.TryClone(),
                 Output = this.Output,
                 Viscosity = this.Viscosity,
                 PressureOffset = this.PressureOffset
             };
-            var r = CloneDownstream(n, this.Root);
-            s.Child = r.Segments[0];
-            r.Start = s;
-            r.Segments[0].Start = s;
+            // var r = CloneDownstream(n, this.Root);
+            // s.Child = r.Segments[0];
+            // r.Start = s;
+            // r.Segments[0].Start = s;
+            for (var i = 0; i < sources.Count; ++i)
+            {
+                n.Sources[i].Copy(sources[i]);
+            }
             return n;
         }
 
-        private static Branch CloneDownstream(Network n, Branch b)
+        internal static Branch CloneDownstream(Network n, Branch b)
         {
             var T = new List<Transient>(b.Segments.Count);
             foreach (var t in b.Transients)
@@ -201,7 +196,7 @@ namespace Vascular.Structure
         /// <returns></returns>
         public AxialBounds GetAxialBounds()
         {
-            return this.Root.GlobalBounds;
+            return this.Roots.NotNull().GetTotalBounds();
         }
 
         /// <summary>
@@ -211,7 +206,10 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Branch> action)
         {
-            BranchQuery(query, action, this.Root);
+            foreach (var r in this.Roots.NotNull())
+            {
+                BranchQuery(query, action, r);
+            }
         }
 
         /// <summary>
@@ -242,7 +240,14 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public bool Query(AxialBounds query, Func<Branch, bool> action)
         {
-            return BranchQuery(query, action, this.Root);
+            foreach (var r in this.Roots.NotNull())
+            {
+                if (BranchQuery(query, action, r))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -280,7 +285,10 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public void Query(AxialBounds query, Action<Segment> action)
         {
-            SegmentQuery(query, action, this.Root);
+            foreach (var r in this.Roots.NotNull())
+            {
+                SegmentQuery(query, action, r);
+            }
         }
 
         /// <summary>
@@ -317,7 +325,14 @@ namespace Vascular.Structure
         /// <param name="action"></param>
         public bool Query(AxialBounds query, Func<Segment, bool> action)
         {
-            return SegmentQuery(query, action, this.Root);
+            foreach (var r in this.Roots.NotNull())
+            {
+                if (SegmentQuery(query, action, r))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -389,15 +404,23 @@ namespace Vascular.Structure
             get
             {
                 var stack = new Stack<Branch>();
-                stack.Push(this.Root);
-                while (stack.Count > 0)
+                foreach (var root in this.Roots)
                 {
-                    var current = stack.Pop();
-                    yield return current;
-                    var children = current.Children;
-                    for (var i = 0; i < children.Length; ++i)
+                    if (root is null)
                     {
-                        stack.Push(children[i]);
+                        continue;
+                    }
+
+                    stack.Push(root);
+                    while (stack.Count > 0)
+                    {
+                        var current = stack.Pop();
+                        yield return current;
+                        var children = current.Children;
+                        for (var i = 0; i < children.Length; ++i)
+                        {
+                            stack.Push(children[i]);
+                        }
                     }
                 }
             }
@@ -427,7 +450,10 @@ namespace Vascular.Structure
         {
             get
             {
-                yield return this.Source;
+                foreach (var source in sources)
+                {
+                    yield return source;
+                }
                 foreach (var branch in this.Branches)
                 {
                     yield return branch.End;
@@ -442,7 +468,10 @@ namespace Vascular.Structure
         {
             get
             {
-                yield return this.Source;
+                foreach (var source in sources)
+                {
+                    yield return source;
+                }
                 foreach (var segment in this.Segments)
                 {
                     yield return segment.End;
@@ -476,20 +505,28 @@ namespace Vascular.Structure
             get
             {
                 var stack = new Stack<Branch>();
-                stack.Push(this.Root);
-                while (stack.Count > 0)
+                foreach (var root in this.Roots)
                 {
-                    var current = stack.Pop();
-                    if (current.End is Terminal terminal)
+                    if (root is null)
                     {
-                        yield return terminal;
+                        continue;
                     }
-                    else
+
+                    stack.Push(root);
+                    while (stack.Count > 0)
                     {
-                        var children = current.Children;
-                        for (var i = 0; i < children.Length; ++i)
+                        var current = stack.Pop();
+                        if (current.End is Terminal terminal)
                         {
-                            stack.Push(children[i]);
+                            yield return terminal;
+                        }
+                        else
+                        {
+                            var children = current.Children;
+                            for (var i = 0; i < children.Length; ++i)
+                            {
+                                stack.Push(children[i]);
+                            }
                         }
                     }
                 }
@@ -504,7 +541,8 @@ namespace Vascular.Structure
         /// <returns></returns>
         public async Task VisitAsync(Action<Branch> action, int splitDepth)
         {
-            await VisitAsync(this.Root, action, splitDepth);
+            //await VisitAsync(this.Root, action, splitDepth);
+            await this.Roots.NotNull().RunAsync(r => VisitAsync(r, action, splitDepth));
         }
 
         /// <summary>
