@@ -223,6 +223,38 @@ namespace Vascular.Structure.Nodes
         ///
         /// </summary>
         /// <returns></returns>
-        public abstract Source Clone();
+        protected abstract Source CloneInternal();
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public Source Clone()
+        {
+            var s = CloneInternal();
+            s.InletDirection = this.InletDirection?.Copy();
+            return s;
+        }
+
+        /// <summary>
+        /// Updates all elements in this tree to belong to the given network.
+        /// </summary>
+        /// <param name="network"></param>
+        public void SetNetwork(Network network)
+        {
+            if (network != this.Network)
+            {
+                this.Network = network;
+                if (child is not null)
+                {
+                    ForEach(br => br.End.Network = network);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Used in smoothing.
+        /// </summary>
+        public Vector3? InletDirection { get; set; } = null;
     }
 }

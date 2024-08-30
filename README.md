@@ -64,6 +64,9 @@ This project does not currently accept contributions.
   - ~~Enable nullable.~~ (0.2)
   - ~~Remove data contract members.~~ (0.2)
   - Make the test suite available (target: 1.0)
+    - Set up the src/build/test/docs split structure.
+- Audit:
+  - Audit trail for all modules, similar to triangulation.
 
 ## Installation
 `dotnet add package Vascular.Networks`

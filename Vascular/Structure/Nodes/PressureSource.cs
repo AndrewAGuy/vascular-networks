@@ -79,7 +79,7 @@ namespace Vascular.Structure.Nodes
         }
 
         /// <inheritdoc/>
-        public override Source Clone()
+        protected override Source CloneInternal()
         {
             return new PressureSource(this.Position.Copy(), pressure);
         }

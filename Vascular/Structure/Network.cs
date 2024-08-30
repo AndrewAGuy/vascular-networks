@@ -14,6 +14,21 @@ namespace Vascular.Structure
     /// </summary>
     public class Network : IAxialBoundsQueryable<Segment>, IAxialBoundsQueryable<Branch>
     {
+        private SourceCollection sources = null!;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public SourceCollection Sources
+        {
+            get => sources;
+            set
+            {
+                sources = value;
+                sources.SetNetwork(this);
+            }
+        }
+
         private Source source = null!;
 
         /// <summary>
@@ -42,6 +57,20 @@ namespace Vascular.Structure
         public Branch Root => source.Child.Branch;
 
         /// <summary>
+        ///
+        /// </summary>
+        public IEnumerable<Branch?> Roots
+        {
+            get
+            {
+                foreach (var s in sources)
+                {
+                    yield return s.Downstream[0];
+                }
+            }
+        }
+
+        /// <summary>
         /// The matching group this belongs to.
         /// </summary>
         public Network[]? Partners { get; set; } = null;
@@ -50,7 +79,7 @@ namespace Vascular.Structure
         private double scaledViscosity = 4.0e-6 * 8.0 / Math.PI;
 
         /// <summary>
-        /// Typically set in kPa &#183; s.
+        /// Typically set in kPa · s.
         /// </summary>
         public double Viscosity
         {
@@ -92,11 +121,6 @@ namespace Vascular.Structure
         public bool Output { get; set; } = false;
 
         /// <summary>
-        /// Used in smoothing.
-        /// </summary>
-        public Vector3? InletDirection { get; set; } = null;
-
-        /// <summary>
         ///
         /// </summary>
         /// <param name="s"></param>
@@ -109,7 +133,6 @@ namespace Vascular.Structure
                 Source = s,
                 Splitting = this.Splitting.TryClone(),
                 Output = this.Output,
-                InletDirection = this.InletDirection,
                 Viscosity = this.Viscosity,
                 PressureOffset = this.PressureOffset
             };
