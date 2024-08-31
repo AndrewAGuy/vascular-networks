@@ -162,7 +162,7 @@ namespace Vascular.Structure
         /// indicate that they have changed or are desired outputs, and intermediate steps
         /// will be calculated.
         /// </summary>
-        /// <param name="network"></param>
+        /// <param name="root"></param>
         /// <param name="logical"></param>
         /// <param name="physical"></param>
         /// <param name="radii"></param>
@@ -171,7 +171,7 @@ namespace Vascular.Structure
         /// <param name="pressure"></param>
         /// <param name="radiiMod"></param>
         /// <param name="boundsPad"></param>
-        public static void Set(this Network network,
+        public static void Set(this Branch root,
             bool logical = false, bool physical = false, bool radii = false, bool bounds = false,
             int depth = 0, bool pressure = false,
             Func<Branch, double>? radiiMod = null, double boundsPad = 0)
@@ -182,17 +182,18 @@ namespace Vascular.Structure
             //      v
             //      d,l
             // Anything in between that gets invalidated but not requested must be recomputed.
+            var source = root.Start;
 
             void chainLogicalPhysical()
             {
                 if (logical)
                 {
-                    network.Root.SetLogical();
+                    root.SetLogical();
                     physical = true;
                 }
                 if (physical)
                 {
-                    network.Source.CalculatePhysical();
+                    source.CalculatePhysical();
                     radii = true;
                 }
             }
@@ -203,24 +204,24 @@ namespace Vascular.Structure
                 chainLogicalPhysical();
                 if (radii)
                 {
-                    network.Source.PropagateRadiiDownstream();
+                    source.PropagateRadiiDownstream();
                 }
-                network.Source.CalculatePressures();
+                source.CalculatePressures();
 
                 // Now go to bounds, possibly modifying.
                 if (bounds)
                 {
                     if (radiiMod is not null)
                     {
-                        network.Source.PropagateRadiiDownstream(radiiMod);
+                        source.PropagateRadiiDownstream(radiiMod);
                     }
                     if (boundsPad != 0)
                     {
-                        network.Source.GenerateDownstreamBounds(boundsPad);
+                        source.GenerateDownstreamBounds(boundsPad);
                     }
                     else
                     {
-                        network.Source.GenerateDownstreamBounds();
+                        source.GenerateDownstreamBounds();
                     }
                 }
             }
@@ -234,22 +235,22 @@ namespace Vascular.Structure
                 {
                     if (radiiMod is not null)
                     {
-                        network.Source.PropagateRadiiDownstream(radiiMod);
+                        source.PropagateRadiiDownstream(radiiMod);
                     }
                     else
                     {
-                        network.Source.PropagateRadiiDownstream();
+                        source.PropagateRadiiDownstream();
                     }
                 }
                 if (bounds)
                 {
                     if (boundsPad != 0)
                     {
-                        network.Source.GenerateDownstreamBounds(boundsPad);
+                        source.GenerateDownstreamBounds(boundsPad);
                     }
                     else
                     {
-                        network.Source.GenerateDownstreamBounds();
+                        source.GenerateDownstreamBounds();
                     }
                 }
             }
@@ -257,11 +258,11 @@ namespace Vascular.Structure
             {
                 if (logical)
                 {
-                    network.Root.SetLogical();
+                    root.SetLogical();
                 }
                 if (physical)
                 {
-                    network.Source.CalculatePhysical();
+                    source.CalculatePhysical();
                 }
             }
 
@@ -270,10 +271,10 @@ namespace Vascular.Structure
             switch (depth)
             {
                 case > 0:
-                    network.Source.CalculatePathLengthsAndOrder();
+                    source.CalculatePathLengthsAndOrder();
                     break;
                 case < 0:
-                    network.Source.CalculatePathLengthsAndDepths();
+                    source.CalculatePathLengthsAndDepths();
                     break;
             }
         }

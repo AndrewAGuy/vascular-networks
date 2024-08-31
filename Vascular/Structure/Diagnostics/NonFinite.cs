@@ -20,25 +20,28 @@ namespace Vascular.Structure.Diagnostics
         public static IEnumerable<object> First(Network net)
         {
             var stack = new Stack<BranchNode>();
-            stack.Push(net.Source);
-            while (stack.Count > 0)
+            foreach (var source in net.Sources)
             {
-                var current = stack.Pop();
-                if (TestNode(current))
+                stack.Push(source);
+                while (stack.Count > 0)
                 {
-                    yield return current;
-                }
-                else
-                {
-                    foreach (var branch in current.Downstream)
+                    var current = stack.Pop();
+                    if (TestNode(current))
                     {
-                        if (TestBranch(branch))
+                        yield return current;
+                    }
+                    else
+                    {
+                        foreach (var branch in current.Downstream)
                         {
-                            yield return branch;
-                        }
-                        else
-                        {
-                            stack.Push(branch.End);
+                            if (TestBranch(branch))
+                            {
+                                yield return branch;
+                            }
+                            else
+                            {
+                                stack.Push(branch.End);
+                            }
                         }
                     }
                 }

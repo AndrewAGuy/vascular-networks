@@ -590,20 +590,20 @@ namespace Vascular.Structure.Actions
             }
         }
 
-        /// <summary>
-        /// If optimizations have been made on clones of the original network, transfer the cloned structure to the original.
-        /// This is achieved by setting the downstream section of the source node to the clone - the terminals may have changed so
-        /// the new terminals are kept.
-        /// </summary>
-        /// <param name="to"></param>
-        /// <param name="from"></param>
-        public static void Transfer(Network to, Network from)
-        {
-            var node = to.Source;
-            var seg = from.Source.Child;
-            node.Child = seg;
-            seg.Start = node;
-            seg.Branch.Start = node;
-        }
+        // /// <summary>
+        // /// If optimizations have been made on clones of the original network, transfer the cloned structure to the original.
+        // /// This is achieved by setting the downstream section of the source node to the clone - the terminals may have changed so
+        // /// the new terminals are kept.
+        // /// </summary>
+        // /// <param name="to"></param>
+        // /// <param name="from"></param>
+        // public static void Transfer(Network to, Network from)
+        // {
+        //     var node = to.Source;
+        //     var seg = from.Source.Child;
+        //     node.Child = seg;
+        //     seg.Start = node;
+        //     seg.Branch.Start = node;
+        // }
     }
 }

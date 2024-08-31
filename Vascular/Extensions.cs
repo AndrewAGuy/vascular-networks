@@ -17,6 +17,20 @@ namespace Vascular
         ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="ts"></param>
+        /// <param name="a"></param>
+        public static void Apply<T>(this IEnumerable<T> ts, Action<T> a)
+        {
+            foreach (var t in ts)
+            {
+                a(t);
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="values"></param>
         /// <returns></returns>
         public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> values) where T : class

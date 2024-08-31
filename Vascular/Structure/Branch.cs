@@ -464,7 +464,7 @@ namespace Vascular.Structure
 
 #if !NoDepthPathLength
         /// <summary>
-        /// Returns the depth of the end node, so the <see cref="Network.Root"/> has depth 1.
+        /// Returns the depth of the end node, so the <see cref="Network.Roots"/> have depth 1.
         /// </summary>
         public int Depth => this.End.Depth;
 #endif

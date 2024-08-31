@@ -27,7 +27,12 @@ namespace Vascular.Structure.Diagnostics
         /// <returns></returns>
         public int GetHashCode(Network obj)
         {
-            return GetHashCode(obj.Root.End);
+            var code = new HashCode();
+            foreach (var root in obj.Roots)
+            {
+                code.Add(GetHashCode(root.End));
+            }
+            return code.ToHashCode();
         }
 
         private int GetHashCode(BranchNode node)
@@ -55,8 +60,35 @@ namespace Vascular.Structure.Diagnostics
 
         private bool CompareCanonicalized(Network x, Network y)
         {
-            var Bx = enumeratorX.Downstream(x.Root).GetEnumerator();
-            var By = enumeratorY.Downstream(y.Root).GetEnumerator();
+            var rX = x.Roots.GetEnumerator();
+            var rY = y.Roots.GetEnumerator();
+            while (true)
+            {
+                var mx = rX.MoveNext();
+                var my = rY.MoveNext();
+                switch (mx, my)
+                {
+                    case (false, false):
+                        return true;
+
+                    case (false, true):
+                    case (true, false):
+                        return false;
+
+                    case (true, true):
+                        break;
+                }
+                if (!CompareCanonicalized(rX.Current, rY.Current))
+                {
+                    return false;
+                }
+            }
+        }
+
+        private bool CompareCanonicalized(Branch x, Branch y)
+        {
+            var Bx = enumeratorX.Downstream(x).GetEnumerator();
+            var By = enumeratorY.Downstream(y).GetEnumerator();
             while (true)
             {
                 var mx = Bx.MoveNext();
