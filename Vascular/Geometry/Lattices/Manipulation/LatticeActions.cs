@@ -301,7 +301,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         }
 
         /// <summary>
-        /// Given a lattice and network, add all terminals to a single map.
+        /// Given a lattice and root, add all terminals to a single map.
         /// Overwrites happen in the order of visiting.
         /// </summary>
         /// <param name="root"></param>
@@ -311,6 +311,31 @@ namespace Vascular.Geometry.Lattices.Manipulation
         {
             var interior = new SingleMap(Terminal.CountDownstream(root));
             Terminal.ForDownstream(root, t => interior[lattice.ClosestVectorBasis(t.Position)] = t);
+            return interior;
+        }
+
+        internal static int CountTerminals(Network net)
+        {
+            return net.Roots.Select(Terminal.CountDownstream).Sum();
+            // var total = 0;
+            // foreach (var root in net.Roots)
+            // {
+            //     total += Terminal.CountDownstream(root);
+            // }
+            // return total;
+        }
+
+        /// <summary>
+        /// Given a lattice and root, add all terminals to a single map.
+        /// Overwrites happen in the order of visiting.
+        /// </summary>
+        /// <param name="net"></param>
+        /// <param name="lattice"></param>
+        /// <returns></returns>
+        public static SingleMap GetSingleInterior(Network net, Lattice lattice)
+        {
+            var interior = new SingleMap(CountTerminals(net));
+            net.Roots.Apply(root => Terminal.ForDownstream(root, t => interior[lattice.ClosestVectorBasis(t.Position)] = t));
             return interior;
         }
 
@@ -462,7 +487,7 @@ namespace Vascular.Geometry.Lattices.Manipulation
         /// <param name="networks"></param>
         public static void MatchTerminals(Lattice lattice, params Network[] networks)
         {
-            var interiors = networks.Select(network => GetSingleInterior(network.Root, lattice)).ToArray();
+            var interiors = networks.Select(network => GetSingleInterior(network, lattice)).ToArray();
             MatchTerminals(interiors);
             foreach (var network in networks)
             {
