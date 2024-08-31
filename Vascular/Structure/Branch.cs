@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Vascular.Geometry;
 using Vascular.Geometry.Bounds;
+using Vascular.Structure.Actions;
 using Vascular.Structure.Nodes;
 
 namespace Vascular.Structure
@@ -474,14 +475,29 @@ namespace Vascular.Structure
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public Branch? GetNthUpstream(int n)
+        public Branch GetNthUpstream(int n)
         {
             var u = this;
-            while (--n >= 0 && u != null)
+            while (--n >= 0)
             {
-                u = u.Start.Upstream;
+                u = u.Start.Upstream ?? throw new TopologyException("Branch depth insufficient");
             }
             return u;
+        }
+
+        /// <summary>
+        /// Replaces <see cref="IndexOutOfRangeException"/> with <see cref="TopologyException"/>.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        /// <exception cref="TopologyException"></exception>
+        public Branch GetNthChild(int n)
+        {
+            if (n < 0 || n >= this.Children.Length)
+            {
+                throw new TopologyException("Branch does not have sufficient children");
+            }
+            return this.Children[n];
         }
 
         /// <summary>
@@ -591,11 +607,11 @@ namespace Vascular.Structure
             {
                 if (a.Flow > b.Flow)
                 {
-                    b = b.Parent!;
+                    b = b.Parent ?? throw new TopologyException("No common ancestor found");
                 }
                 else
                 {
-                    a = a.Parent!;
+                    a = a.Parent ?? throw new TopologyException("No common ancestor found");
                 }
             }
             return a;
