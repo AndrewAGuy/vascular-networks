@@ -158,6 +158,26 @@ namespace Vascular.Structure
         }
 
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="logical"></param>
+        /// <param name="physical"></param>
+        /// <param name="radii"></param>
+        /// <param name="bounds"></param>
+        /// <param name="depth"></param>
+        /// <param name="pressure"></param>
+        /// <param name="radiiMod"></param>
+        /// <param name="boundsPad"></param>
+        public static void Set(this Network n,
+            bool logical = false, bool physical = false, bool radii = false, bool bounds = false,
+            int depth = 0, bool pressure = false,
+            Func<Branch, double>? radiiMod = null, double boundsPad = 0)
+        {
+            n.Roots.Apply(r => r.Set(logical, physical, radii, bounds, depth, pressure, radiiMod, boundsPad));
+        }
+
+        /// <summary>
         /// Utility method for recomputing a number of properties. Set arguments to true to
         /// indicate that they have changed or are desired outputs, and intermediate steps
         /// will be calculated.

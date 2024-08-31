@@ -113,7 +113,7 @@ namespace Vascular.Optimization.Geometric
         /// <returns></returns>
         public static Func<Source, Vector3?> InletSourceDirection()
         {
-            return s => s.Network.InletDirection;
+            return s => s.InletDirection;
         }
 
         /// <summary>
@@ -225,6 +225,11 @@ namespace Vascular.Optimization.Geometric
 
         private void AddAngularForces(Source source, IDictionary<IMobileNode, Vector3> forces, ref double energy)
         {
+            if (source.Child is null)
+            {
+                return;
+            }
+
             var cDir = source.Child.Direction.Normalize();
             var pDir = this.SourceDirection?.Invoke(source);
             if (pDir == null)

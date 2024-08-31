@@ -99,6 +99,16 @@ namespace Vascular.Structure.Diagnostics
         }
     }
 
+    public record struct BranchAddress(int Source, IReadOnlyList<int> Branch);
+
+    public record struct SegmentAddress(int Source, IReadOnlyList<int> Branch, int Segment);
+
+    // Addressing questions to be addressed (lol)
+    // Relative addressing for segments? Or just give relative branch address, then absolute segment.
+    // Address for nodes? Simple if taking parent segment for everything except source node, then use syntax (S, [], -1)?
+    // Relative address indicated if S < 0?
+    // No benefit to allowing relative addresses crossing sources: would be smaller to use absolute.
+
     /// <summary>
     /// Serializes addresses to human-readable strings
     /// </summary>
