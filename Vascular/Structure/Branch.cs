@@ -182,6 +182,11 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
+        public Source Origin => this.End.Origin;
+
+        /// <summary>
+        ///
+        /// </summary>
         public Vector3 Direction => this.End.Position - this.Start.Position;
 
         /// <summary>

@@ -26,6 +26,15 @@ namespace Vascular.Structure.Nodes
         private Branch[] downstream = Array.Empty<Branch>();
 
         /// <summary>
+        ///
+        /// </summary>
+        public override Source Origin
+        {
+            get => this;
+            set => new TopologyException("Cannot set origin of a source node");
+        }
+
+        /// <summary>
         /// Updates <see cref="Children"/> and <see cref="Downstream"/> when set.
         /// </summary>
         public Segment? Child

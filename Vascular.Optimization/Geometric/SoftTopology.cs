@@ -98,26 +98,40 @@ public class SoftTopology
 
     private bool TrimTerminals(Network network)
     {
-        if (this.Trim is null || network.Root.End is Terminal)
+        if (this.Trim is null)
         {
             return false;
         }
 
-        var trim = new List<Terminal>(network.Terminals.Count());
-        foreach (var t in network.Terminals)
+        var result = false;
+        var trim = new List<Terminal>();
+        void action(Terminal t)
         {
             if (this.Trim(t.Upstream))
             {
                 trim.Add(t);
             }
         }
-        foreach (var t in trim)
+
+        foreach (var root in network.Roots)
         {
-            this.OnTrim?.Invoke(t);
-            Topology.CullTerminal(t);
+            if (root.End is Terminal)
+            {
+                continue;
+            }
+
+            trim.Clear();
+            Terminal.ForDownstream(root, action);
+
+            foreach (var t in trim)
+            {
+                this.OnTrim?.Invoke(t);
+                Topology.CullTerminal(t);
+            }
+            result |= trim.Count != 0;
         }
 
-        return trim.Count != 0;
+        return result;
     }
 
     /// <summary>
@@ -152,7 +166,7 @@ public class SoftTopology
         }
         else if (this.DefragmentationPredicate != null)
         {
-            network.Source.PropagateRadiiDownstream();
+            network.Sources.Apply(s => s.PropagateRadiiDownstream());
             foreach (var b in network.Branches)
             {
                 geometryInvalid |= Fragmentation.Defragment(b,

@@ -89,6 +89,11 @@ namespace Vascular.Structure
             return segment.Branch.Network;
         }
 
+        public static Source Origin(this Segment segment)
+        {
+            return segment.Branch.Origin;
+        }
+
         /// <summary>
         ///
         /// </summary>
@@ -97,6 +102,11 @@ namespace Vascular.Structure
         public static Network Network(this INode node)
         {
             return node.Parent?.Branch.Network ?? node.Children[0].Branch.Network;
+        }
+
+        public static Source Origin(this INode node)
+        {
+            return node.Parent?.Branch.Origin ?? node.Children[0].Branch.Origin;
         }
 
         /// <summary>

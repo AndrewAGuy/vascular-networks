@@ -146,7 +146,7 @@ namespace Vascular.Optimization.Geometric
         /// Uses the approximation that <c>r ~ kQ^(1/3)</c>, thus the appropriate factor should be <c>(Q/Q_0)^(1/3)</c>.
         /// </summary>
         public static Func<INode, double> FlowEstimatedRadiusAmplification =>
-            node => Math.Pow(node.Flow() / node.Network().Root.Flow, 1.0 / 3.0);
+            node => Math.Pow(node.Flow() / node.Origin().Flow, 1.0 / 3.0);
 
         /// <summary>
         /// Uses the approximation that <c>r ~ 2^(-1/3)r_p</c> at each bifurcation, thus the appropriate factor is <c>2^(-d/3)</c>.
@@ -158,6 +158,6 @@ namespace Vascular.Optimization.Geometric
         /// Uses the actual ratio of radii, <c>r/r_0</c>.
         /// </summary>
         public static Func<INode, double> ActualRadiusAmplification =>
-            node => node.MaxRadius() / node.Network().Root.Radius;
+            node => node.MaxRadius() / node.Origin().Root!.Radius;
     }
 }

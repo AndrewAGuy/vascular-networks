@@ -71,6 +71,11 @@ namespace Vascular.Structure
         public Network Network { get; set; } = null!;
 
         /// <summary>
+        ///
+        /// </summary>
+        public virtual Source Origin { get; set; } = null!;
+
+        /// <summary>
         /// The sum of downstream flows.
         /// </summary>
         public abstract double Flow { get; }

@@ -90,7 +90,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Volume(IMobileNode node, double probeLength)
         {
-            var source = node.Parent!.Branch.Network.Source;
+            var source = node.Origin();
             return Gradient(node, probeLength, () => source.Volume);
         }
 
@@ -102,7 +102,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Volume(Branch branch, double probeFlow)
         {
-            var source = branch.Network.Source;
+            var source = branch.Origin;
             return Gradient(branch, probeFlow, () => source.Volume);
         }
 #endif
@@ -151,7 +151,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Work(IMobileNode node, double probeLength)
         {
-            var source = node.Parent!.Branch.Network.Source;
+            var source = node.Origin();
             return Gradient(node, probeLength, () => source.Work);
         }
 
@@ -163,7 +163,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Work(Branch branch, double probeFlow)
         {
-            var source = branch.Network.Source;
+            var source = branch.Origin;
             return Gradient(branch, probeFlow, () => source.Work);
         }
 
@@ -175,7 +175,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Resistance(IMobileNode node, double probeLength)
         {
-            var source = node.Parent!.Branch.Network.Source;
+            var source = node.Origin();
             return Gradient(node, probeLength, () => source.Resistance);
         }
 
@@ -187,7 +187,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Resistance(Branch branch, double probeFlow)
         {
-            var source = branch.Network.Source;
+            var source = branch.Origin;
             return Gradient(branch, probeFlow, () => source.Resistance);
         }
 
