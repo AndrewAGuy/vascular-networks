@@ -215,13 +215,13 @@ namespace Vascular.Structure
         /// <summary>
         ///
         /// </summary>
-        /// <param name="n"></param>
-        public void SetNetworkDownstream(Network n)
+        public virtual void PropagateOriginDownstream()
         {
-            this.Network = n;
+            this.Origin = this.Upstream!.Start.Origin;
+            this.Network = this.Origin.Network;
             foreach (var d in this.Downstream)
             {
-                d.End.SetNetworkDownstream(n);
+                d.End.PropagateOriginDownstream();
             }
         }
     }

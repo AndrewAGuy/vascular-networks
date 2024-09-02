@@ -31,7 +31,7 @@ namespace Vascular.Structure.Nodes
         public override Source Origin
         {
             get => this;
-            set => new TopologyException("Cannot set origin of a source node");
+            set => throw new TopologyException("Cannot set origin of a source node");
         }
 
         /// <summary>
@@ -55,6 +55,7 @@ namespace Vascular.Structure.Nodes
                     down = null;
                     downstream = Array.Empty<Branch>();
                 }
+                PropagateOriginDownstream();
             }
         }
 
@@ -286,5 +287,13 @@ namespace Vascular.Structure.Nodes
         /// Used in smoothing.
         /// </summary>
         public Vector3? InletDirection { get; set; } = null;
+
+        /// <summary>
+        /// If the root vessel is built, propagate the origin info downstream.
+        /// </summary>
+        public override void PropagateOriginDownstream()
+        {
+            this.Root?.End.PropagateOriginDownstream();
+        }
     }
 }

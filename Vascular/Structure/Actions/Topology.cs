@@ -98,6 +98,7 @@ namespace Vascular.Structure.Actions
             {
                 Parent = parentS,
                 Network = br.Network,
+                Origin = br.Origin,
                 Position = br.Start.Position
             };
             parentS.End = hs;
@@ -126,12 +127,12 @@ namespace Vascular.Structure.Actions
             var (splS, remS) = hs.Children.SplitArrayStack(indices);
             var sInt = MakeBlank();
 
-            var nSpl = MakeBranchNode(sInt, splS, hs.Network, Vector3.INVALID);
+            var nSpl = MakeBranchNode(sInt, splS, hs.Origin, Vector3.INVALID);
 
             var remC = new Segment[remS.Length + 1];
             Array.Copy(remS, remC, remS.Length);
             remC[^1] = sInt;
-            var nRem = MakeBranchNode(hs.Parent, remC, hs.Network, Vector3.INVALID);
+            var nRem = MakeBranchNode(hs.Parent, remC, hs.Origin, Vector3.INVALID);
 
             return (nRem, nSpl);
         }
@@ -171,7 +172,7 @@ namespace Vascular.Structure.Actions
 
             if (remS.Length > 1)
             {
-                nRem = MakeBranchNode(bfC[0], remS, hs.Network, Vector3.INVALID);
+                nRem = MakeBranchNode(bfC[0], remS, hs.Origin, Vector3.INVALID);
             }
             else
             {
@@ -181,7 +182,7 @@ namespace Vascular.Structure.Actions
 
             if (splS.Length > 1)
             {
-                nSpl = MakeBranchNode(bfC[1], splS, hs.Network, Vector3.INVALID);
+                nSpl = MakeBranchNode(bfC[1], splS, hs.Origin, Vector3.INVALID);
             }
             else
             {
@@ -189,7 +190,7 @@ namespace Vascular.Structure.Actions
                 bfC[1] = splS[0];
             }
 
-            var nBf = (Bifurcation)MakeBranchNode(hs.Parent, bfC, hs.Network, Vector3.INVALID);
+            var nBf = (Bifurcation)MakeBranchNode(hs.Parent, bfC, hs.Origin, Vector3.INVALID);
 
             return (nRem, nSpl, nBf);
         }
@@ -231,22 +232,22 @@ namespace Vascular.Structure.Actions
             var c = new Segment[node.Children.Length + 1];
             Array.Copy(node.Children, c, node.Children.Length);
             c[^1] = child;
-            return MakeBranchNode(p, c, node.Network(), node.Position);
+            return MakeBranchNode(p, c, node.Origin(), node.Position);
         }
 
-        private static BranchNode MakeBranchNode(Segment parent, Segment[] children, Network network, Vector3 position)
+        private static BranchNode MakeBranchNode(Segment parent, Segment[] children, Source origin, Vector3 position)
         {
             // Needs all segments to have valid branches attached to them.
             if (children.Length == 2)
             {
-                var bf = new Bifurcation(children) { Parent = parent, Network = network, Position = position };
+                var bf = new Bifurcation(children) { Parent = parent, Network = origin.Network, Origin = origin, Position = position };
                 parent.End = bf;
                 parent.Branch.End = bf;
                 return bf;
             }
             else if (children.Length > 2)
             {
-                var hs = new HigherSplit(children) { Parent = parent, Network = network, Position = position };
+                var hs = new HigherSplit(children) { Parent = parent, Network = origin.Network, Origin = origin, Position = position };
                 parent.End = hs;
                 parent.Branch.End = hs;
                 return hs;
@@ -254,7 +255,7 @@ namespace Vascular.Structure.Actions
             throw new TopologyException();
         }
 
-        private static INode MakeNode(Segment parent, Segment[] children, Network network, Vector3 position)
+        private static INode MakeNode(Segment parent, Segment[] children, Source origin, Vector3 position)
         {
             if (children.Length == 1)
             {
@@ -275,14 +276,14 @@ namespace Vascular.Structure.Actions
             }
             else
             {
-                return MakeBranchNode(parent, children, network, position);
+                return MakeBranchNode(parent, children, origin, position);
             }
         }
 
         private static INode RemoveBranches(BranchNode node, ReadOnlySpan<int> idx)
         {
             var (_, kept) = node.Children.SplitArrayStack(idx);
-            return MakeNode(node.Parent!, kept, node.Network, node.Position);
+            return MakeNode(node.Parent!, kept, node.Origin, node.Position);
         }
 
         private static INode RemoveBranch(BranchNode node, int i)
@@ -310,7 +311,7 @@ namespace Vascular.Structure.Actions
             Action<Terminal>? onTerm, Action<Branch>? onBranch)
         {
             var (lost, kept) = node.Children.SplitArrayStack(idx);
-            var repl = MakeNode(node.Parent!, kept, node.Network, node.Position);
+            var repl = MakeNode(node.Parent!, kept, node.Origin, node.Position);
             foreach (var culled in lost)
             {
                 if (onTerm is not null)
@@ -424,7 +425,8 @@ namespace Vascular.Structure.Actions
             var branchEnd = from.Branch.End;
             var bifurc = new Bifurcation()
             {
-                Network = from.Branch.Network
+                Network = from.Branch.Network,
+                Origin = from.Branch.Origin
             };
             // Structural relationships of children and bifurcation.
             var child0 = new Segment(bifurc, end);
@@ -447,7 +449,7 @@ namespace Vascular.Structure.Actions
             // Update network reference if required
             if (to.Network != bifurc.Network)
             {
-                to.SetNetworkDownstream(bifurc.Network);
+                to.PropagateOriginDownstream();
             }
             return bifurc;
         }
@@ -465,10 +467,10 @@ namespace Vascular.Structure.Actions
             b.End = endA;
             a.Reset();
             b.Reset();
-            if (endA.Network != endB.Network)
+            if (endA.Origin != endB.Origin)
             {
-                a.End.SetNetworkDownstream(a.Start.Network);
-                b.End.SetNetworkDownstream(b.Start.Network);
+                a.End.PropagateOriginDownstream();
+                b.End.PropagateOriginDownstream();
             }
         }
 
@@ -494,10 +496,10 @@ namespace Vascular.Structure.Actions
             a.Branch.Reinitialize();
             b.Branch.Reinitialize();
             // Update network references
-            if (branchEndA.Network != branchEndB.Network)
+            if (branchEndA.Origin != branchEndB.Origin)
             {
-                a.Branch.End.SetNetworkDownstream(a.Branch.Start.Network);
-                b.Branch.End.SetNetworkDownstream(b.Branch.Start.Network);
+                a.Branch.End.PropagateOriginDownstream();
+                b.Branch.End.PropagateOriginDownstream();
             }
         }
 
@@ -589,21 +591,5 @@ namespace Vascular.Structure.Actions
                 return OrderDownstream(node, branch => Canonicalize(branch.End, comparer), comparer);
             }
         }
-
-        // /// <summary>
-        // /// If optimizations have been made on clones of the original network, transfer the cloned structure to the original.
-        // /// This is achieved by setting the downstream section of the source node to the clone - the terminals may have changed so
-        // /// the new terminals are kept.
-        // /// </summary>
-        // /// <param name="to"></param>
-        // /// <param name="from"></param>
-        // public static void Transfer(Network to, Network from)
-        // {
-        //     var node = to.Source;
-        //     var seg = from.Source.Child;
-        //     node.Child = seg;
-        //     seg.Start = node;
-        //     seg.Branch.Start = node;
-        // }
     }
 }
