@@ -2,6 +2,8 @@
 using System.Linq;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Structure.Diagnostics;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Hierarchical
 {
@@ -35,15 +37,15 @@ namespace Vascular.Optimization.Hierarchical
         /// Sets <see cref="Cost"/> and gradient caches required to evaluate
         /// <see cref="PositionGradient"/>, <see cref="FlowGradient"/>, <see cref="ReducedResistanceGradient"/>.
         /// </summary>
-        /// <param name="network"></param>
-        public abstract void SetCache(Network? network = null);
+        /// <param name="source"></param>
+        public abstract void SetCache(Source? source = null);
 
         /// <summary>
         /// Sets <see cref="Cost"/> and returns the value.
         /// </summary>
-        /// <param name="network"></param>
+        /// <param name="source"></param>
         /// <returns></returns>
-        public abstract double SetCost(Network? network = null);
+        public abstract double SetCost(Source? source = null);
 
         /// <summary>
         ///
@@ -53,13 +55,24 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
-        /// <param name="network"></param>
+        /// <param name="source"></param>
         /// <returns></returns>
-        public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Network network)
+        public virtual (double cost, IDictionary<IMobileNode, Vector3> gradient) Evaluate(Source source)
         {
-            var G = new Dictionary<IMobileNode, Vector3>(network.Nodes.Count());
-            SetCache(network);
-            foreach (var m in network.MobileNodes)
+            if (source.Root is null)
+            {
+                return (0, new Dictionary<IMobileNode, Vector3>());
+            }
+
+            var s = 0;
+            // TODO: make proper counting methods and enumeration on source, as well as network.
+            // Or use enumerator more often?
+            source.ForEach(b => s += b.Segments.Count);
+            var G = new Dictionary<IMobileNode, Vector3>(s);
+
+            SetCache(source);
+            var e = new BranchEnumerator();
+            foreach (var m in e.MobileNodes(source.Root))
             {
                 G[m] = PositionGradient(m);
             }

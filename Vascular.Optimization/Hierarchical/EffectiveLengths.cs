@@ -92,6 +92,11 @@ namespace Vascular.Optimization.Hierarchical
         /// </summary>
         public void SetLengths()
         {
+            if (this.Cache.Root is null)
+            {
+                return;
+            }
+
             this.Values.Clear();
             this.Value = Calculate(this.Cache.Root);
         }
@@ -121,6 +126,11 @@ namespace Vascular.Optimization.Hierarchical
         /// </summary>
         public void SetGradients()
         {
+            if (this.Cache.Root is null)
+            {
+                return;
+            }
+
             this.Gradients.Clear();
             Calculate(this.Cache.Root, 0, 0, 1);
         }
@@ -279,6 +289,11 @@ namespace Vascular.Optimization.Hierarchical
         /// <returns></returns>
         public Vector3 PositionGradient(Source s)
         {
+            if (s.Child is null)
+            {
+                return new();
+            }
+
             var br = s.Downstream[0];
             var gb = this.Gradients[br];
             var bl = br.Length;

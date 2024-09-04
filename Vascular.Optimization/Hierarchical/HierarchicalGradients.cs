@@ -14,10 +14,10 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
-        /// <param name="n"></param>
-        public HierarchicalGradients(Network n)
+        /// <param name="s"></param>
+        public HierarchicalGradients(Source s)
         {
-            this.Network = n;
+            this.Source = s;
         }
 
         /// <summary>
@@ -38,17 +38,17 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
-        public Network Network { get; set; }
+        public Network Network => this.Source.Network;
 
         /// <summary>
         ///
         /// </summary>
-        public Source Source => this.Network.Source;
+        public Source Source { get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public Branch Root => this.Source.Child.Branch;
+        public Branch? Root => this.Source.Root;
 
         private double dr_dR, dr_dQ;
 
@@ -80,6 +80,11 @@ namespace Vascular.Optimization.Hierarchical
         /// </summary>
         public void SetCache()
         {
+            if (this.Root is null)
+            {
+                return;
+            }
+
             this.Local.Clear();
             this.Global.Clear();
             SetRadius();
@@ -172,6 +177,11 @@ namespace Vascular.Optimization.Hierarchical
         /// <returns></returns>
         public Vector3 PositionGradient(Source s)
         {
+            if (s.Child is null)
+            {
+                return new();
+            }
+
             var br = s.Downstream[0];
             var gb = this.Global[br];
             var dc = s.Child.Direction;

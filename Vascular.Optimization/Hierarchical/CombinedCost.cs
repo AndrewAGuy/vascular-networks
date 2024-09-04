@@ -1,6 +1,7 @@
 ﻿using System;
 using Vascular.Geometry;
 using Vascular.Structure;
+using Vascular.Structure.Nodes;
 
 namespace Vascular.Optimization.Hierarchical
 {
@@ -87,12 +88,12 @@ namespace Vascular.Optimization.Hierarchical
         /// target this network. Then sets base cache and all costs depending on this, and updates gradients of
         /// overall cost with respect to each component cost.
         /// </summary>
-        /// <param name="n"></param>
-        public override void SetCache(Network? n)
+        /// <param name="s"></param>
+        public override void SetCache(Source? s)
         {
-            if (n is not null)
+            if (s is not null)
             {
-                cache.Network = n;
+                cache.Source = s;
             }
             cache.SetCache();
 
@@ -106,17 +107,17 @@ namespace Vascular.Optimization.Hierarchical
         /// <summary>
         ///
         /// </summary>
-        /// <param name="n"></param>
+        /// <param name="s"></param>
         /// <returns></returns>
-        public override double SetCost(Network? n)
+        public override double SetCost(Source? s)
         {
-            if (n is not null)
+            if (s is not null)
             {
-                cache.Network = n;
+                cache.Source = s;
             }
             foreach (var cost in costs)
             {
-                cost.SetCost(n);
+                cost.SetCost(s);
             }
             return this.Cost;
         }

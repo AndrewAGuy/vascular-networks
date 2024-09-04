@@ -74,7 +74,7 @@ namespace Vascular.Optimization.Geometric
 
             if (recalculate)
             {
-                n.Source.CalculatePhysical();
+                n.Sources.Apply(n => n.CalculatePhysical());
             }
         }
 

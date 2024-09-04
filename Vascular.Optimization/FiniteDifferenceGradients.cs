@@ -200,7 +200,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static Vector3 Hierarchical(HierarchicalCost cost, IMobileNode node, double probeLength)
         {
-            return Gradient(node, probeLength, () => cost.SetCost(node.Network()));
+            return Gradient(node, probeLength, () => cost.SetCost(node.Origin()));
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace Vascular.Optimization
         /// <returns></returns>
         public static double Hierarchical(HierarchicalCost cost, Branch branch, double probeFlow)
         {
-            return Gradient(branch, probeFlow, () => cost.SetCost(branch.Network));
+            return Gradient(branch, probeFlow, () => cost.SetCost(branch.Origin));
         }
     }
 }

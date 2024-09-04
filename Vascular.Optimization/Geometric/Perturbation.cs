@@ -27,7 +27,7 @@ namespace Vascular.Optimization.Geometric
                     node.Position += perturb(node);
                 }
             }
-            net.Source.CalculatePhysical();
+            net.Sources.Apply(n => n.CalculatePhysical());
         }
 
         /// <summary>
