@@ -8,7 +8,7 @@ namespace Vascular.Optimization.Hierarchical
     /// - "maximize useful output": <see cref="ProjectedArea"/> for the retina or <see cref="Volume"/> in 3D;
     /// <br/>
     /// - "minimize operating cost": <see cref="Resistance"/> and <see cref="Work"/> for open circuit applications (filtration)
-    /// or <see cref="Murray"/> for closed systems (incorporating the cost of blood maintenance);
+    /// or <see cref="MetabolicExpenditure"/> for closed systems (incorporating the cost of blood maintenance);
     /// <br/>
     /// - "maximize efficiency": <see cref="ProjectedAreaEfficiency"/> and <see cref="ProjectedAreaEfficiencyVariableFlow"/>  in 2D,
     /// <see cref="VolumeEfficiency"/> and <see cref="VolumeEfficiencyVariableFlow"/> in 3D
@@ -90,7 +90,7 @@ namespace Vascular.Optimization.Hierarchical
         /// <param name="lu"></param>
         /// <param name="Q"></param>
         /// <returns></returns>
-        public static HierarchicalCost Murray(HierarchicalGradients g,
+        public static HierarchicalCost MetabolicExpenditure(HierarchicalGradients g,
             double v = 3.6e-3, double mb = 640, double lu = 1e3, double Q = 0.0)
         {
             var V = new PolynomialCost(g, Math.PI / Math.Pow(lu, 3) * mb, 1, 2);

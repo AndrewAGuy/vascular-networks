@@ -10,7 +10,14 @@ internal class MultiSourceCost : HierarchicalCost
 {
     public Dictionary<Source, HierarchicalCost> Costs { get; set; } = new();
 
-    public override double Cost => this.Costs.Values.Sum(c => c.Cost);
+    public override double Cost => cost;
+
+    private double cost = double.PositiveInfinity;
+
+    private void SetCost()
+    {
+        cost = this.Costs.Values.Sum(c => c.Cost);
+    }
 
     public override double FlowGradient(Branch branch)
     {
@@ -33,6 +40,7 @@ internal class MultiSourceCost : HierarchicalCost
         {
             c.SetCache(n);
         }
+        SetCost();
     }
 
     public override double SetCost(Source? source = null)
@@ -41,6 +49,7 @@ internal class MultiSourceCost : HierarchicalCost
         {
             c.SetCost(n);
         }
+        SetCost();
         return this.Cost;
     }
 }
