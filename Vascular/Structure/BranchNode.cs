@@ -33,7 +33,12 @@ namespace Vascular.Structure
         /// <summary>
         /// The number of <see cref="Branch"/> instances between this and a <see cref="Source"/> node.
         /// </summary>
-        public abstract int Depth { get; }
+        public int Depth => depth;
+
+        /// <summary>
+        ///
+        /// </summary>
+        protected int depth = -1;
 
         /// <summary>
         /// Updates in a downwards pass.
@@ -44,6 +49,19 @@ namespace Vascular.Structure
         /// Sets <see cref="Depth"/> to Strahler order.
         /// </summary>
         public abstract void CalculatePathLengthsAndOrder();
+
+        /// <summary>
+        /// Sets <see cref="Depth"/> to the visiting order.
+        /// </summary>
+        public virtual int CalculateIndex(int index)
+        {
+            depth = index++;
+            foreach (var child in this.Downstream)
+            {
+                index = child.End.CalculateIndex(index);
+            }
+            return index;
+        }
 #endif
 
         /// <inheritdoc/>

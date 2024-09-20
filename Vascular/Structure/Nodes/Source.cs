@@ -174,13 +174,6 @@ namespace Vascular.Structure.Nodes
         /// Always 0.
         /// </summary>
         sealed public override double PathLength => 0.0;
-
-        /// <summary>
-        /// Always 0 when depth, but non zero for Strahler order.
-        /// </summary>
-        sealed public override int Depth => depth;
-
-        private int depth = 0;
 #endif
 
         /// <inheritdoc/>

@@ -96,13 +96,9 @@ namespace Vascular.Structure.Nodes
 
 #if !NoDepthPathLength
         private double pathLength = -1.0;
-        private int depth = -1;
 
         /// <inheritdoc/>
         public override double PathLength => pathLength;
-
-        /// <inheritdoc/>
-        public override int Depth => depth;
 
         /// <inheritdoc/>
         public override void CalculatePathLengthsAndDepths()
