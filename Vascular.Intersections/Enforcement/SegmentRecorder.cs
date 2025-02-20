@@ -7,17 +7,17 @@
     public abstract class SegmentRecorder<TPenalizing> : Recorder<SegmentIntersection, TPenalizing>
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected double minimumNodePerturbation = 0.0;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected double radialCaptureFraction = 1.25;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected double aggressionFactor = 1.25;
 

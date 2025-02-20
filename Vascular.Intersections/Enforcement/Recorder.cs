@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vascular.Structure.Actions;
 
@@ -23,6 +24,11 @@ namespace Vascular.Intersections.Enforcement
         /// <param name="t"></param>
         public virtual void Record(TIntersection t)
         {
+            if (this.Ignore is not null && this.Ignore(t))
+            {
+                return;
+            }
+
             RecordSingle(t);
             total++;
         }
@@ -93,9 +99,13 @@ namespace Vascular.Intersections.Enforcement
         {
             foreach (var t in ts)
             {
-                RecordSingle(t);
+                Record(t);
             }
-            total += ts.Count();
         }
+
+        /// <summary>
+        /// Whether to ignore the intersection.
+        /// </summary>
+        public Func<TIntersection, bool>? Ignore { get; set; } = null;
     }
 }

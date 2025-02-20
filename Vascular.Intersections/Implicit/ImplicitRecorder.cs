@@ -76,11 +76,6 @@ namespace Vascular.Intersections.Implicit
         /// <summary>
         ///
         /// </summary>
-        public Func<ImplicitViolation, bool> ImmunityPredicate { get; set; } = v => false;
-
-        /// <summary>
-        ///
-        /// </summary>
         public double ImmediateCull { get; set; } = double.PositiveInfinity;
 
         /// <summary>
@@ -141,10 +136,6 @@ namespace Vascular.Intersections.Implicit
 
         private bool TryTopology(ImplicitViolation violation)
         {
-            if (this.ImmunityPredicate(violation))
-            {
-                return true;
-            }
             intersecting.Add(violation.Node);
 
             if (violation.Value < this.ImmediateCull)
