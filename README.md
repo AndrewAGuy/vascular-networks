@@ -1,5 +1,7 @@
 <h1> <img align="left" src="package/icon.svg" width="48"/> &nbsp; Vascular.Networks </h1>
 
+**Note:** the underlying algorithm of `Vascular.Construction.LSV` has been submitted as `BIORXIV/2026/708633`: "Multiscale computational framework for generating vascularized biohybrid tissue constructs".
+
 #### Procedural Plumbing for Bioengineers
 This package contains the core libraries for defining vascular trees, their bounding geometries and functional structures, and the operations to build, optimize, constrain, analyze and triangulate them.
 Libraries for import/export of common file formats are also provided.
